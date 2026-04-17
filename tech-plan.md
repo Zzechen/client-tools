@@ -444,7 +444,8 @@ ln -sf $(pwd)/skill/client-tools-inspect ~/.claude/skills/client-tools-inspect
 
 ## 约束与边界
 
-- 当前支持 Android 原生 View 体系和 iOS（UIKit/SwiftUI/OC），不支持 Android Compose（后续可扩展）
+- Android 布局统一使用 XML，不使用 Jetpack Compose
+- 当前支持 Android 原生 View 体系和 iOS（UIKit/SwiftUI/OC）
 - 预处理阶段需本地安装 Playwright + Chromium（约 100MB，一次性）
 - 运行时修改为内存状态，不持久化到源码；持久化由 AI 另行修改源文件完成
 - SDK 仅用于开发调试阶段，不应打包进生产包

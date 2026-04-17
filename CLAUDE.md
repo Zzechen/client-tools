@@ -26,6 +26,13 @@ AI Coding 客户端页面开发增强套件，目标是让 AI 高质量完成「
 - 与用户交流使用中文
 - 结构化数据格式优先使用 JSON
 
+## 技术约定
+
+- **Android 布局**：统一使用 XML（不使用 Jetpack Compose）
+- **KMP 共享模块**：仅包含纯 Kotlin 数据结构和序列化逻辑，不依赖任何平台 API
+- **Android 最低版本**：待定
+- **iOS 最低版本**：待定
+
 ## Superpowers 文档路径
 
 - Spec 文件：`docs/YYYY-MM-DD-<topic>/spec.md`
