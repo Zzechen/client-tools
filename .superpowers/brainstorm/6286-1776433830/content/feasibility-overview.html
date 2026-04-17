@@ -1,0 +1,63 @@
+<h2>需求可行性总览</h2>
+<p class="subtitle">5 个模块的技术可行性评估 — 点击模块查看详情</p>
+
+<style>
+.module-grid { display: flex; flex-direction: column; gap: 12px; margin-top: 20px; }
+.module-row { display: flex; align-items: stretch; gap: 0; border-radius: 10px; overflow: hidden; border: 1px solid rgba(255,255,255,0.08); }
+.module-label { width: 280px; min-width: 280px; padding: 14px 18px; font-size: 14px; font-weight: 600; display: flex; align-items: center; gap: 10px; }
+.module-label .num { font-size: 11px; opacity: 0.6; font-weight: 400; }
+.module-status { width: 100px; min-width: 100px; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; letter-spacing: 0.05em; }
+.module-note { flex: 1; padding: 14px 18px; font-size: 13px; opacity: 0.8; display: flex; align-items: center; }
+.risk-tag { display: inline-block; font-size: 11px; padding: 2px 8px; border-radius: 4px; margin-left: 10px; font-weight: 600; }
+
+.green  { background: rgba(52,199,89,0.10); }
+.green .module-status  { background: rgba(52,199,89,0.20); color: #34c759; }
+.yellow { background: rgba(255,204,0,0.08); }
+.yellow .module-status { background: rgba(255,204,0,0.18); color: #ffcc00; }
+.orange { background: rgba(255,149,0,0.08); }
+.orange .module-status { background: rgba(255,149,0,0.18); color: #ff9500; }
+.red    { background: rgba(255,59,48,0.08); }
+.red .module-status    { background: rgba(255,59,48,0.18); color: #ff3b30; }
+
+.risk-high   { background: rgba(255,59,48,0.2);  color: #ff3b30; }
+.risk-mid    { background: rgba(255,149,0,0.2);  color: #ff9500; }
+.risk-low    { background: rgba(52,199,89,0.2);  color: #34c759; }
+
+.legend { display: flex; gap: 20px; margin-top: 20px; font-size: 12px; opacity: 0.6; }
+.legend-item { display: flex; align-items: center; gap: 6px; }
+.legend-dot { width: 10px; height: 10px; border-radius: 50%; }
+</style>
+
+<div class="module-grid">
+  <div class="module-row green">
+    <div class="module-label">📐 模块1 <span class="num">设计稿预处理</span></div>
+    <div class="module-status">✅ 可行</div>
+    <div class="module-note">Python + BeautifulSoup 成熟方案，但有一个关键盲点需讨论 <span class="risk-tag risk-mid">注意</span></div>
+  </div>
+  <div class="module-row green">
+    <div class="module-label">📄 模块2 <span class="num">结构化文档格式</span></div>
+    <div class="module-status">✅ 可行</div>
+    <div class="module-note">纯数据结构设计，无技术障碍，需确定字段规范</div>
+  </div>
+  <div class="module-row yellow">
+    <div class="module-label">📱 模块3 <span class="num">客户端 SDK</span></div>
+    <div class="module-status">⚠️ 有挑战</div>
+    <div class="module-note">WebView 叠加可行，View 树获取需 Debug 权限或无障碍服务 <span class="risk-tag risk-mid">中风险</span></div>
+  </div>
+  <div class="module-row orange">
+    <div class="module-label">🔍 模块4 <span class="num">差异计算</span></div>
+    <div class="module-status">⚠️ 较复杂</div>
+    <div class="module-note">节点匹配算法 + 坐标系转换是难点，需要设计匹配策略 <span class="risk-tag risk-mid">中风险</span></div>
+  </div>
+  <div class="module-row orange">
+    <div class="module-label">🤖 模块5 <span class="num">AI 校正循环</span></div>
+    <div class="module-status">⚠️ 较复杂</div>
+    <div class="module-note">循环收敛性和运行时改代码的能力边界需明确 <span class="risk-tag risk-high">高风险</span></div>
+  </div>
+</div>
+
+<div class="legend">
+  <div class="legend-item"><div class="legend-dot" style="background:#34c759"></div> 成熟方案，可直接实现</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#ffcc00"></div> 可行但需注意细节</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#ff9500"></div> 有技术挑战，需仔细设计</div>
+</div>

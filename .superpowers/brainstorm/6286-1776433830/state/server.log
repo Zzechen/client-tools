@@ -1,0 +1,5 @@
+{"type":"server-started","port":58590,"host":"127.0.0.1","url_host":"localhost","url":"http://localhost:58590","screen_dir":"/Users/zzc/Desktop/works/client-tools/.superpowers/brainstorm/6286-1776433830/content","state_dir":"/Users/zzc/Desktop/works/client-tools/.superpowers/brainstorm/6286-1776433830/state"}
+{"type":"screen-added","file":"/Users/zzc/Desktop/works/client-tools/.superpowers/brainstorm/6286-1776433830/content/feasibility-overview.html"}
+{"type":"screen-added","file":"/Users/zzc/Desktop/works/client-tools/.superpowers/brainstorm/6286-1776433830/content/module-details.html"}
+{"type":"screen-added","file":"/Users/zzc/Desktop/works/client-tools/.superpowers/brainstorm/6286-1776433830/content/node-matching.html"}
+{"type":"server-stopped","reason":"idle timeout"}

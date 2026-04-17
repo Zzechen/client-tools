@@ -1,0 +1,133 @@
+<h2>三个问题的深入分析</h2>
+<p class="subtitle">逐一解答</p>
+
+<style>
+.section { margin-bottom: 32px; }
+.section-title { font-size: 16px; font-weight: 700; margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
+.tag { font-size: 11px; padding: 2px 8px; border-radius: 4px; font-weight: 600; }
+.tag-green  { background: rgba(52,199,89,0.2);  color: #34c759; }
+.tag-orange { background: rgba(255,149,0,0.2);  color: #ff9500; }
+.tag-red    { background: rgba(255,59,48,0.2);  color: #ff3b30; }
+.tag-blue   { background: rgba(10,132,255,0.2); color: #0a84ff; }
+
+.info-box { background: rgba(255,255,255,0.04); border-left: 3px solid; border-radius: 0 8px 8px 0; padding: 12px 16px; margin: 10px 0; font-size: 13px; line-height: 1.7; }
+.info-box.green  { border-color: #34c759; }
+.info-box.orange { border-color: #ff9500; }
+.info-box.red    { border-color: #ff3b30; }
+.info-box.blue   { border-color: #0a84ff; }
+
+.compare { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-top: 10px; }
+.compare-item { background: rgba(255,255,255,0.04); border-radius: 8px; padding: 12px; font-size: 13px; }
+.compare-item h4 { font-size: 13px; font-weight: 700; margin-bottom: 8px; }
+.compare-item ul { margin: 0; padding-left: 16px; opacity: 0.8; line-height: 1.8; }
+.recommended { border: 1px solid rgba(52,199,89,0.4); }
+.rec-label { font-size: 11px; color: #34c759; font-weight: 600; margin-bottom: 4px; }
+
+.flow { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; margin: 10px 0; font-size: 13px; }
+.flow-step { background: rgba(255,255,255,0.08); border-radius: 6px; padding: 6px 12px; }
+.flow-arrow { opacity: 0.4; }
+.flow-problem { background: rgba(255,59,48,0.15); border-radius: 6px; padding: 6px 12px; color: #ff3b30; }
+.flow-ok { background: rgba(52,199,89,0.15); border-radius: 6px; padding: 6px 12px; color: #34c759; }
+</style>
+
+<!-- 问题1 -->
+<div class="section">
+  <div class="section-title">✅ 模块3 View树获取 <span class="tag tag-green">已确认可行</span></div>
+  <div class="info-box green">
+    通过监听 ActivityLifecycle → 拿到 DecorView → 遍历 View 树，这个路径完全成立。<br>
+    结构化数据（坐标、尺寸、类型、属性）都可以在同一个上下文里拿到，不需要任何外部权限。<br>
+    <strong>模块3 风险降为低。</strong>
+  </div>
+</div>
+
+<!-- 问题2 -->
+<div class="section">
+  <div class="section-title">🤖 「循环收敛性 & 运行时改代码」是什么意思 <span class="tag tag-orange">需澄清</span></div>
+  <div class="info-box orange">
+    <strong>我的疑问是：AI 校正循环里，「调整 View 属性」具体是怎么做的？</strong><br>
+    这决定了整个循环能不能真正收敛。
+  </div>
+
+  <div class="flow">
+    <div class="flow-step">获取 DOM/View 差异</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step">AI 计算调整量</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-problem">❓ 怎么「调整」？</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step">重新校验</div>
+  </div>
+
+  <div class="compare" style="grid-template-columns:1fr 1fr;">
+    <div class="compare-item">
+      <h4>方案A：运行时反射修改</h4>
+      <ul>
+        <li>通过 SDK 直接用反射改 View 的 margin/padding</li>
+        <li>改完立即生效，截图校验</li>
+        <li>✅ 快，循环紧凑</li>
+        <li>❌ 改的是内存状态，重启丢失</li>
+        <li>❌ 不能改布局文件</li>
+      </ul>
+    </div>
+    <div class="compare-item recommended">
+      <div class="rec-label">★ 推荐 / 需确认</div>
+      <h4>方案B：修改源码 + 重新编译</h4>
+      <ul>
+        <li>AI 直接改 XML/Kotlin 源码</li>
+        <li>重新 build → 安装 → 截图校验</li>
+        <li>✅ 改动持久，最终产出可用代码</li>
+        <li>❌ 每轮循环要几十秒</li>
+        <li>❌ 收敛慢</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="info-box blue" style="margin-top:12px;">
+    <strong>收敛风险：</strong>如果用反射改内存，AI 可能陷入「改了A又破坏B」的震荡循环，永远不收敛。<br>
+    需要定义：最多循环几轮？误差阈值是多少？哪些属性允许调整？
+  </div>
+</div>
+
+<!-- 问题3 -->
+<div class="section">
+  <div class="section-title">📐 模块1 无头浏览器方案 <span class="tag tag-blue">方案对比</span></div>
+
+  <div class="compare">
+    <div class="compare-item">
+      <h4>❌ 纯 BeautifulSoup</h4>
+      <ul>
+        <li>只解析 HTML 结构</li>
+        <li>拿不到渲染后坐标</li>
+        <li>flex/grid 布局后位置未知</li>
+        <li>成本极低</li>
+        <li><strong>不够用</strong></li>
+      </ul>
+    </div>
+    <div class="compare-item recommended">
+      <div class="rec-label">★ 推荐</div>
+      <h4>✅ Playwright（无头）</h4>
+      <ul>
+        <li>真实渲染，拿到 getBoundingClientRect</li>
+        <li>一次性运行，不是常驻服务</li>
+        <li>pip install playwright 即可</li>
+        <li>首次安装约 100MB Chromium</li>
+        <li>运行一次 ~2-5 秒</li>
+      </ul>
+    </div>
+    <div class="compare-item">
+      <h4>🟡 Selenium</h4>
+      <ul>
+        <li>同样可以拿坐标</li>
+        <li>需要本地安装浏览器</li>
+        <li>依赖 chromedriver 版本</li>
+        <li>维护成本比 Playwright 高</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="info-box blue" style="margin-top:12px;">
+    <strong>关于使用成本：</strong>Playwright 只在「预处理阶段」运行一次，不是每次校验都跑。<br>
+    预处理完成后输出 JSON，之后所有对比都基于 JSON，不再需要浏览器。<br>
+    <strong>额外成本：首次安装约 100MB，单次运行 2-5 秒，可接受。</strong>
+  </div>
+</div>

@@ -1,0 +1,98 @@
+<h2>DOM ↔ View 节点匹配策略</h2>
+<p class="subtitle">设计稿层次 vs 代码层次不一定 1-1 对应，哪种策略更鲁棒？</p>
+
+<style>
+.compare { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; margin: 16px 0; }
+.compare-item { background: rgba(255,255,255,0.04); border-radius: 10px; padding: 16px; font-size: 13px; }
+.compare-item h4 { font-size: 14px; font-weight: 700; margin-bottom: 10px; }
+.compare-item ul { margin: 0; padding-left: 16px; line-height: 1.9; }
+.recommended { border: 1px solid rgba(52,199,89,0.4); }
+.rec-label { font-size: 11px; color: #34c759; font-weight: 600; margin-bottom: 6px; }
+.pro { color: #34c759; }
+.con { color: #ff3b30; }
+
+.problem-box { background: rgba(255,204,0,0.08); border-left: 3px solid #ffcc00; border-radius: 0 8px 8px 0; padding: 12px 16px; margin: 16px 0; font-size: 13px; line-height: 1.8; }
+.solution-box { background: rgba(10,132,255,0.08); border-left: 3px solid #0a84ff; border-radius: 0 8px 8px 0; padding: 12px 16px; margin: 16px 0; font-size: 13px; line-height: 1.8; }
+
+.tree-demo { display: grid; grid-template-columns: 1fr auto 1fr; gap: 16px; align-items: center; margin: 16px 0; }
+.tree { background: rgba(255,255,255,0.04); border-radius: 8px; padding: 14px; font-size: 12px; font-family: monospace; line-height: 2; }
+.tree .node { padding-left: calc(var(--depth, 0) * 14px); }
+.tree .node.highlight { color: #0a84ff; font-weight: 700; }
+.tree .node.highlight2 { color: #34c759; font-weight: 700; }
+.tree .node.extra { color: rgba(255,255,255,0.3); font-style: italic; }
+.arrow-center { font-size: 24px; opacity: 0.4; text-align: center; }
+.tree-label { font-size: 11px; opacity: 0.5; margin-bottom: 6px; font-weight: 600; letter-spacing: 0.05em; text-transform: uppercase; }
+.match-line { font-size: 11px; color: #34c759; margin-top: 8px; }
+</style>
+
+<!-- 层次不对应的核心问题 -->
+<div class="problem-box">
+  <strong>核心问题：设计稿 1 个节点 → 代码可能是 N 个 View 的组合</strong><br>
+  例如设计稿里一个「带图标的按钮」是 1 个 div，Android 实现是 LinearLayout + ImageView + TextView 三层。<br>
+  靠结构匹配会失败，靠 id 精确匹配也无法覆盖所有中间容器层。
+</div>
+
+<!-- 树对比示意 -->
+<div class="tree-demo">
+  <div>
+    <div class="tree-label">设计稿 DOM</div>
+    <div class="tree">
+      <div class="node" style="--depth:0">div.card</div>
+      <div class="node highlight" style="--depth:1">div.btn-icon ← 锚定目标</div>
+      <div class="node" style="--depth:2">img.icon</div>
+      <div class="node" style="--depth:2">span.label</div>
+    </div>
+  </div>
+  <div class="arrow-center">⟷</div>
+  <div>
+    <div class="tree-label">Android View 树</div>
+    <div class="tree">
+      <div class="node" style="--depth:0">FrameLayout</div>
+      <div class="node extra" style="--depth:1">LinearLayout (容器，无对应)</div>
+      <div class="node highlight2" style="--depth:2">LinearLayout (btn) ← 真正对应</div>
+      <div class="node" style="--depth:3">ImageView</div>
+      <div class="node" style="--depth:3">TextView</div>
+    </div>
+  </div>
+</div>
+
+<!-- 三种策略对比 -->
+<div class="compare">
+  <div class="compare-item">
+    <h4>A. 纯 id 约定</h4>
+    <ul>
+      <li class="pro">✅ 精确，零歧义</li>
+      <li class="pro">✅ 可忽略中间容器</li>
+      <li class="con">❌ AI 写代码必须严格遵守命名规范</li>
+      <li class="con">❌ 容器层无对应 id，覆盖不完整</li>
+      <li class="con">❌ 规范一旦不一致全部失效</li>
+    </ul>
+  </div>
+  <div class="compare-item">
+    <h4>B. 纯坐标匹配</h4>
+    <ul>
+      <li class="pro">✅ 不依赖命名规范</li>
+      <li class="con">❌ 层次不对应时，多个 View 包围同一坐标区域</li>
+      <li class="con">❌ 容器 View 和叶子 View 坐标重叠，歧义大</li>
+      <li class="con">❌ 无法区分「哪一层才是需要核对的那个」</li>
+    </ul>
+  </div>
+  <div class="compare-item recommended">
+    <div class="rec-label">★ 推荐</div>
+    <h4>C. 叶子节点 + 坐标</h4>
+    <ul>
+      <li class="pro">✅ 只匹配「叶子节点」（最终渲染单元）</li>
+      <li class="pro">✅ 设计稿叶子 ↔ View 叶子，层次差异自动消除</li>
+      <li class="pro">✅ 用坐标 + 类型辅助区分歧义</li>
+      <li class="pro">✅ 对中间容器不做核对，只核对可见内容</li>
+      <li class="con">❌ 纯容器的 padding/margin 问题需额外处理</li>
+    </ul>
+  </div>
+</div>
+
+<div class="solution-box">
+  <strong>推荐方案：叶子节点匹配 + 类型辅助</strong><br>
+  只核对最终渲染的叶子节点（TextView、ImageView、可见 div），不强求层次一致。<br>
+  匹配规则：<strong>相同类型（text↔TextView, img↔ImageView）+ 锚点相对坐标最近</strong> → 即为同一元素。<br>
+  id 作为可选的精确覆盖（有 id 优先用，没有降级用坐标），不作为唯一依赖。
+</div>
