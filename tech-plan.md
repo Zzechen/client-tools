@@ -434,9 +434,9 @@ ln -sf $(pwd)/skill/client-tools-inspect ~/.claude/skills/client-tools-inspect
 | 设计稿预处理 | Python 3.10+、Playwright、BeautifulSoup（辅助解析）|
 | 结构化数据格式 | JSON |
 | 数据结构唯一源 | KMP（Kotlin Multiplatform）共享模块，定义 data class + 序列化逻辑 |
-| KMP 共享模块 | `shared/`，Kotlin Multiplatform，commonMain，定义 data class + 序列化 |
-| Android SDK | `android/sdk/`，Kotlin，依赖 shared，打包为 `.aar` |
-| iOS SDK | `ios/sdk/`，Swift/OC 实现视图层遍历，依赖 shared KMP framework，打包为 `.xcframework`，兼容 UIKit/SwiftUI/OC |
+| KMP 共享模块 | `packages/shared/`，Kotlin Multiplatform，commonMain，定义 data class + 序列化 |
+| Android SDK | `packages/android/sdk/`，Kotlin，依赖 shared，打包为 `.aar` |
+| iOS SDK | `packages/ios/sdk/`，Swift/OC 实现视图层遍历，依赖 shared KMP framework，打包为 `.xcframework`，兼容 UIKit/SwiftUI/OC |
 | 运行时修改（Android）| ViewGroup LayoutParams、View.setPadding()、findViewById |
 | 运行时修改（iOS）| UIView frame/bounds/layoutMargins 等公开 API |
 
