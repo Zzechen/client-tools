@@ -10,12 +10,15 @@ AI Coding 客户端页面开发增强套件，目标是让 AI 高质量完成「
 
 ## 目录结构
 
-- `android/sdk/` — Android SDK（View 树获取、WebView 叠加、运行时属性修改）
+- `shared/` — KMP 共享模块（data class + 序列化逻辑，commonMain，Android/iOS 唯一源）
+- `android/sdk/` — Android SDK，打包为 `.aar`（依赖 shared）
 - `android/demo/` — Android 接入示例
+- `ios/sdk/` — iOS SDK，打包为 `.xcframework`（依赖 shared KMP framework）
+- `ios/demo/` — iOS 接入示例
 - `mcp/` — MCP Server，封装 SDK HTTP 接口供 AI 调用
-- `skill/` — AI 工作流 Skill，描述校正循环策略；含设计稿预处理脚本（Python/Playwright）
+- `skill/` — AI 工作流 Skill + 设计稿预处理脚本（Python/Playwright）
 - `docs/` — 文档
-- `tech-plan.md` — 整体技术规划（详细设计见此文档）
+- `tech-plan.md` — 整体技术规划
 
 ## 开发约定
 
