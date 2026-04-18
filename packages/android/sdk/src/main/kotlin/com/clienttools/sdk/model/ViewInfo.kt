@@ -1,6 +1,6 @@
 package com.clienttools.sdk.model
 
-import com.clienttools.shared.NodeAttrs
+import com.clienttools.shared.models.NodeAttrs
 import kotlinx.serialization.Serializable
 
 @Serializable

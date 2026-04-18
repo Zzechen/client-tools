@@ -14,6 +14,7 @@ object ClientToolsSDK {
     private var httpServer: HttpServer? = null
     private var eventManager: EventManager? = null
     private var pageChangeListener: PageChangeListener? = null
+    private var currentActivity: android.app.Activity? = null
     private var isInitialized = false
     private const val TAG = "ClientToolsSDK"
 
@@ -22,7 +23,7 @@ object ClientToolsSDK {
         try {
             eventManager = EventManager()
             httpServer = HttpServer(context, eventManager!!)
-            httpServer!!.start()
+            httpServer!!.startServer()
             pageChangeListener = PageChangeListener(eventManager!!)
             pageChangeListener!!.register(context)
             isInitialized = true
@@ -40,8 +41,14 @@ object ClientToolsSDK {
         pageChangeListener?.addListener(callback)
     }
     fun shutdown() {
-        httpServer?.stop()
+        httpServer?.stopServer()
         pageChangeListener?.unregister()
         isInitialized = false
     }
+
+    internal fun setCurrentActivity(activity: android.app.Activity?) {
+        currentActivity = activity
+    }
+
+    internal fun getCurrentActivity(): android.app.Activity? = currentActivity
 }
