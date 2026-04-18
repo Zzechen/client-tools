@@ -5,6 +5,7 @@ agp = "8.7.3"
 androidx-appcompat = "1.7.0"
 androidx-core = "1.13.1"
 androidx-activity-compose = "1.8.1"
+compose-compiler = "1.5.10"
 
 [libraries]
 kotlin-stdlib = { module = "org.jetbrains.kotlin:kotlin-stdlib" }
@@ -18,5 +19,6 @@ androidx-test-espresso = { module = "androidx.test.espresso:espresso-core", vers
 kotlin-multiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref = "kotlin" }
 kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
 kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
+compose-compiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
 android-library = { id = "com.android.library", version.ref = "agp" }
 android-application = { id = "com.android.application", version.ref = "agp" }
