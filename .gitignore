@@ -1,5 +1,6 @@
 # Superpowers
 .superpowers/
+.worktrees/
 
 # Python
 __pycache__/
