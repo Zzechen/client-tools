@@ -249,11 +249,10 @@ GET /webview/files
 │ 当前：login (0418-1430)     │
 │                             │
 │ 已保存文件：                 │
-│ ☐ login_0417-1400 [加载]    │
-│ ☑ login_0418-1430 [当前] ★  │
-│ ☐ home_0418-1500 [加载]     │
+│ ○ login_0417-1400          │
+│ ◐ login_0418-1430 ★ 当前   │
+│ ○ home_0418-1500           │
 │                             │
-│ [📤 推送新 HTML]            │
 └─────────────────────────────┘
 ```
 
@@ -261,7 +260,7 @@ GET /webview/files
 - 显示当前加载的 HTML 标签和时间戳
 - 列出所有已保存的 HTML 文件
 - 点击文件可快速加载（调用 `/webview/show` 接口）
-- [推送新 HTML] 按钮打开输入对话框（后续实现）
+- 当前文件用 ★ 和半圆符号标记
 
 #### 4.3.2 调整模块（可折叠）
 
@@ -318,12 +317,11 @@ GET /webview/files
    ↓
 2. SDK 自动显示悬浮按钮（右下角）
    ↓
-3. 点击悬浮按钮 → 展开面板
+3. 点击悬浮按钮 → 展开面板（动画展开，科技感效果）
    ↓
-4. 用户操作（3 选 1）
-   A) 推送新 HTML → 输入 HTML 内容 → 调用 /webview/push-html
-   B) 加载已保存文件 → 点击列表中文件 → 调用 /webview/show
-   C) 显示 WebView → 点击【显示】按钮 → 调用 /webview/show
+4. 用户操作（2 选 1）
+   A) AI 推送 HTML → 自动加载到 WebView（后台），显示在【已保存文件】列表中
+   B) 加载已保存文件 → 点击列表中文件 → 调用 /webview/show → WebView 显示
    ↓
 5. WebView 在屏幕上叠加显示
    ↓
@@ -341,7 +339,112 @@ GET /webview/files
 
 ---
 
-## 5. OverlayManager 增强
+## 5. UI 设计指南（科技感）
+
+### 5.1 悬浮按钮
+
+**样式：**
+- 背景：渐变色（#6200EE → #3700B3）
+- 大小：48×48 dp（易点击）
+- 形状：圆形，带阴影（elevation 8dp）
+- 图标：白色，简约设计（如 ⚙️ 或 🎛️），使用 Material Icons
+
+**动画：**
+- 点击时：按压效果（缩小 10%，回弹）
+- 拖动时：实时跟随手指，边界检测
+
+### 5.2 展开面板
+
+**样式：**
+- 背景：深色背景（#1F1F1F）+ 毛玻璃效果（iOS style）
+- 文字：白色或浅灰色
+- 边框：微弱的发光边框（#6200EE 20% 透明度）
+- 圆角：16 dp
+- 阴影：elevation 16dp + 外发光效果
+
+**动画：**
+- 展开：从悬浮按钮位置弹出，缩放动画（0.8 → 1.0）+ 透明度渐变（0 → 1）
+- 折叠模块：滑动收起，高度动画
+- 拖动面板：跟随手指，松手时物理弹性动画
+
+### 5.3 模块设计
+
+**WebView 模块：**
+- 标题：字号 14sp，粗体
+- 文件列表：每项 44dp 高度，hover 时背景高亮（#333333）
+- 当前文件：半圆符号 ◐ + ★，颜色突出（#6200EE）
+
+**调整模块：**
+- 方向按钮：48×48 dp，圆形，带 ripple 效果
+- 档位选择：3 个 toggle button，选中状态加强色
+- 透明度滑块：Material Design 风格，拖动时显示百分比气泡
+
+**控制模块：**
+- 按钮：全宽，高 48dp，带 ripple 动画
+- 按钮间距：8 dp
+
+---
+
+## 6. Activity 重启兼容性
+
+### 6.1 状态持久化
+
+WebView 的显示状态需要在 Activity 销毁/重启（如屏幕旋转）时恢复。
+
+**持久化的状态：**
+1. 当前加载的 HTML 文件（tag + timestamp）
+2. WebView 的显示/隐藏状态
+3. 位移值（offsetX, offsetY）
+4. 透明度（opacity）
+
+**实现方式：**
+
+使用 `SavedStateHandle` 或 `ViewModel` 保存状态：
+
+```kotlin
+// ViewModel 方式（推荐）
+class WebViewViewModel : ViewModel() {
+    // 当前加载的文件
+    val currentFile = MutableLiveData<Pair<String, String>>()  // (tag, timestamp)
+    
+    // WebView 是否显示
+    val isWebViewVisible = MutableLiveData<Boolean>(false)
+    
+    // 位移和透明度
+    val offsetX = MutableLiveData<Int>(0)
+    val offsetY = MutableLiveData<Int>(0)
+    val opacity = MutableLiveData<Float>(1.0f)
+    
+    // 当 Activity 销毁时，这些数据被保留
+    // Activity 重启时自动恢复
+}
+```
+
+### 6.2 恢复流程
+
+```
+Activity.onCreate()
+  ↓
+检查 ViewModel.currentFile
+  ↓ 如果存在且显示状态为 true
+  ↓
+调用 /webview/show(tag, timestamp)
+  ↓
+调用 /webview/adjust(offsetX, offsetY, opacity)
+  ↓
+WebView 显示位置和透明度恢复完成
+```
+
+### 6.3 注意事项
+
+- ✅ 不保存 HTML 文件内容，只保存标识（tag + timestamp）
+- ✅ 文件列表从本地存储动态读取，无需特殊恢复
+- ✅ 悬浮按钮和面板位置：屏幕旋转后重置到默认位置（右下角），用户可重新拖动
+- ✅ 所有 HTTP 调用幂等，重复调用不会产生副作用
+
+---
+
+## 7. OverlayManager 增强
 
 现有 OverlayManager 基础上添加：
 
@@ -364,7 +467,7 @@ object OverlayManager {
 
 ---
 
-## 6. 验收标准
+## 8. 验收标准
 
 | 功能 | 验收条件 |
 |-----|--------|
@@ -381,7 +484,7 @@ object OverlayManager {
 
 ---
 
-## 7. 实现清单
+## 9. 实现清单
 
 - [ ] WebViewManager 类（统一管理）
 - [ ] WebViewFileStore 类（本地存储）
@@ -398,14 +501,14 @@ object OverlayManager {
 
 ---
 
-## 8. 依赖关系
+## 10. 依赖关系
 
 - **依赖于：** 已有的 OverlayManager、HTTP Server 框架、SDK 初始化机制
 - **被依赖于：** 模块 4&5（差异计算和 AI 校正循环）
 
 ---
 
-## 9. 参考资源
+## 11. 参考资源
 
 - tech-plan.md 第 3.1 和 3.4 节
 - OverlayManager.kt（已有实现）
