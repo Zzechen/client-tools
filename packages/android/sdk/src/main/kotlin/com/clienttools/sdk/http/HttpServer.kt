@@ -2,64 +2,53 @@ package com.clienttools.sdk.http
 
 import android.content.Context
 import android.util.Log
-import com.clienttools.sdk.webview.WebViewApiHandler
+import com.clienttools.sdk.ClientToolsSDK
+import com.clienttools.sdk.inspector.InspectorApiHandler
 import fi.iki.elonen.NanoHTTPD
-import kotlinx.serialization.json.Json
 
 class HttpServer(
     private val context: Context,
     private val eventManager: EventManager
 ) : NanoHTTPD(8080) {
 
-    private var server: NanoHTTPD? = null
-
     override fun serve(session: IHTTPSession?): Response {
         return try {
             if (session == null) return newFixedLengthResponse(Response.Status.BAD_REQUEST, MIME_PLAINTEXT, "Bad request")
-
             val uri = session.uri
             val method = session.method
-
             when {
                 method == Method.GET && uri.startsWith("/api/nodes/") -> {
                     val id = uri.removePrefix("/api/nodes/")
                     ApiHandler.handleGetNode(id)
                 }
                 method == Method.POST && uri == "/api/modify" -> {
-                    val body = readBody(session)
-                    ApiHandler.handleModify(body)
-                }
-                method == Method.POST && uri == "/api/overlay/show" -> {
-                    val body = readBody(session)
-                    ApiHandler.handleOverlayShow(body)
-                }
-                method == Method.POST && uri == "/api/overlay/hide" -> {
-                    ApiHandler.handleOverlayHide()
-                }
-                method == Method.POST && uri == "/api/overlay/opacity" -> {
-                    val body = readBody(session)
-                    ApiHandler.handleOverlayOpacity(body)
+                    ApiHandler.handleModify(readBody(session))
                 }
                 method == Method.GET && uri == "/api/events" -> {
                     eventManager.subscribeSSE(session)
                 }
                 method == Method.POST && uri == "/webview/push-html" -> {
-                    val body = readBody(session)
-                    WebViewApiHandler.handlePushHtml(body)
+                    inspectorHandler().handlePushHtml(readBody(session))
                 }
                 method == Method.POST && uri == "/webview/show" -> {
-                    val body = readBody(session)
-                    WebViewApiHandler.handleShow(body)
+                    inspectorHandler().handleShow(readBody(session))
                 }
                 method == Method.POST && uri == "/webview/hide" -> {
-                    WebViewApiHandler.handleHide()
+                    inspectorHandler().handleHide()
                 }
                 method == Method.POST && uri == "/webview/adjust" -> {
-                    val body = readBody(session)
-                    WebViewApiHandler.handleAdjust(body)
+                    val vm = ClientToolsSDK.getTop()?.viewModel
+                    inspectorHandler().handleAdjust(
+                        readBody(session),
+                        currentOffsetX = vm?.offsetX?.value ?: 0,
+                        currentOffsetY = vm?.offsetY?.value ?: 0,
+                        currentOpacity = vm?.opacity?.value ?: 0.5f
+                    )
                 }
                 method == Method.GET && uri == "/webview/files" -> {
-                    WebViewApiHandler.handleGetFiles()
+                    inspectorHandler().handleGetFiles(
+                        currentFile = ClientToolsSDK.getTop()?.viewModel?.currentFile?.value
+                    )
                 }
                 else -> newFixedLengthResponse(Response.Status.NOT_FOUND, MIME_PLAINTEXT, "Not found")
             }
@@ -68,6 +57,11 @@ class HttpServer(
             newFixedLengthResponse(Response.Status.INTERNAL_ERROR, MIME_PLAINTEXT, e.message ?: "Internal error")
         }
     }
+
+    private fun inspectorHandler() = InspectorApiHandler(
+        fileStore = ClientToolsSDK.fileStore,
+        getTopViewModel = { ClientToolsSDK.getTop()?.viewModel }
+    )
 
     private fun readBody(session: IHTTPSession): String {
         val contentLength = session.headers["content-length"]?.toIntOrNull() ?: 0
