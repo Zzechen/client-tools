@@ -1,5 +1,36 @@
+# Superpowers
 .superpowers/
+
+# Python
 __pycache__/
 *.pyc
 .pytest_cache/
 .venv/
+
+# Gradle
+packages/.gradle/
+packages/build/
+packages/local.properties
+packages/**/build/
+packages/**/.gradle/
+
+# Android
+*.aar
+*.apk
+
+# iOS / Xcode
+*.xcworkspace/
+*.xcuserdata/
+*.xccheckout
+DerivedData/
+*.ipa
+*.dSYM.zip
+*.dSYM
+
+# Kotlin Native
+.konan/
+
+# IDE
+.idea/
+*.iml
+.DS_Store

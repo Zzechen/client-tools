@@ -18,13 +18,19 @@ skill/preprocess/
   extractor.py         # Playwright 渲染 + 节点提取
   anchor.py            # 锚点计算 + 相对坐标生成
   models.py            # 数据结构定义（Node, NodeType, Attrs）
-  tests/
-    test_extractor.py  # 节点提取单元测试
-    test_anchor.py     # 锚点计算单元测试
-    test_cli.py        # CLI 集成测试
-    fixtures/
-      simple.html      # 测试用设计稿
+tests/preprocess/      # 测试目录（实际偏差：从 skill/preprocess/tests/ 迁移至此）
+  test_extractor.py
+  test_anchor.py
+  test_cli.py
+  fixtures/
+    simple.html
 ```
+
+> **实际偏差：**
+> - 测试文件从 `skill/preprocess/tests/` 迁移到项目根 `tests/preprocess/`，不污染 skill 目录
+> - 测试文件中 `sys.path.insert` 指向 `skill/preprocess/`，`test_cli.py` 中 `SCRIPT` 和 `PYTHON` 路径相应更新
+> - 依赖通过 `.venv` 虚拟环境管理（`pip3` + PEP 668 保护），运行测试命令为：
+>   `skill/preprocess/.venv/bin/pytest tests/preprocess/ -q`
 
 ---
 
@@ -32,15 +38,16 @@ skill/preprocess/
 
 **Files:**
 - Create: `skill/preprocess/requirements.txt`
-- Create: `skill/preprocess/tests/fixtures/simple.html`
+- Create: `tests/preprocess/fixtures/simple.html`
 
-- [ ] **Step 1: 创建目录结构**
+- [x] **Step 1: 创建目录结构**
 
 ```bash
-mkdir -p skill/preprocess/tests/fixtures
+mkdir -p skill/preprocess
+mkdir -p tests/preprocess/fixtures
 ```
 
-- [ ] **Step 2: 创建 requirements.txt**
+- [x] **Step 2: 创建 requirements.txt**
 
 ```
 playwright>=1.40.0
@@ -48,9 +55,9 @@ pytest>=7.0.0
 pytest-asyncio>=0.21.0
 ```
 
-- [ ] **Step 3: 创建测试用 HTML fixture**
+- [x] **Step 3: 创建测试用 HTML fixture**
 
-写入 `skill/preprocess/tests/fixtures/simple.html`：
+写入 `tests/preprocess/fixtures/simple.html`：
 
 ```html
 <!DOCTYPE html>
@@ -79,20 +86,21 @@ body { width: 375px; }
 </html>
 ```
 
-- [ ] **Step 4: 安装依赖**
+- [x] **Step 4: 安装依赖**
 
 ```bash
 cd skill/preprocess
-pip install -r requirements.txt
-playwright install chromium
+python3 -m venv .venv
+.venv/bin/pip install -r requirements.txt
+.venv/bin/playwright install chromium
 ```
 
 Expected: 安装成功，无报错
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
-git add skill/preprocess/requirements.txt skill/preprocess/tests/fixtures/simple.html
+git add skill/preprocess/requirements.txt tests/preprocess/fixtures/simple.html
 git commit -m "feat: init preprocess tool structure"
 ```
 
@@ -103,7 +111,7 @@ git commit -m "feat: init preprocess tool structure"
 **Files:**
 - Create: `skill/preprocess/models.py`
 
-- [ ] **Step 1: 创建 models.py**
+- [x] **Step 1: 创建 models.py**
 
 ```python
 from dataclasses import dataclass, field
@@ -178,7 +186,7 @@ class DesignDoc:
     nodes: list[Node]
 ```
 
-- [ ] **Step 2: Commit**
+- [x] **Step 2: Commit**
 
 ```bash
 git add skill/preprocess/models.py
@@ -191,15 +199,18 @@ git commit -m "feat: add preprocess data models"
 
 **Files:**
 - Create: `skill/preprocess/extractor.py`
-- Create: `skill/preprocess/tests/test_extractor.py`
+- Create: `tests/preprocess/test_extractor.py`
 
-- [ ] **Step 1: 写失败测试**
+- [x] **Step 1: 写失败测试**
 
-写入 `skill/preprocess/tests/test_extractor.py`：
+写入 `tests/preprocess/test_extractor.py`：
 
 ```python
 import pytest
 from pathlib import Path
+import sys
+sys.path.insert(0, str(Path(__file__).parent.parent.parent / "skill" / "preprocess"))
+
 from extractor import extract_nodes
 
 FIXTURE = str(Path(__file__).parent / "fixtures/simple.html")
@@ -226,8 +237,6 @@ async def test_extract_node_has_required_fields():
 @pytest.mark.asyncio
 async def test_extract_skips_invisible_nodes():
     nodes = await extract_nodes(FIXTURE, viewport=375)
-    ids = [n.id for n in nodes]
-    # img src 为空，宽高为 0 时应被过滤；此 fixture 中 avatar 有尺寸所以应存在
     assert all(n.widthDp > 0 and n.heightDp > 0 for n in nodes)
 
 
@@ -252,22 +261,20 @@ async def test_extract_ids_are_unique():
 async def test_extract_id_naming_convention():
     nodes = await extract_nodes(FIXTURE, viewport=375)
     for node in nodes:
-        # id 格式应为 type_序号，如 text_1, img_1
         parts = node.id.rsplit("_", 1)
         assert len(parts) == 2
         assert parts[1].isdigit()
 ```
 
-- [ ] **Step 2: 运行测试确认失败**
+- [x] **Step 2: 运行测试确认失败**
 
 ```bash
-cd skill/preprocess
-pytest tests/test_extractor.py -v
+skill/preprocess/.venv/bin/pytest tests/preprocess/test_extractor.py -v
 ```
 
 Expected: FAIL with `ModuleNotFoundError: No module named 'extractor'`
 
-- [ ] **Step 3: 实现 extractor.py**
+- [x] **Step 3: 实现 extractor.py**
 
 ```python
 import asyncio
@@ -278,7 +285,6 @@ from models import (
     Node, NodeType, TextAttrs, ImageAttrs, ListAttrs, ContainerAttrs
 )
 
-# DOM 标签 → NodeType 映射
 _TAG_TYPE_MAP = {
     "p": NodeType.TEXT, "span": NodeType.TEXT, "label": NodeType.TEXT,
     "h1": NodeType.TEXT, "h2": NodeType.TEXT, "h3": NodeType.TEXT,
@@ -364,7 +370,6 @@ async def extract_nodes(html_path: str, viewport: int) -> list[Node]:
         await page.wait_for_load_state("networkidle")
 
         elements = await page.query_selector_all("*")
-        seen_selectors = set()
 
         for el in elements:
             tag = await el.evaluate("el => el.tagName.toLowerCase()")
@@ -375,7 +380,6 @@ async def extract_nodes(html_path: str, viewport: int) -> list[Node]:
             if not rect or rect["width"] == 0 or rect["height"] == 0:
                 continue
 
-            # 检查可见性
             visible = await el.evaluate("""el => {
                 const s = window.getComputedStyle(el);
                 return s.display !== 'none' && s.visibility !== 'hidden';
@@ -386,7 +390,6 @@ async def extract_nodes(html_path: str, viewport: int) -> list[Node]:
             node_type = _get_node_type(tag)
             node_id = _next_id(node_type)
 
-            # 注入 id 到 DOM 用于后续 attrs 查询
             await el.evaluate(f"el => el.setAttribute('data-ct-id', '{node_id}')")
             selector = f"[data-ct-id='{node_id}']"
 
@@ -407,19 +410,18 @@ async def extract_nodes(html_path: str, viewport: int) -> list[Node]:
     return nodes
 ```
 
-- [ ] **Step 4: 运行测试确认通过**
+- [x] **Step 4: 运行测试确认通过**
 
 ```bash
-cd skill/preprocess
-pytest tests/test_extractor.py -v
+skill/preprocess/.venv/bin/pytest tests/preprocess/test_extractor.py -v
 ```
 
 Expected: 全部 PASS
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
-git add skill/preprocess/extractor.py skill/preprocess/tests/test_extractor.py
+git add skill/preprocess/extractor.py tests/preprocess/test_extractor.py
 git commit -m "feat: implement node extractor with playwright"
 ```
 
@@ -429,16 +431,21 @@ git commit -m "feat: implement node extractor with playwright"
 
 **Files:**
 - Create: `skill/preprocess/anchor.py`
-- Create: `skill/preprocess/tests/test_anchor.py`
+- Create: `tests/preprocess/test_anchor.py`
 
-- [ ] **Step 1: 写失败测试**
+- [x] **Step 1: 写失败测试**
 
-写入 `skill/preprocess/tests/test_anchor.py`：
+写入 `tests/preprocess/test_anchor.py`：
 
 ```python
 import pytest
-from models import Node, NodeType, RelPos, ContainerAttrs
+from pathlib import Path
+import sys
+sys.path.insert(0, str(Path(__file__).parent.parent.parent / "skill" / "preprocess"))
+
+from models import Node, NodeType, RelPos, ContainerAttrs, AnchorRef, DesignDoc, design_doc_to_json
 from anchor import apply_anchor
+import json
 
 
 def make_node(id, x, y, w, h, node_type=NodeType.CONTAINER):
@@ -467,7 +474,6 @@ def test_anchor_bottom_edge():
     other = make_node("img_1", 16.0, 80.0, 40.0, 40.0)
     nodes = [anchor, other]
     result = apply_anchor(nodes, anchor_id="text_1", anchor_edge="bottom")
-    # anchor bottom y = 48 + 24 = 72
     other_result = next(n for n in result if n.id == "img_1")
     assert other_result.rel.dy == round(80.0 - 72.0, 1)  # 8.0
 
@@ -485,18 +491,28 @@ def test_all_nodes_have_rel():
     ]
     result = apply_anchor(nodes, anchor_id="text_1", anchor_edge="top")
     assert all(n.rel is not None for n in result)
+
+
+def test_design_doc_serialization():
+    nodes = [make_node("text_1", 16.0, 48.0, 200.0, 24.0)]
+    nodes = apply_anchor(nodes, "text_1", "top")
+    doc = DesignDoc(viewport=375, anchor=AnchorRef(id="text_1", edge="top"), nodes=nodes)
+    output = json.loads(design_doc_to_json(doc))
+    assert output["viewport"] == 375
+    assert output["anchor"]["id"] == "text_1"
+    assert len(output["nodes"]) == 1
+    assert output["nodes"][0]["rel"]["dx"] == 0.0
 ```
 
-- [ ] **Step 2: 运行测试确认失败**
+- [x] **Step 2: 运行测试确认失败**
 
 ```bash
-cd skill/preprocess
-pytest tests/test_anchor.py -v
+skill/preprocess/.venv/bin/pytest tests/preprocess/test_anchor.py -v
 ```
 
 Expected: FAIL with `ModuleNotFoundError: No module named 'anchor'`
 
-- [ ] **Step 3: 实现 anchor.py**
+- [x] **Step 3: 实现 anchor.py**
 
 ```python
 from models import Node, RelPos
@@ -519,19 +535,18 @@ def apply_anchor(nodes: list[Node], anchor_id: str, anchor_edge: str) -> list[No
     return nodes
 ```
 
-- [ ] **Step 4: 运行测试确认通过**
+- [x] **Step 4: 运行测试确认通过**
 
 ```bash
-cd skill/preprocess
-pytest tests/test_anchor.py -v
+skill/preprocess/.venv/bin/pytest tests/preprocess/test_anchor.py -v
 ```
 
 Expected: 全部 PASS
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
-git add skill/preprocess/anchor.py skill/preprocess/tests/test_anchor.py
+git add skill/preprocess/anchor.py tests/preprocess/test_anchor.py
 git commit -m "feat: implement anchor relative coordinate calculation"
 ```
 
@@ -542,7 +557,7 @@ git commit -m "feat: implement anchor relative coordinate calculation"
 **Files:**
 - Modify: `skill/preprocess/models.py`
 
-- [ ] **Step 1: 为 DesignDoc 添加序列化方法**
+- [x] **Step 1: 为 DesignDoc 添加序列化方法**
 
 在 `skill/preprocess/models.py` 末尾追加：
 
@@ -576,39 +591,18 @@ def design_doc_to_json(doc: DesignDoc) -> str:
     return json.dumps(data, ensure_ascii=False, indent=2)
 ```
 
-- [ ] **Step 2: 写测试**
-
-在 `skill/preprocess/tests/test_anchor.py` 末尾追加：
-
-```python
-from models import AnchorRef, DesignDoc, design_doc_to_json
-import json
-
-
-def test_design_doc_serialization():
-    nodes = [make_node("text_1", 16.0, 48.0, 200.0, 24.0)]
-    nodes = apply_anchor(nodes, "text_1", "top")
-    doc = DesignDoc(viewport=375, anchor=AnchorRef(id="text_1", edge="top"), nodes=nodes)
-    output = json.loads(design_doc_to_json(doc))
-    assert output["viewport"] == 375
-    assert output["anchor"]["id"] == "text_1"
-    assert len(output["nodes"]) == 1
-    assert output["nodes"][0]["rel"]["dx"] == 0.0
-```
-
-- [ ] **Step 3: 运行测试**
+- [x] **Step 2: 运行测试**
 
 ```bash
-cd skill/preprocess
-pytest tests/test_anchor.py::test_design_doc_serialization -v
+skill/preprocess/.venv/bin/pytest tests/preprocess/test_anchor.py::test_design_doc_serialization -v
 ```
 
 Expected: PASS
 
-- [ ] **Step 4: Commit**
+- [x] **Step 3: Commit**
 
 ```bash
-git add skill/preprocess/models.py skill/preprocess/tests/test_anchor.py
+git add skill/preprocess/models.py
 git commit -m "feat: add design doc JSON serialization"
 ```
 
@@ -618,11 +612,11 @@ git commit -m "feat: add design doc JSON serialization"
 
 **Files:**
 - Create: `skill/preprocess/preprocess.py`
-- Create: `skill/preprocess/tests/test_cli.py`
+- Create: `tests/preprocess/test_cli.py`
 
-- [ ] **Step 1: 写 CLI 集成测试**
+- [x] **Step 1: 写 CLI 集成测试**
 
-写入 `skill/preprocess/tests/test_cli.py`：
+写入 `tests/preprocess/test_cli.py`：
 
 ```python
 import json
@@ -631,12 +625,13 @@ import sys
 from pathlib import Path
 
 FIXTURE = str(Path(__file__).parent / "fixtures/simple.html")
-SCRIPT = str(Path(__file__).parent.parent / "preprocess.py")
+SCRIPT = str(Path(__file__).parent.parent.parent / "skill" / "preprocess" / "preprocess.py")
+PYTHON = str(Path(__file__).parent.parent.parent / "skill" / "preprocess" / ".venv" / "bin" / "python")
 
 
 def test_list_only_outputs_json_array():
     result = subprocess.run(
-        [sys.executable, SCRIPT, "--input", FIXTURE, "--viewport", "375", "--list-only"],
+        [PYTHON, SCRIPT, "--input", FIXTURE, "--viewport", "375", "--list-only"],
         capture_output=True, text=True
     )
     assert result.returncode == 0
@@ -651,7 +646,7 @@ def test_list_only_outputs_json_array():
 def test_full_run_outputs_json_file(tmp_path):
     output = str(tmp_path / "design.json")
     result = subprocess.run(
-        [sys.executable, SCRIPT,
+        [PYTHON, SCRIPT,
          "--input", FIXTURE,
          "--viewport", "375",
          "--anchor-id", "text_1",
@@ -670,27 +665,27 @@ def test_full_run_outputs_json_file(tmp_path):
 def test_missing_anchor_id_exits_with_message(tmp_path):
     output = str(tmp_path / "design.json")
     result = subprocess.run(
-        [sys.executable, SCRIPT,
+        [PYTHON, SCRIPT,
          "--input", FIXTURE,
          "--viewport", "375",
          "--output", output],
         capture_output=True, text=True
     )
-    # 没有 --anchor-id 且非 --list-only，应输出节点列表到 stdout 并以非零退出
     assert result.returncode == 1
-    assert "anchor" in result.stdout.lower() or len(json.loads(result.stdout)) > 0
+    nodes = json.loads(result.stdout)
+    assert isinstance(nodes, list)
+    assert len(nodes) > 0
 ```
 
-- [ ] **Step 2: 运行测试确认失败**
+- [x] **Step 2: 运行测试确认失败**
 
 ```bash
-cd skill/preprocess
-pytest tests/test_cli.py -v
+skill/preprocess/.venv/bin/pytest tests/preprocess/test_cli.py -v
 ```
 
 Expected: FAIL with `No such file or directory: 'preprocess.py'`
 
-- [ ] **Step 3: 实现 preprocess.py**
+- [x] **Step 3: 实现 preprocess.py**
 
 ```python
 #!/usr/bin/env python3
@@ -721,25 +716,19 @@ async def main():
 
     nodes = await extract_nodes(args.input, args.viewport)
 
+    node_list = [
+        {"id": n.id, "type": n.type.value,
+         "screenX": n.screenX, "screenY": n.screenY,
+         "widthDp": n.widthDp, "heightDp": n.heightDp}
+        for n in nodes
+    ]
+
     if args.list_only:
-        output = [
-            {"id": n.id, "type": n.type.value,
-             "screenX": n.screenX, "screenY": n.screenY,
-             "widthDp": n.widthDp, "heightDp": n.heightDp}
-            for n in nodes
-        ]
-        print(json.dumps(output, ensure_ascii=False, indent=2))
+        print(json.dumps(node_list, ensure_ascii=False, indent=2))
         return
 
     if not args.anchor_id:
-        # 输出节点列表供 AI 选择锚点，以非零退出提示需要指定 --anchor-id
-        output = [
-            {"id": n.id, "type": n.type.value,
-             "screenX": n.screenX, "screenY": n.screenY,
-             "widthDp": n.widthDp, "heightDp": n.heightDp}
-            for n in nodes
-        ]
-        print(json.dumps(output, ensure_ascii=False, indent=2))
+        print(json.dumps(node_list, ensure_ascii=False, indent=2))
         print("\n[ERROR] 请通过 --anchor-id 指定锚点节点 id", file=sys.stderr)
         sys.exit(1)
 
@@ -760,19 +749,18 @@ if __name__ == "__main__":
     asyncio.run(main())
 ```
 
-- [ ] **Step 4: 运行测试确认通过**
+- [x] **Step 4: 运行测试确认通过**
 
 ```bash
-cd skill/preprocess
-pytest tests/test_cli.py -v
+skill/preprocess/.venv/bin/pytest tests/preprocess/test_cli.py -v
 ```
 
 Expected: 全部 PASS
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
-git add skill/preprocess/preprocess.py skill/preprocess/tests/test_cli.py
+git add skill/preprocess/preprocess.py tests/preprocess/test_cli.py
 git commit -m "feat: implement preprocess CLI entrypoint"
 ```
 
@@ -783,33 +771,30 @@ git commit -m "feat: implement preprocess CLI entrypoint"
 **Files:**
 - 无新增文件
 
-- [ ] **Step 1: 运行全部测试**
+- [x] **Step 1: 运行全部测试**
 
 ```bash
-cd skill/preprocess
-pytest tests/ -v
+skill/preprocess/.venv/bin/pytest tests/preprocess/ -v
 ```
 
-Expected: 全部 PASS
+Expected: 14 tests PASS
 
-- [ ] **Step 2: 手动端到端验证 list-only 模式**
+- [x] **Step 2: 手动端到端验证 list-only 模式**
 
 ```bash
-cd skill/preprocess
-python preprocess.py \
-  --input tests/fixtures/simple.html \
+skill/preprocess/.venv/bin/python skill/preprocess/preprocess.py \
+  --input tests/preprocess/fixtures/simple.html \
   --viewport 375 \
   --list-only
 ```
 
 Expected: 输出 JSON 数组，包含 text_1、img_1、list_1、container_* 等节点
 
-- [ ] **Step 3: 手动端到端验证完整输出**
+- [x] **Step 3: 手动端到端验证完整输出**
 
 ```bash
-cd skill/preprocess
-python preprocess.py \
-  --input tests/fixtures/simple.html \
+skill/preprocess/.venv/bin/python skill/preprocess/preprocess.py \
+  --input tests/preprocess/fixtures/simple.html \
   --viewport 375 \
   --anchor-id text_1 \
   --anchor-edge top \
@@ -820,7 +805,7 @@ cat /tmp/design.json
 
 Expected: 输出包含 `viewport`、`anchor`、`nodes` 的完整 JSON，所有节点含 `rel` 字段，`text_1` 的 `rel.dx` 和 `rel.dy` 均为 0.0
 
-- [ ] **Step 4: Commit**
+- [x] **Step 4: Commit**
 
 ```bash
 git add .

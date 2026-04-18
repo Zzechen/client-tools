@@ -1,7 +1,7 @@
 import pytest
 from pathlib import Path
 import sys
-sys.path.insert(0, str(Path(__file__).parent.parent))
+sys.path.insert(0, str(Path(__file__).parent.parent.parent / "skill" / "preprocess"))
 
 from models import Node, NodeType, RelPos, ContainerAttrs, AnchorRef, DesignDoc, design_doc_to_json
 from anchor import apply_anchor
