@@ -28,6 +28,10 @@ dependencies {
     // Kotlin serialization
     implementation(libs.kotlinx.serialization.json)
 
+    // Lifecycle
+    implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.7.0")
+    implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.7.0")
+
     // Testing
     testImplementation(kotlin("test"))
     androidTestImplementation(libs.androidx.test.core)
