@@ -24,6 +24,8 @@ dependencies {
     implementation(libs.kotlin.stdlib)
     implementation(libs.androidx.appcompat)
     implementation(libs.androidx.core)
+    implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.6.1")
+    implementation("androidx.lifecycle:lifecycle-livedata-ktx:2.6.1")
 
     testImplementation(kotlin("test"))
     androidTestImplementation(libs.androidx.test.espresso)
