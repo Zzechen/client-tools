@@ -112,9 +112,53 @@ cd packages
 
 ---
 
+### 模块 3：Android SDK + Demo 应用 ✅
+
+**目标**：实现 Android SDK，为运行时提供视图查询、属性修改、事件推送能力；Demo 应用展示完整功能。
+
+**技术栈**：Kotlin、Android API 26+、Nanohttpd、Jetpack Compose、kotlinx.serialization
+
+**关键特性**：
+- **HTTP Server**：Nanohttpd 轻量级服务（端口 8080），纯 REST API + SSE
+- **View 操作**：DecorView 树遍历、运行时属性修改（margin、padding、宽高）、结构化信息查询
+- **事件系统**：Activity 生命周期监听、SSE 页面切换事件推送
+- **自动初始化**：ContentProvider 无需业务代码显式调用
+- **Demo UI**：Jetpack Compose 列表首页 + 多个 XML 布局测试页
+
+**编译与运行**：
+```bash
+cd packages
+
+# 编译 SDK
+./gradlew :android:sdk:build
+
+# 编译 Demo
+./gradlew :android:demo:build
+
+# 运行测试
+./gradlew test
+```
+
+**REST API**：
+```bash
+# 查询视图信息
+curl http://localhost:8080/api/nodes/text_1
+
+# 修改视图属性
+curl -X POST http://localhost:8080/api/modify \
+  -H "Content-Type: application/json" \
+  -d '{"id":"text_1","props":{"marginTopDiffDp":10}}'
+
+# 订阅页面事件（SSE）
+curl http://localhost:8080/api/events
+```
+
+**文档**：[Android SDK Spec & Plan](docs/2026-04-18-android-sdk/)
+
+---
+
 ## 后续模块（规划中）
 
-- **模块 3**：Android SDK 实现（packages/android/sdk/）
 - **模块 4**：iOS SDK 实现（packages/ios/sdk/）
 - **模块 5**：MCP Server（mcp/）
 - **模块 6**：AI Skill 集成工作流
