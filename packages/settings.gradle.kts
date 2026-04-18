@@ -16,3 +16,5 @@ dependencyResolutionManagement {
 rootProject.name = "client-tools"
 
 include(":shared")
+include(":android:sdk")
+include(":android:demo")
