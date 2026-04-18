@@ -1,42 +1,3 @@
-plugins {
-    alias(libs.plugins.kotlin.multiplatform)
-    alias(libs.plugins.kotlin.serialization)
-    alias(libs.plugins.android.library)
-}
-
-android {
-    namespace = "com.clienttools.shared"
-    compileSdk = 35
-    defaultConfig {
-        minSdk = 26
-    }
-    compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_17
-        targetCompatibility = JavaVersion.VERSION_17
-    }
-}
-
-kotlin {
-    jvm()
-    androidTarget()
-    iosX64()
-    iosArm64()
-    iosSimulatorArm64()
-
-    sourceSets {
-        commonMain.dependencies {
-            implementation(libs.kotlinx.serialization.json)
-        }
-        commonTest.dependencies {
-            implementation(kotlin("test"))
-        }
-    }
-}
-
-// 生成 JSON Schema 到 mcp 和 skill/preprocess 目录
-tasks.register("generateSchema") {
-    doLast {
-        val schemaContent = """
 {
   "title": "Client Tools Shared Types",
   "description": "Shared data structures for Android/iOS SDK and MCP",
@@ -84,22 +45,22 @@ tasks.register("generateSchema") {
     },
     "NodeAttrs": {
       "oneOf": [
-        { "${'$'}ref": "#/definitions/TextAttrs" },
-        { "${'$'}ref": "#/definitions/ImageAttrs" },
-        { "${'$'}ref": "#/definitions/ListAttrs" },
-        { "${'$'}ref": "#/definitions/ContainerAttrs" }
+        { "$ref": "#/definitions/TextAttrs" },
+        { "$ref": "#/definitions/ImageAttrs" },
+        { "$ref": "#/definitions/ListAttrs" },
+        { "$ref": "#/definitions/ContainerAttrs" }
       ]
     },
     "Node": {
       "type": "object",
       "properties": {
         "id": { "type": "string" },
-        "type": { "${'$'}ref": "#/definitions/NodeType" },
+        "type": { "$ref": "#/definitions/NodeType" },
         "screenX": { "type": "number" },
         "screenY": { "type": "number" },
         "widthDp": { "type": "number" },
         "heightDp": { "type": "number" },
-        "attrs": { "${'$'}ref": "#/definitions/NodeAttrs" }
+        "attrs": { "$ref": "#/definitions/NodeAttrs" }
       },
       "required": ["id", "type", "screenX", "screenY", "widthDp", "heightDp"]
     },
@@ -119,7 +80,7 @@ tasks.register("generateSchema") {
         "code": { "type": "integer" },
         "message": { "type": "string" },
         "sdkVersion": { "type": "integer" },
-        "device": { "${'$'}ref": "#/definitions/DeviceInfo" },
+        "device": { "$ref": "#/definitions/DeviceInfo" },
         "data": { "type": "object" }
       },
       "required": ["code", "message", "sdkVersion", "device"]
@@ -143,7 +104,7 @@ tasks.register("generateSchema") {
       "type": "object",
       "properties": {
         "id": { "type": "string" },
-        "props": { "${'$'}ref": "#/definitions/ViewProps" }
+        "props": { "$ref": "#/definitions/ViewProps" }
       },
       "required": ["id", "props"]
     },
@@ -157,24 +118,4 @@ tasks.register("generateSchema") {
       "required": ["activityName", "timestamp"]
     }
   }
-}
-        """.trimIndent()
-
-        val projectRoot = project.rootProject.projectDir.parentFile
-        val mcpDir = File(projectRoot, "mcp/schema")
-        val skillDir = File(projectRoot, "skill/preprocess/schema")
-
-        mcpDir.mkdirs()
-        skillDir.mkdirs()
-
-        val mcpSchema = File(mcpDir, "shared.json")
-        val skillSchema = File(skillDir, "shared.json")
-
-        mcpSchema.writeText(schemaContent)
-        skillSchema.writeText(schemaContent)
-
-        println("[OK] Schema 生成成功")
-        println("  - $mcpSchema")
-        println("  - $skillSchema")
-    }
 }
