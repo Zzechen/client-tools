@@ -1,100 +1,106 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:padding="16dp"
-    android:background="@color/white">
-
-    <TextView
-        android:id="@+id/form_title"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="User Registration Form"
-        android:textSize="24sp"
-        android:textColor="@color/primary"
-        android:layout_marginBottom="16dp" />
+    android:layout_height="match_parent">
 
     <LinearLayout
-        android:id="@+id/form_container"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical">
+        android:orientation="vertical"
+        android:padding="16dp"
+        android:background="@color/white">
 
-        <LinearLayout
+        <TextView
+            android:id="@+id/form_title"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:layout_marginBottom="8dp">
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="First Name"
-                android:textColor="@color/primary" />
-
-            <EditText
-                android:id="@+id/field_first_name"
-                android:layout_width="match_parent"
-                android:layout_height="40dp"
-                android:inputType="text"
-                android:hint="Enter first name"
-                android:background="@android:drawable/editbox_background"
-                android:padding="8dp" />
-        </LinearLayout>
+            android:text="User Registration Form"
+            android:textSize="24sp"
+            android:textColor="@color/primary"
+            android:layout_marginBottom="16dp" />
 
         <LinearLayout
+            android:id="@+id/form_container"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:layout_marginBottom="8dp">
+            android:orientation="vertical">
 
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Last Name"
-                android:textColor="@color/primary" />
-
-            <EditText
-                android:id="@+id/field_last_name"
+            <LinearLayout
                 android:layout_width="match_parent"
-                android:layout_height="40dp"
-                android:inputType="text"
-                android:hint="Enter last name"
-                android:background="@android:drawable/editbox_background"
-                android:padding="8dp" />
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:layout_marginBottom="8dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="First Name"
+                    android:textColor="@color/primary" />
+
+                <EditText
+                    android:id="@+id/field_first_name"
+                    android:layout_width="match_parent"
+                    android:layout_height="40dp"
+                    android:inputType="text"
+                    android:hint="Enter first name"
+                    android:background="@android:drawable/editbox_background"
+                    android:padding="8dp" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:layout_marginBottom="8dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Last Name"
+                    android:textColor="@color/primary" />
+
+                <EditText
+                    android:id="@+id/field_last_name"
+                    android:layout_width="match_parent"
+                    android:layout_height="40dp"
+                    android:inputType="text"
+                    android:hint="Enter last name"
+                    android:background="@android:drawable/editbox_background"
+                    android:padding="8dp" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:layout_marginBottom="16dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Email"
+                    android:textColor="@color/primary" />
+
+                <EditText
+                    android:id="@+id/field_email"
+                    android:layout_width="match_parent"
+                    android:layout_height="40dp"
+                    android:inputType="textEmailAddress"
+                    android:hint="Enter email"
+                    android:background="@android:drawable/editbox_background"
+                    android:padding="8dp" />
+            </LinearLayout>
+
         </LinearLayout>
 
-        <LinearLayout
+        <Button
+            android:id="@+id/btn_submit"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:layout_marginBottom="16dp">
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Email"
-                android:textColor="@color/primary" />
-
-            <EditText
-                android:id="@+id/field_email"
-                android:layout_width="match_parent"
-                android:layout_height="40dp"
-                android:inputType="textEmailAddress"
-                android:hint="Enter email"
-                android:background="@android:drawable/editbox_background"
-                android:padding="8dp" />
-        </LinearLayout>
+            android:layout_height="48dp"
+            android:text="Submit"
+            android:textColor="@color/white"
+            android:backgroundTint="@color/primary" />
 
     </LinearLayout>
 
-    <Button
-        android:id="@+id/btn_submit"
-        android:layout_width="match_parent"
-        android:layout_height="48dp"
-        android:text="Submit"
-        android:textColor="@color/white"
-        android:backgroundTint="@color/primary" />
-
-</LinearLayout>
+</ScrollView>

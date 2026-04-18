@@ -1,19 +1,28 @@
 package com.clienttools.sdk.runtime
 
+import android.os.Looper
 import android.view.View
 import android.view.ViewGroup
+import com.clienttools.sdk.ClientToolsSDK
 import com.clienttools.shared.models.ViewProps
 
 object ViewModifier {
     fun apply(viewId: String, props: ViewProps): Boolean {
         val views = ViewTreeTraversal.findViewById(viewId)
         return if (views.isEmpty()) false else {
-            views.forEach { modify(it, props) }
+            views.forEach { view ->
+                if (Looper.myLooper() == Looper.getMainLooper()) {
+                    modify(view, props)
+                } else {
+                    val activity = ClientToolsSDK.getCurrentActivity()
+                    activity?.runOnUiThread { modify(view, props) }
+                }
+            }
             true
         }
     }
 
-    fun modify(view: View, props: ViewProps) {
+    private fun modify(view: View, props: ViewProps) {
         val displayMetrics = view.resources.displayMetrics
         val dpToPx = { dp: Float -> (dp * displayMetrics.density).toInt() }
 
