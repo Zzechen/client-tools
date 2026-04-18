@@ -20,6 +20,7 @@ android {
 }
 
 dependencies {
+    implementation(project(":android:sdk"))
     implementation(libs.kotlin.stdlib)
     implementation(libs.androidx.appcompat)
     implementation(libs.androidx.core)
