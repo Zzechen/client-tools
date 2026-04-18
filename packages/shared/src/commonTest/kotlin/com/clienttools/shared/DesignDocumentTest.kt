@@ -84,4 +84,27 @@ class DesignDocumentTest {
         assertEquals("header", decoded.anchorNodeId)
         assertEquals(2, decoded.nodes.size)
     }
+
+    @Test
+    fun testNodeCustomAttrsDeserialization() {
+        val node = Node(
+            id = "button",
+            type = NodeType.CONTAINER,
+            screenX = 10f,
+            screenY = 20f,
+            widthDp = 100f,
+            heightDp = 50f,
+            attrs = null,
+            customAttrs = mapOf(
+                "backgroundColor" to "#FF6200EE",
+                "borderRadius" to "8"
+            )
+        )
+
+        val json = Json.encodeToString(Node.serializer(), node)
+        val decoded = Json.decodeFromString(Node.serializer(), json)
+
+        assertEquals(node, decoded)
+        assertEquals(mapOf("backgroundColor" to "#FF6200EE", "borderRadius" to "8"), decoded.customAttrs)
+    }
 }
