@@ -1,0 +1,226 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/panel_root"
+    android:layout_width="280dp"
+    android:layout_height="wrap_content"
+    android:layout_gravity="bottom|end"
+    android:layout_margin="16dp"
+    android:background="#F0F0F0"
+    android:elevation="16dp"
+    android:orientation="vertical"
+    android:minHeight="200dp">
+
+    <!-- 拖动条 -->
+    <View
+        android:id="@+id/drag_handle"
+        android:layout_width="match_parent"
+        android:layout_height="40dp"
+        android:background="#6200EE" />
+
+    <!-- WebView 模块：标题（可折叠） -->
+    <TextView
+        android:id="@+id/section_webview_title"
+        android:layout_width="match_parent"
+        android:layout_height="44dp"
+        android:gravity="center_vertical"
+        android:paddingStart="12dp"
+        android:text="▼ WebView"
+        android:textSize="14sp"
+        android:textStyle="bold"
+        android:background="#E0E0E0" />
+
+    <LinearLayout
+        android:id="@+id/section_webview_content"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="8dp">
+
+        <TextView
+            android:id="@+id/current_file_label"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="当前：无"
+            android:textSize="12sp"
+            android:paddingBottom="4dp" />
+
+        <!-- 文件列表：动态添加 -->
+        <LinearLayout
+            android:id="@+id/file_list_container"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical" />
+
+    </LinearLayout>
+
+    <!-- 调整模块：标题（可折叠） -->
+    <TextView
+        android:id="@+id/section_adjust_title"
+        android:layout_width="match_parent"
+        android:layout_height="44dp"
+        android:gravity="center_vertical"
+        android:paddingStart="12dp"
+        android:text="▼ 调整"
+        android:textSize="14sp"
+        android:textStyle="bold"
+        android:background="#E0E0E0" />
+
+    <LinearLayout
+        android:id="@+id/section_adjust_content"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="8dp">
+
+        <!-- 档位选择 -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginBottom="4dp">
+
+            <Button
+                android:id="@+id/btn_step_1"
+                style="?android:attr/buttonStyleSmall"
+                android:layout_width="0dp"
+                android:layout_height="36dp"
+                android:layout_weight="1"
+                android:text="1dp"
+                android:textSize="11sp" />
+
+            <Button
+                android:id="@+id/btn_step_10"
+                style="?android:attr/buttonStyleSmall"
+                android:layout_width="0dp"
+                android:layout_height="36dp"
+                android:layout_weight="1"
+                android:text="10dp"
+                android:textSize="11sp" />
+
+            <Button
+                android:id="@+id/btn_step_50"
+                style="?android:attr/buttonStyleSmall"
+                android:layout_width="0dp"
+                android:layout_height="36dp"
+                android:layout_weight="1"
+                android:text="50dp"
+                android:textSize="11sp" />
+
+        </LinearLayout>
+
+        <!-- 方向按钮：一行，均匀排布 -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginBottom="4dp">
+
+            <Button
+                android:id="@+id/btn_left"
+                android:layout_width="0dp"
+                android:layout_height="44dp"
+                android:layout_weight="1"
+                android:text="◀"
+                android:textSize="16sp" />
+
+            <Button
+                android:id="@+id/btn_up"
+                android:layout_width="0dp"
+                android:layout_height="44dp"
+                android:layout_weight="1"
+                android:text="△"
+                android:textSize="16sp" />
+
+            <Button
+                android:id="@+id/btn_down"
+                android:layout_width="0dp"
+                android:layout_height="44dp"
+                android:layout_weight="1"
+                android:text="▽"
+                android:textSize="16sp" />
+
+            <Button
+                android:id="@+id/btn_right"
+                android:layout_width="0dp"
+                android:layout_height="44dp"
+                android:layout_weight="1"
+                android:text="▶"
+                android:textSize="16sp" />
+
+        </LinearLayout>
+
+        <!-- 透明度 -->
+        <TextView
+            android:id="@+id/opacity_label"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="透明度：50%"
+            android:textSize="12sp" />
+
+        <SeekBar
+            android:id="@+id/opacity_seekbar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:max="100"
+            android:progress="50" />
+
+        <!-- 偏移显示 -->
+        <TextView
+            android:id="@+id/offset_label"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="偏移：X: 0dp  Y: 0dp"
+            android:textSize="12sp"
+            android:layout_marginTop="4dp" />
+
+    </LinearLayout>
+
+    <!-- 控制模块：不可折叠 -->
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="44dp"
+        android:gravity="center_vertical"
+        android:paddingStart="12dp"
+        android:text="控制"
+        android:textSize="14sp"
+        android:textStyle="bold"
+        android:background="#E0E0E0" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="8dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginBottom="8dp">
+
+            <Button
+                android:id="@+id/btn_show"
+                android:layout_width="0dp"
+                android:layout_height="48dp"
+                android:layout_weight="1"
+                android:text="显示"
+                android:layout_marginEnd="4dp" />
+
+            <Button
+                android:id="@+id/btn_hide"
+                android:layout_width="0dp"
+                android:layout_height="48dp"
+                android:layout_weight="1"
+                android:text="隐藏" />
+
+        </LinearLayout>
+
+        <Button
+            android:id="@+id/btn_close_panel"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:text="关闭面板" />
+
+    </LinearLayout>
+
+</LinearLayout>
