@@ -10,5 +10,6 @@ data class Node(
     val screenY: Float,
     val widthDp: Float,
     val heightDp: Float,
-    val attrs: NodeAttrs? = null
+    val attrs: NodeAttrs? = null,
+    val customAttrs: Map<String, String> = emptyMap()
 )
