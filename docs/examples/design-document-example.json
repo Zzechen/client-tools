@@ -1,0 +1,135 @@
+{
+  "version": "1.0",
+  "metadata": {
+    "name": "Login Screen v1.0",
+    "description": "User login page with email and password fields",
+    "designerName": "Alice",
+    "createdAt": "2026-04-18T10:00:00Z",
+    "modifiedAt": "2026-04-18T14:30:00Z",
+    "screenWidthDp": 360,
+    "screenHeightDp": 800,
+    "tags": ["authentication", "mobile"]
+  },
+  "anchorNodeId": "header",
+  "nodes": [
+    {
+      "id": "header",
+      "type": "CONTAINER",
+      "screenX": 0.0,
+      "screenY": 0.0,
+      "widthDp": 360.0,
+      "heightDp": 100.0,
+      "attrs": {
+        "type": "container",
+        "paddingTop": 16.0,
+        "paddingBottom": 16.0,
+        "paddingLeft": 16.0,
+        "paddingRight": 16.0
+      },
+      "customAttrs": {
+        "backgroundColor": "#FF6200EE"
+      }
+    },
+    {
+      "id": "title",
+      "type": "TEXT",
+      "screenX": 16.0,
+      "screenY": 20.0,
+      "widthDp": 328.0,
+      "heightDp": 60.0,
+      "attrs": {
+        "type": "text",
+        "fontSize": 24.0,
+        "color": "#FFFFFFFF",
+        "fontWeight": "bold"
+      },
+      "customAttrs": {}
+    },
+    {
+      "id": "username_label",
+      "type": "TEXT",
+      "screenX": 16.0,
+      "screenY": 120.0,
+      "widthDp": 100.0,
+      "heightDp": 24.0,
+      "attrs": {
+        "type": "text",
+        "fontSize": 14.0,
+        "color": "#FF333333",
+        "fontWeight": "normal"
+      },
+      "customAttrs": {}
+    },
+    {
+      "id": "username_input",
+      "type": "CONTAINER",
+      "screenX": 16.0,
+      "screenY": 150.0,
+      "widthDp": 328.0,
+      "heightDp": 48.0,
+      "attrs": {
+        "type": "container",
+        "paddingTop": 8.0,
+        "paddingBottom": 8.0,
+        "paddingLeft": 12.0,
+        "paddingRight": 12.0
+      },
+      "customAttrs": {
+        "borderColor": "#FFCCCCCC",
+        "borderWidth": "1"
+      }
+    },
+    {
+      "id": "password_label",
+      "type": "TEXT",
+      "screenX": 16.0,
+      "screenY": 210.0,
+      "widthDp": 100.0,
+      "heightDp": 24.0,
+      "attrs": {
+        "type": "text",
+        "fontSize": 14.0,
+        "color": "#FF333333",
+        "fontWeight": "normal"
+      },
+      "customAttrs": {}
+    },
+    {
+      "id": "password_input",
+      "type": "CONTAINER",
+      "screenX": 16.0,
+      "screenY": 240.0,
+      "widthDp": 328.0,
+      "heightDp": 48.0,
+      "attrs": {
+        "type": "container",
+        "paddingTop": 8.0,
+        "paddingBottom": 8.0,
+        "paddingLeft": 12.0,
+        "paddingRight": 12.0
+      },
+      "customAttrs": {
+        "borderColor": "#FFCCCCCC",
+        "borderWidth": "1"
+      }
+    },
+    {
+      "id": "login_button",
+      "type": "CONTAINER",
+      "screenX": 16.0,
+      "screenY": 320.0,
+      "widthDp": 328.0,
+      "heightDp": 48.0,
+      "attrs": {
+        "type": "container",
+        "paddingTop": 0.0,
+        "paddingBottom": 0.0,
+        "paddingLeft": 0.0,
+        "paddingRight": 0.0
+      },
+      "customAttrs": {
+        "backgroundColor": "#FF6200EE"
+      }
+    }
+  ]
+}
