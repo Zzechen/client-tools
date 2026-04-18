@@ -14,6 +14,8 @@ object OverlayManager {
     private var windowManager: WindowManager? = null
     private var layoutParams: WindowManager.LayoutParams? = null
     private var currentOpacity: Float = 1.0f
+    private var currentOffsetX: Int = 0
+    private var currentOffsetY: Int = 0
 
     fun show(url: String, opacity: Float = 1.0f): Boolean = try {
         val activity = ClientToolsSDK.getCurrentActivity() ?: return false
@@ -48,6 +50,29 @@ object OverlayManager {
     } catch (e: Exception) {
         false
     }
+
+    fun setOffset(offsetX: Int, offsetY: Int): Boolean {
+        return try {
+            val activity = ClientToolsSDK.getCurrentActivity() ?: return false
+            currentOffsetX = offsetX
+            currentOffsetY = offsetY
+
+            if (webView == null || layoutParams == null) {
+                return false
+            }
+
+            if (Looper.myLooper() == Looper.getMainLooper()) {
+                updateWebViewOffset(activity)
+            } else {
+                activity.runOnUiThread { updateWebViewOffset(activity) }
+            }
+            true
+        } catch (e: Exception) {
+            false
+        }
+    }
+
+    fun getOffset(): Pair<Int, Int> = Pair(currentOffsetX, currentOffsetY)
 
     private fun showOnMainThread(activity: Activity, url: String) {
         if (webView == null) {
@@ -84,6 +109,18 @@ object OverlayManager {
             } catch (e: Exception) {}
             webView = null
             windowManager = null
+        }
+    }
+
+    private fun updateWebViewOffset(activity: Activity) {
+        try {
+            layoutParams?.let {
+                it.x = currentOffsetX
+                it.y = currentOffsetY
+                windowManager?.updateViewLayout(webView, it)
+            }
+        } catch (e: Exception) {
+            android.util.Log.e("OverlayManager", "Error updating offset", e)
         }
     }
 }
