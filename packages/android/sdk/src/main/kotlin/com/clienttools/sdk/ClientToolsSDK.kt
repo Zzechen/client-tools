@@ -9,6 +9,7 @@ import com.clienttools.sdk.model.ModifyRequest
 import com.clienttools.sdk.model.ViewInfo
 import com.clienttools.sdk.runtime.ViewModifier
 import com.clienttools.sdk.runtime.ViewQueryService
+import com.clienttools.sdk.webview.WebViewManager
 
 object ClientToolsSDK {
     private var httpServer: HttpServer? = null
@@ -26,6 +27,7 @@ object ClientToolsSDK {
             httpServer!!.startServer()
             pageChangeListener = PageChangeListener(eventManager!!)
             pageChangeListener!!.register(context)
+            WebViewManager.init(context)
             isInitialized = true
             Log.d(TAG, "ClientToolsSDK initialized")
         } catch (e: Exception) {

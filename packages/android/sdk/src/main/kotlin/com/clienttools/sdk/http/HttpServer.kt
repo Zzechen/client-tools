@@ -2,6 +2,7 @@ package com.clienttools.sdk.http
 
 import android.content.Context
 import android.util.Log
+import com.clienttools.sdk.webview.WebViewApiHandler
 import fi.iki.elonen.NanoHTTPD
 import kotlinx.serialization.json.Json
 
@@ -41,6 +42,24 @@ class HttpServer(
                 }
                 method == Method.GET && uri == "/api/events" -> {
                     eventManager.subscribeSSE(session)
+                }
+                method == Method.POST && uri == "/webview/push-html" -> {
+                    val body = readBody(session)
+                    WebViewApiHandler.handlePushHtml(body)
+                }
+                method == Method.POST && uri == "/webview/show" -> {
+                    val body = readBody(session)
+                    WebViewApiHandler.handleShow(body)
+                }
+                method == Method.POST && uri == "/webview/hide" -> {
+                    WebViewApiHandler.handleHide()
+                }
+                method == Method.POST && uri == "/webview/adjust" -> {
+                    val body = readBody(session)
+                    WebViewApiHandler.handleAdjust(body)
+                }
+                method == Method.GET && uri == "/webview/files" -> {
+                    WebViewApiHandler.handleGetFiles()
                 }
                 else -> newFixedLengthResponse(Response.Status.NOT_FOUND, MIME_PLAINTEXT, "Not found")
             }
