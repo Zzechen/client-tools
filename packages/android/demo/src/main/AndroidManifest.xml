@@ -21,7 +21,7 @@
         </activity>
         
         <activity
-            android:name="com.clienttools.demo.TestScreenHost"
+            android:name="com.clienttools.demo.LoginActivity"
             android:exported="false" />
         
     </application>

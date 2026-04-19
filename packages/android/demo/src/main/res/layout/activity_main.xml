@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:id="@+id/button_container"
+    android:id="@+id/main_root"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
@@ -10,16 +10,8 @@
     android:paddingTop="64dp"
     android:paddingBottom="32dp">
 
-    <!-- Logo 区域 -->
     <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="⬡"
-        android:textColor="@color/primary"
-        android:textSize="40sp"
-        android:layout_marginBottom="8dp" />
-
-    <TextView
+        android:id="@+id/main_title"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="ClientTools"
@@ -29,6 +21,7 @@
         android:letterSpacing="0.05" />
 
     <TextView
+        android:id="@+id/main_subtitle"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Demo Pages"
@@ -37,8 +30,8 @@
         android:layout_marginTop="4dp"
         android:layout_marginBottom="48dp" />
 
-    <!-- 页面入口卡片 -->
     <TextView
+        android:id="@+id/main_section_label"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="PAGES"
@@ -47,43 +40,10 @@
         android:letterSpacing="0.12"
         android:layout_marginBottom="12dp" />
 
-    <Button
-        android:id="@+id/login_button"
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/main_page_list"
         android:layout_width="match_parent"
-        android:layout_height="52dp"
-        android:layout_marginBottom="12dp"
-        android:background="@drawable/bg_card"
-        android:text="Login Screen"
-        android:textColor="@color/text_primary"
-        android:textSize="15sp"
-        android:gravity="start|center_vertical"
-        android:paddingStart="20dp"
-        android:stateListAnimator="@null" />
-
-    <Button
-        android:id="@+id/form_button"
-        android:layout_width="match_parent"
-        android:layout_height="52dp"
-        android:background="@drawable/bg_card"
-        android:text="Form Screen"
-        android:textColor="@color/text_primary"
-        android:textSize="15sp"
-        android:gravity="start|center_vertical"
-        android:paddingStart="20dp"
-        android:stateListAnimator="@null" />
-
-    <View
-        android:layout_width="match_parent"
-        android:layout_height="1dp"
-        android:layout_marginTop="40dp"
-        android:layout_marginBottom="16dp"
-        android:background="@color/divider" />
-
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Tap ⚙ to open Inspector overlay"
-        android:textColor="@color/text_secondary"
-        android:textSize="12sp" />
+        android:layout_height="0dp"
+        android:layout_weight="1" />
 
 </LinearLayout>
