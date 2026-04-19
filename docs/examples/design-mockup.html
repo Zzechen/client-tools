@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login Screen Design</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+            background: #f5f5f5;
+            padding: 0;
+        }
+
+        .container {
+            width: 360px;
+            margin: 0 auto;
+            background: white;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            min-height: 100vh;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #6200EE 0%, #3700B3 100%);
+            color: white;
+            padding: 40px 16px;
+            text-align: center;
+            border-radius: 0 0 16px 16px;
+        }
+
+        .header h1 {
+            font-size: 28px;
+            font-weight: bold;
+            margin-bottom: 8px;
+        }
+
+        .header p {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+
+        .content {
+            padding: 32px 16px;
+        }
+
+        .form-group {
+            margin-bottom: 24px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 14px;
+            color: #333;
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 12px;
+            font-size: 14px;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            font-family: inherit;
+            transition: border-color 0.2s;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #6200EE;
+            box-shadow: 0 0 0 3px rgba(98, 0, 238, 0.1);
+        }
+
+        .button-group {
+            display: grid;
+            gap: 12px;
+            margin-top: 32px;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            font-size: 16px;
+            font-weight: 600;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-family: inherit;
+        }
+
+        .btn-primary {
+            background: #6200EE;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #5400D4;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(98, 0, 238, 0.3);
+        }
+
+        .btn-secondary {
+            background: #f0f0f0;
+            color: #333;
+            border: 1px solid #e0e0e0;
+        }
+
+        .btn-secondary:hover {
+            background: #e8e8e8;
+        }
+
+        .footer {
+            text-align: center;
+            padding: 16px;
+            font-size: 12px;
+            color: #999;
+        }
+
+        .avatar {
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, #BB86FC 0%, #6200EE 100%);
+            border-radius: 50%;
+            margin: -40px auto 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 32px;
+            box-shadow: 0 4px 12px rgba(98, 0, 238, 0.2);
+        }
+
+        .watermark {
+            position: fixed;
+            bottom: 10px;
+            right: 10px;
+            font-size: 12px;
+            color: #ccc;
+            pointer-events: none;
+            z-index: 999;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Welcome</h1>
+            <p>Sign in to your account</p>
+        </div>
+
+        <div class="avatar" id="avatar">👤</div>
+
+        <div class="content">
+            <div class="form-group">
+                <label for="username">Username</label>
+                <input type="text" id="username" placeholder="Enter your username" name="username">
+            </div>
+
+            <div class="form-group">
+                <label for="password">Password</label>
+                <input type="password" id="password" placeholder="Enter your password" name="password">
+            </div>
+
+            <div class="button-group">
+                <button class="btn btn-primary" id="login-btn">Sign In</button>
+                <button class="btn btn-secondary" id="signup-btn">Create Account</button>
+            </div>
+        </div>
+
+        <div class="footer">
+            <p>Design Mockup • Screen Size: 360×800dp</p>
+        </div>
+    </div>
+
+    <div class="watermark">Design Preview</div>
+
+    <script>
+        // Add node IDs for tracking
+        document.querySelector('.header').id = 'header';
+        document.querySelector('.avatar').id = 'img_1';
+        document.querySelector('#username').id = 'input_1';
+        document.querySelector('#password').id = 'input_2';
+        document.querySelector('#login-btn').id = 'btn_login';
+        document.querySelector('#signup-btn').id = 'btn_signup';
+
+        // Log interactions
+        document.addEventListener('click', (e) => {
+            console.log('Clicked:', e.target.id || e.target.tagName);
+        });
+
+        // Basic interaction handlers
+        document.querySelector('#login-btn').addEventListener('click', () => {
+            const username = document.querySelector('#username').value;
+            alert(username ? `Welcome, ${username}!` : 'Please enter username');
+        });
+
+        document.querySelector('#signup-btn').addEventListener('click', () => {
+            alert('Signup feature coming soon!');
+        });
+    </script>
+</body>
+</html>

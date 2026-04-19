@@ -30,11 +30,11 @@
 │         本地存储层（App Cache）              │
 │  <cache>/webview/<tag>/<tag>_<timestamp>.html
 ├─────────────────────────────────────────────┤
-│         OverlayManager（WebView 容器）       │
-│  show(url, opacity)                         │
-│  hide()                                     │
-│  setOpacity(opacity)                        │
-│  setOffset(offsetX, offsetY)                │
+│         WebViewRenderer（WebView 渲染）       │
+│  collect isVisible → visibility             │
+│  collect currentFile → loadUrl              │
+│  collect opacity → alpha                    │
+│  collect offsetX/Y → translationX/Y         │
 └─────────────────────────────────────────────┘
 ```
 
@@ -42,11 +42,13 @@
 
 | 组件 | 职责 | 实现语言 |
 |-----|------|--------|
-| **WebViewManager** | 统一管理 WebView 生命周期、存储、HTTP 接口 | Kotlin |
-| **FloatingControlPanel** | 悬浮按钮和展开面板 UI | Kotlin (自定义 View) |
-| **WebViewFileStore** | 本地存储管理 | Kotlin |
-| **WebViewApiHandler** | HTTP 接口处理 | Kotlin |
-| **OverlayManager** | 增强已有 OverlayManager（添加位移控制） | Kotlin |
+| **InspectorPage** | 每个 Activity 的管理单元，封装 View + ViewModel，注册到 SDK 栈 | Kotlin |
+| **InspectorViewModel** | 单页状态中心（currentFile、isVisible、offsetX/Y、opacity） | Kotlin (AndroidViewModel) |
+| **InspectorPanel** | 悬浮按钮和展开面板 UI，观察 ViewModel 驱动渲染 | Kotlin (自定义 View) |
+| **WebViewRenderer** | 持有 WebView 引用，collect InspectorViewModel → 执行 loadUrl/visibility/alpha/translationX/Y | Kotlin |
+| **InspectorFileStore** | 本地存储管理 | Kotlin |
+| **InspectorApiHandler** | HTTP 接口处理，写入当前页 ViewModel | Kotlin |
+| **ClientToolsSDK** | 全局入口，维护 InspectorPage 栈，提供 getTop() | Kotlin (object) |
 
 ---
 
@@ -111,6 +113,12 @@ POST /webview/show
 }
 ```
 
+**处理逻辑：**
+1. 从 `InspectorFileStore` 查文件路径，文件不存在则返回 404
+2. `viewModel.currentFile.value = FileInfo(tag, timestamp, fileUrl)`
+3. `viewModel.isVisible.value = true`
+4. `WebViewRenderer` collect 到变化后自动执行 `loadUrl` + `visibility = VISIBLE`
+
 ### 2.3 隐藏 WebView
 
 ```
@@ -130,17 +138,16 @@ POST /webview/adjust
 
 请求体：
 {
-  "offsetX": 10,        // 相对当前位置的增量（dp），可正可负
+  "offsetX": 10,        // 增量（dp），可正可负，服务端执行 viewModel.offsetX += offsetX
   "offsetY": -20,
-  "opacity": 0.7,       // 绝对值 0.0-1.0，可省略（只调整位移）
-  "step": "10dp"        // 档位，用于 UI 记录当前设置，可省略
+  "opacity": 0.7        // 绝对值 0.0-1.0，可省略（只调整位移）
 }
 
 响应：
 {
   "code": 0,
   "data": {
-    "offsetX": 10,      // 当前累计位移
+    "offsetX": 30,      // 累计绝对位移（执行增量后的 ViewModel 当前值）
     "offsetY": -20,
     "opacity": 0.7
   }
@@ -202,9 +209,9 @@ GET /webview/files
 ```
 
 **当前文件标记：**
-- 每个 tag 只有一个「当前」文件
-- 加载新文件时，自动更新当前文件指针
-- 可通过 `isCurrent` 字段查询
+- `isCurrent` 不持久化，完全由内存状态动态计算
+- `GET /webview/files` 响应时，`InspectorApiHandler` 从 `InspectorFileStore` 取文件列表，再与 `ClientToolsSDK.getTop()?.viewModel?.currentFile?.value` 对比，匹配则 `isCurrent = true`
+- `getTop()` 为 null 时（无前台 Activity），所有文件 `isCurrent = false`
 
 **清理策略：**
 - 手动清理：提供 HTTP 接口删除指定文件或某个 tag 下的所有文件（后续可扩展）
@@ -217,7 +224,7 @@ GET /webview/files
 ### 4.1 悬浮按钮
 
 **外观：**
-- 大小：10×10 dp
+- 大小：40×40 dp
 - 形状：圆形
 - 颜色：蓝色（#6200EE）
 - 初始位置：屏幕右下角（距边 10dp）
@@ -230,7 +237,7 @@ GET /webview/files
 
 **外观：**
 - 宽度：280 dp
-- 高度：动态（初始 400dp，随模块展开/隐藏调整）
+- 高度：动态（初始 200dp，随模块展开/隐藏调整）
 - 背景：白色，圆角 8dp，阴影
 - 位置：浮动，默认右下，可拖动
 
@@ -268,31 +275,26 @@ GET /webview/files
 ┌─────────────────────────────┐
 │ ▼ 调整                      │  (点击折叠/展开)
 ├─────────────────────────────┤
-│ 位移（档位: 1dp 10dp 50dp） │
-│          △                  │
-│       ◀︎ ◆ ▶︎                │
-│          ▽                  │
 │ [1dp]  [10dp]  [50dp]      │
+│ [◀︎]    [△]    [▽]   [▶︎]   │
 │                             │
 │ 透明度：                     │
-│ [==========●===] 70%       │
-│                             │
-│ 当前偏移：                   │
-│ X: +20dp   Y: -15dp        │
+│ [==========●===] 50%       │
+│ 偏移：X: +20dp  Y: -15dp   │
 └─────────────────────────────┘
 ```
 
 **功能：**
 - **位移控制：**
-  - 4 个方向按钮（上下左右）
+  - 4 个方向按钮（上下左右）排成一行：[◀︎] [△] [▽] [▶︎]
   - 3 个档位选择（1dp、10dp、50dp），默认 10dp
-  - 点击按钮调用 `/webview/adjust` 接口
-  - 显示当前累计位移
+  - 点击按钮：`viewModel.offsetX.value += step`（或 offsetY），直接写 ViewModel，增量累加
+  - 显示当前累计绝对位移（来自 ViewModel）
 
 - **透明度滑块：**
   - 范围 0.0 - 1.0
   - 默认 0.5
-  - 实时调整，调用 `/webview/adjust` 接口
+  - 拖动时直接写 `viewModel.opacity.value = progress`，不走 HTTP
 
 #### 4.3.3 控制模块（始终可见，不可折叠）
 
@@ -325,9 +327,9 @@ GET /webview/files
    ↓
 5. WebView 在屏幕上叠加显示
    ↓
-6. 调整 WebView
-   - 位移：点击方向按钮，选择档位 → 调用 /webview/adjust
-   - 透明度：拖动滑块 → 调用 /webview/adjust
+6. 调整 WebView（手动操作直接写 ViewModel，不走 HTTP）
+   - 位移：选择档位 → 点击方向按钮 → viewModel.offsetX/Y += step
+   - 透明度：拖动滑块 → viewModel.opacity = value
    ↓
 7. 隐藏 WebView
    - 点击【隐藏】按钮 → 调用 /webview/hide
@@ -345,7 +347,7 @@ GET /webview/files
 
 **样式：**
 - 背景：渐变色（#6200EE → #3700B3）
-- 大小：48×48 dp（易点击）
+- 大小：40×40 dp
 - 形状：圆形，带阴影（elevation 8dp）
 - 图标：白色，简约设计（如 ⚙️ 或 🎛️），使用 Material Icons
 
@@ -375,9 +377,10 @@ GET /webview/files
 - 当前文件：半圆符号 ◐ + ★，颜色突出（#6200EE）
 
 **调整模块：**
-- 方向按钮：48×48 dp，圆形，带 ripple 效果
-- 档位选择：3 个 toggle button，选中状态加强色
-- 透明度滑块：Material Design 风格，拖动时显示百分比气泡
+- 档位选择：3 个 toggle button，选中状态加强色，排在方向按钮上方一行
+- 方向按钮：[◀︎] [△] [▽] [▶︎] 四个按钮排成一行，均匀分布，每个 48×48 dp，圆形，带 ripple 效果
+- 透明度滑块：Material Design 风格，默认值 50%，拖动时显示百分比气泡
+- 偏移显示：紧接滑块下方，单行显示 X/Y 值
 
 **控制模块：**
 - 按钮：全宽，高 48dp，带 ripple 动画
@@ -385,89 +388,215 @@ GET /webview/files
 
 ---
 
-## 6. Activity 重启兼容性
+## 6. Activity 重建兼容性
 
-### 6.1 状态持久化
+`InspectorViewModel` 继承 `AndroidViewModel`，Activity 旋转重建时 ViewModel 实例不销毁，所有 StateFlow 状态（currentFile、isVisible、offsetX/Y、opacity）天然保留。
 
-WebView 的显示状态需要在 Activity 销毁/重启（如屏幕旋转）时恢复。
+`InspectorPage.attach()` 在重建后重新执行，`WebViewRenderer` 和 `InspectorPanel` 重新 collect ViewModel，自动恢复到重建前的状态，无需额外逻辑。
 
-**持久化的状态：**
-1. 当前加载的 HTML 文件（tag + timestamp）
-2. WebView 的显示/隐藏状态
-3. 位移值（offsetX, offsetY）
-4. 透明度（opacity）
-
-**实现方式：**
-
-使用 `SavedStateHandle` 或 `ViewModel` 保存状态：
-
-```kotlin
-// ViewModel 方式（推荐）
-class WebViewViewModel : ViewModel() {
-    // 当前加载的文件
-    val currentFile = MutableLiveData<Pair<String, String>>()  // (tag, timestamp)
-    
-    // WebView 是否显示
-    val isWebViewVisible = MutableLiveData<Boolean>(false)
-    
-    // 位移和透明度
-    val offsetX = MutableLiveData<Int>(0)
-    val offsetY = MutableLiveData<Int>(0)
-    val opacity = MutableLiveData<Float>(1.0f)
-    
-    // 当 Activity 销毁时，这些数据被保留
-    // Activity 重启时自动恢复
-}
-```
-
-### 6.2 恢复流程
-
-```
-Activity.onCreate()
-  ↓
-检查 ViewModel.currentFile
-  ↓ 如果存在且显示状态为 true
-  ↓
-调用 /webview/show(tag, timestamp)
-  ↓
-调用 /webview/adjust(offsetX, offsetY, opacity)
-  ↓
-WebView 显示位置和透明度恢复完成
-```
-
-### 6.3 注意事项
-
-- ✅ 不保存 HTML 文件内容，只保存标识（tag + timestamp）
-- ✅ 文件列表从本地存储动态读取，无需特殊恢复
-- ✅ 悬浮按钮和面板位置：屏幕旋转后重置到默认位置（右下角），用户可重新拖动
-- ✅ 所有 HTTP 调用幂等，重复调用不会产生副作用
+- 悬浮按钮和面板的屏幕位置（x/y 坐标）重置到默认位置（右下角），不做持久化。
 
 ---
 
-## 7. OverlayManager 增强
+## 7. InspectorPage 与数据流
 
-现有 OverlayManager 基础上添加：
+### 7.1 XML 布局结构
+
+三者（WebView、悬浮按钮、看板）统一收到一个 XML 文件 `inspector_overlay.xml` 中，通过 FrameLayout 层叠，层级由 view 顺序决定（后者在上）：
+
+```xml
+<!-- res/layout/inspector_overlay.xml -->
+<FrameLayout
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <!-- 层级 1（最底）：WebView，全屏，透明背景 -->
+    <WebView
+        android:id="@+id/overlay_webview"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@android:color/transparent"
+        android:visibility="gone" />
+
+    <!-- 层级 2：看板面板，默认隐藏，展开后浮于 WebView 上 -->
+    <include
+        layout="@layout/inspector_panel"
+        android:visibility="gone" />
+
+    <!-- 层级 3（最顶）：悬浮按钮，始终可见，可拖动 -->
+    <TextView
+        android:id="@+id/float_btn"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:layout_gravity="bottom|end"
+        android:layout_margin="16dp" />
+
+</FrameLayout>
+```
+
+看板单独拆成 `inspector_panel.xml`（可折叠模块），通过 `<include>` 引入，保持各自文件职责清晰。
+
+### 7.2 InspectorPage
+
+每个 Activity 对应一个 `InspectorPage` 实例，是该页面的管理单元：
 
 ```kotlin
-object OverlayManager {
-    // 已有方法
-    fun show(url: String, opacity: Float = 1.0f): Boolean
-    fun hide(): Boolean
-    fun setOpacity(opacity: Float): Boolean
-    
-    // 新增方法
-    fun setOffset(offsetX: Int, offsetY: Int): Boolean  // dp 为单位
-    fun getOffset(): Pair<Int, Int>  // 返回 (offsetX, offsetY)
+class InspectorPage(val activity: Activity) {
+    val viewModel: InspectorViewModel =
+        ViewModelProvider(activity)[InspectorViewModel::class.java]
+
+    // inflate 统一布局，包含 WebView + 悬浮按钮 + 看板
+    val rootView: View = LayoutInflater.from(activity)
+        .inflate(R.layout.inspector_overlay, null)
+    val panel: InspectorPanel = InspectorPanel(rootView, viewModel)
+    val renderer: WebViewRenderer = WebViewRenderer(rootView, viewModel)
+
+    fun attach() {
+        val content = activity.findViewById<ViewGroup>(android.R.id.content)
+        content.addView(rootView, FrameLayout.LayoutParams(MATCH_PARENT, MATCH_PARENT))
+        val scope = (activity as LifecycleOwner).lifecycleScope
+        panel.startObserving(scope)
+        renderer.startObserving(scope)
+    }
+
+    fun detach() {
+        panel.stopObserving()
+        renderer.stopObserving()
+    }
 }
 ```
 
-**实现细节：**
-- 使用 `WindowManager.LayoutParams` 的 `x` 和 `y` 字段存储位移
-- 每次调整时重新调用 `windowManager.updateViewLayout()`
+### 7.3 InspectorViewModel
+
+每个 Activity 独立实例，状态互不共享：
+
+```kotlin
+data class FileInfo(
+    val tag: String,
+    val timestamp: String,
+    val fileUrl: String   // file:// 绝对路径，供 WebView.loadUrl() 使用
+)
+
+class InspectorViewModel(app: Application) : AndroidViewModel(app) {
+    val currentFile = MutableStateFlow<FileInfo?>(null)
+    val isVisible   = MutableStateFlow(false)
+    val offsetX     = MutableStateFlow(0)     // dp，累计绝对值
+    val offsetY     = MutableStateFlow(0)     // dp，累计绝对值
+    val opacity     = MutableStateFlow(0.5f)  // 0.0-1.0，默认 0.5
+}
+```
+
+### 7.4 ClientToolsSDK 栈
+
+```kotlin
+object ClientToolsSDK {
+    private val pageStack = mutableListOf<InspectorPage>()  // 有序，栈顶=当前前台
+
+    fun getTop(): InspectorPage? = pageStack.lastOrNull()
+
+    // 内部由 ActivityLifecycleCallbacks 调用
+    internal fun push(page: InspectorPage)   { pageStack.add(page) }
+    internal fun remove(page: InspectorPage) { pageStack.remove(page) }
+}
+```
+
+注册逻辑（`ClientToolsSDK.init(application)` 时）：
+
+```kotlin
+application.registerActivityLifecycleCallbacks(object : ActivityLifecycleCallbacks {
+    val pages = WeakHashMap<Activity, InspectorPage>()
+
+    override fun onActivityResumed(activity: Activity) {
+        if (pages[activity] == null) {
+            val page = InspectorPage(activity)
+            page.attach()
+            pages[activity] = page
+            ClientToolsSDK.push(page)
+        }
+    }
+
+    override fun onActivityDestroyed(activity: Activity) {
+        pages.remove(activity)?.let {
+            it.detach()
+            ClientToolsSDK.remove(it)
+        }
+    }
+})
+```
+
+### 7.5 数据流
+
+```
+HTTP 请求（AI 推送 / 接口调用）
+  ↓
+InspectorApiHandler
+  → ClientToolsSDK.getTop().viewModel.xxx.value = ...
+  ↓
+┌─────────────────────────────────────┐
+│  InspectorViewModel (StateFlow)        │
+│  currentFile / isVisible / offset / opacity │
+└─────────────────────────────────────┘
+  ↓ collect                    ↓ collect
+InspectorPanel           WebViewRenderer
+  UI 自动刷新                  WebView 显隐/位移/透明度自动同步
+
+手动操作（面板按钮 / 滑块）
+  ↓
+InspectorPanel → viewModel.xxx.value = ...
+  ↓（同上，WebViewRenderer 响应）
+```
+
+### 7.6 原则说明
+
+- **零侵入**：Demo/宿主 App 无需任何 SDK 代码，完全由 `ActivityLifecycleCallbacks` 自动管理
+- **只注入一次**：首次 `onActivityResumed` 时创建 `InspectorPage` 并挂载，此后始终存在
+- **独立状态**：各页面 ViewModel 独立，切换 Activity 不共享状态
+- **单一写入点**：无论 HTTP 还是手动操作，都只写 ViewModel；WebViewRenderer 和 InspectorPanel 均为观察者
 
 ---
 
-## 8. 验收标准
+## 8. WebViewRenderer
+
+轻量的渲染执行者，职责单一：持有 `inspector_overlay.xml` 中的 WebView 引用，collect `InspectorViewModel` 驱动渲染，不持有任何状态。
+
+```kotlin
+// scope 由 InspectorPage 传入（使用 activity.lifecycleScope），与 Activity 生命周期绑定
+class WebViewRenderer(rootView: View, private val viewModel: InspectorViewModel) {
+    private val webView: WebView = rootView.findViewById(R.id.overlay_webview)
+    private var job: Job? = null
+
+    fun startObserving(scope: CoroutineScope) {
+        job = scope.launch {
+            launch { viewModel.isVisible.collect { webView.visibility = if (it) View.VISIBLE else View.GONE } }
+            launch { viewModel.currentFile.filterNotNull().collect { webView.loadUrl(it.fileUrl) } }
+            launch { viewModel.opacity.collect { webView.alpha = it } }
+            launch {
+                combine(viewModel.offsetX, viewModel.offsetY) { x, y -> x to y }
+                    .collect { (x, y) ->
+                        webView.translationX = x.dpToPx(webView.context)
+                        webView.translationY = y.dpToPx(webView.context)
+                    }
+            }
+        }
+    }
+
+    fun stopObserving() { job?.cancel() }
+}
+```
+
+**WebView 初始化配置**（在 `InspectorPage.attach()` 中，inflate 后立即配置）：
+```kotlin
+webView.settings.javaScriptEnabled = true
+webView.settings.domStorageEnabled = true
+webView.settings.allowFileAccess = true
+@Suppress("DEPRECATION")
+webView.settings.allowFileAccessFromFileURLs = true
+webView.setBackgroundColor(Color.TRANSPARENT)
+```
+
+---
+
+## 9. 验收标准
 
 | 功能 | 验收条件 |
 |-----|--------|
@@ -484,32 +613,36 @@ object OverlayManager {
 
 ---
 
-## 9. 实现清单
+## 10. 实现清单
 
-- [ ] WebViewManager 类（统一管理）
-- [ ] WebViewFileStore 类（本地存储）
-- [ ] WebViewApiHandler 类（HTTP 接口）
-- [ ] FloatingControlPanel 类（UI 悬浮窗）
-  - [ ] 悬浮按钮
-  - [ ] 展开面板
-  - [ ] WebView 模块
-  - [ ] 调整模块
-  - [ ] 控制模块
-- [ ] OverlayManager 增强（位移控制）
-- [ ] 集成到 SDK 初始化流程
+- [ ] `InspectorViewModel`（StateFlow 状态中心）
+- [ ] `InspectorPage`（Activity 管理单元，封装 View + ViewModel）
+- [ ] `ClientToolsSDK` 栈管理（push / remove / getTop）
+- [ ] `ActivityLifecycleCallbacks` 注册与自动注入
+- [ ] `res/layout/inspector_overlay.xml`（统一根布局：WebView + 悬浮按钮 + 看板 `<include>`）
+- [ ] `res/layout/inspector_panel.xml`（看板面板，含 3 个可折叠模块）
+- [ ] `InspectorPanel`（悬浮按钮 + 看板逻辑，观察 ViewModel）
+  - [ ] 悬浮按钮（可拖动，点击展开/收起看板）
+  - [ ] 看板面板（可拖动）
+  - [ ] WebView 模块（文件列表 + 当前文件）
+  - [ ] 调整模块（方向按钮一行 + 档位 + 透明度滑块）
+  - [ ] 控制模块（显示/隐藏/关闭）
+- [ ] `WebViewRenderer`（持有 rootView 中的 WebView，collect ViewModel 驱动显隐/位移/透明度/loadUrl）
+- [ ] `InspectorFileStore`（本地存储）
+- [ ] `InspectorApiHandler`（HTTP 接口，写入 getTop().viewModel）
 - [ ] 单元测试和集成测试
 
 ---
 
-## 10. 依赖关系
+## 11. 依赖关系
 
-- **依赖于：** 已有的 OverlayManager、HTTP Server 框架、SDK 初始化机制
+- **依赖于：** 已有的 HTTP Server 框架（NanoHTTPD）、SDK 初始化机制（ClientToolsSDK.init）
 - **被依赖于：** 模块 4&5（差异计算和 AI 校正循环）
 
 ---
 
-## 11. 参考资源
+## 12. 参考资源
 
 - tech-plan.md 第 3.1 和 3.4 节
-- OverlayManager.kt（已有实现）
+- ApiHandler.kt（已有 HTTP 路由框架，InspectorApiHandler 接入此处）
 - ApiHandler.kt（已有框架）

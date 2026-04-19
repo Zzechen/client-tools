@@ -1,714 +1,316 @@
-# WebView 管理系统实现计划
+# Inspector 系统实现计划
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** 为 Android SDK 实现完整的 WebView 管理系统，支持 HTTP 推送、本地存储、手动调整面板等功能。
+**Goal:** 为 Android SDK 实现完整的 Inspector 系统（WebView 叠加对比），包含悬浮按钮、看板面板、WebView 渲染，支持 HTML 推送、本地存储、手动调整与 HTTP 接口。
 
-**Architecture:** 分层架构由 4 个核心组件组成：底层文件存储（WebViewFileStore）、业务逻辑协调（WebViewManager）、HTTP 接口处理（WebViewApiHandler）、顶层 UI（FloatingControlPanel）。此外增强 OverlayManager 以支持位移控制。所有组件通过 ViewModel 持久化 Activity 重启时的状态。
+**Architecture:** 每个 Activity 对应一个 `InspectorPage`（View + ViewModel），由 `ClientToolsSDK` 通过 `ActivityLifecycleCallbacks` 自动注入，无需宿主 App 任何改动。状态统一存于 `InspectorViewModel`（StateFlow），`WebViewRenderer` 和 `InspectorPanel` 均为观察者，HTTP 接口通过 `ClientToolsSDK.getTop()` 写入当前页 ViewModel。
 
-**Tech Stack:** Kotlin, Android SDK, Nanohttpd, WebView, Material Design, ViewModels, WindowManager
+**Tech Stack:** Kotlin, Android SDK (API 26+), AndroidX ViewModel + Lifecycle, Coroutines/Flow, NanoHTTPD, XML 布局
 
 ---
 
 ## 文件结构
 
-### 待创建文件
+### 新建
+| 文件 | 职责 |
+|------|------|
+| `sdk/src/main/kotlin/com/clienttools/sdk/inspector/InspectorViewModel.kt` | StateFlow 状态中心 + FileInfo 数据类 |
+| `sdk/src/main/kotlin/com/clienttools/sdk/inspector/InspectorPage.kt` | Activity 管理单元，inflate 布局、持有 panel + renderer |
+| `sdk/src/main/kotlin/com/clienttools/sdk/inspector/WebViewRenderer.kt` | collect ViewModel → WebView 渲染（loadUrl/visibility/alpha/translation） |
+| `sdk/src/main/kotlin/com/clienttools/sdk/inspector/InspectorPanel.kt` | 悬浮按钮 + 看板面板 UI，collect ViewModel 驱动渲染，写 ViewModel 响应操作 |
+| `sdk/src/main/kotlin/com/clienttools/sdk/inspector/InspectorFileStore.kt` | HTML 文件本地存储（替代 WebViewFileStore） |
+| `sdk/src/main/kotlin/com/clienttools/sdk/inspector/InspectorApiHandler.kt` | HTTP 接口处理，写入 getTop().viewModel（替代 WebViewApiHandler） |
+| `sdk/src/main/res/layout/inspector_overlay.xml` | 统一根布局：WebView（底）+ 看板（中）+ 悬浮按钮（顶） |
+| `sdk/src/main/res/layout/inspector_panel.xml` | 看板面板：3 个可折叠模块 |
+| `sdk/src/androidTest/kotlin/com/clienttools/sdk/inspector/InspectorFileStoreTest.kt` | InspectorFileStore 集成测试 |
+| `sdk/src/androidTest/kotlin/com/clienttools/sdk/inspector/InspectorApiHandlerTest.kt` | InspectorApiHandler 单元测试 |
 
+### 修改
+| 文件 | 变更 |
+|------|------|
+| `sdk/build.gradle.kts` | 添加 lifecycle-viewmodel、lifecycle-runtime-ktx 依赖 |
+| `sdk/src/main/kotlin/com/clienttools/sdk/ClientToolsSDK.kt` | 添加 InspectorPage 栈（pageStack）、getTop()、ActivityLifecycleCallbacks 注册 |
+| `sdk/src/main/kotlin/com/clienttools/sdk/http/HttpServer.kt` | 路由 /webview/* 改接 InspectorApiHandler |
+| `sdk/src/main/kotlin/com/clienttools/sdk/listener/PageChangeListener.kt` | onActivityDestroyed 不再调用 setCurrentActivity，由 InspectorPage 管理 |
+
+### 废弃（保留文件，清空实现为空存根，避免编译错误）
+- `sdk/.../webview/WebViewManager.kt`
+- `sdk/.../webview/WebViewFileStore.kt`
+- `sdk/.../webview/WebViewApiHandler.kt`
+- `sdk/.../webview/ui/FloatingControlPanel.kt`
+- `sdk/.../runtime/OverlayManager.kt`
+
+---
+
+## Task 1: 依赖配置 + InspectorViewModel
+
+**Files:**
+- Modify: `packages/android/sdk/build.gradle.kts`
+- Create: `packages/android/sdk/src/main/kotlin/com/clienttools/sdk/inspector/InspectorViewModel.kt`
+
+- [ ] **Step 1: 添加 lifecycle 依赖**
+
+编辑 `packages/android/sdk/build.gradle.kts`，在 `dependencies {}` 中添加：
+
+```kotlin
+dependencies {
+    implementation(project(":shared"))
+    implementation(libs.kotlin.stdlib)
+    implementation(libs.androidx.appcompat)
+    implementation(libs.androidx.core)
+    implementation("org.nanohttpd:nanohttpd:2.3.1")
+    implementation(libs.kotlinx.serialization.json)
+
+    // lifecycle
+    implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.7.0")
+    implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.7.0")
+
+    testImplementation(kotlin("test"))
+    androidTestImplementation(libs.androidx.test.core)
+    androidTestImplementation(libs.androidx.test.ext.junit)
+}
 ```
-packages/android/sdk/src/main/kotlin/com/clienttools/sdk/
-├─ webview/
-│  ├─ WebViewManager.kt           (核心协调器)
-│  ├─ WebViewFileStore.kt         (本地存储管理)
-│  ├─ WebViewApiHandler.kt        (HTTP 接口)
-│  └─ ui/
-│     ├─ FloatingControlPanel.kt  (悬浮按钮 + 展开面板)
-│     ├─ WebViewModule.kt         (WebView 文件列表模块)
-│     ├─ AdjustModule.kt          (位移和透明度调整模块)
-│     └─ ControlModule.kt         (显示/隐藏/关闭模块)
-│
-packages/android/sdk/src/main/kotlin/com/clienttools/sdk/model/
-├─ WebViewFile.kt                (文件信息数据类)
-└─ WebViewState.kt               (状态持久化数据类)
 
-packages/android/demo/src/main/kotlin/com/clienttools/demo/
-└─ WebViewViewModel.kt           (Activity 级 ViewModel)
+- [ ] **Step 2: 创建 InspectorViewModel**
 
-packages/android/sdk/src/test/kotlin/com/clienttools/sdk/webview/
-├─ WebViewFileStoreTest.kt
-├─ WebViewApiHandlerTest.kt
-└─ WebViewManagerTest.kt
+创建 `packages/android/sdk/src/main/kotlin/com/clienttools/sdk/inspector/InspectorViewModel.kt`：
+
+```kotlin
+package com.clienttools.sdk.inspector
+
+import android.app.Application
+import androidx.lifecycle.AndroidViewModel
+import kotlinx.coroutines.flow.MutableStateFlow
+
+data class FileInfo(
+    val tag: String,
+    val timestamp: String,
+    val fileUrl: String  // file:// 绝对路径，供 WebView.loadUrl() 使用
+)
+
+class InspectorViewModel(app: Application) : AndroidViewModel(app) {
+    val currentFile = MutableStateFlow<FileInfo?>(null)
+    val isVisible   = MutableStateFlow(false)
+    val offsetX     = MutableStateFlow(0)     // dp，累计绝对值
+    val offsetY     = MutableStateFlow(0)     // dp，累计绝对值
+    val opacity     = MutableStateFlow(0.5f)  // 0.0-1.0，默认 0.5
+}
 ```
 
-### 修改文件
+- [ ] **Step 3: 验证编译**
 
+```bash
+cd /Users/zzc/Desktop/works/client-tools/packages
+./gradlew :sdk:compileDebugKotlin
 ```
-packages/android/sdk/src/main/kotlin/com/clienttools/sdk/runtime/
-└─ OverlayManager.kt             (添加 setOffset() 和 getOffset() 方法)
 
-packages/android/sdk/src/main/kotlin/com/clienttools/sdk/http/
-└─ ApiHandler.kt                 (集成 WebViewApiHandler)
+期望：BUILD SUCCESSFUL，无编译错误。
 
-packages/android/demo/src/main/kotlin/com/clienttools/demo/
-└─ MainActivity.kt               (显示 WebView 功能入口)
+- [ ] **Step 4: Commit**
+
+```bash
+git add packages/android/sdk/build.gradle.kts \
+        packages/android/sdk/src/main/kotlin/com/clienttools/sdk/inspector/InspectorViewModel.kt
+git commit -m "feat(inspector): add InspectorViewModel with StateFlow state"
 ```
 
 ---
 
-## 任务清单
-
-### Task 1: WebViewFileStore - 本地存储管理
+## Task 2: InspectorFileStore
 
 **Files:**
-- Create: `packages/android/sdk/src/main/kotlin/com/clienttools/sdk/webview/WebViewFileStore.kt`
-- Create: `packages/android/sdk/src/main/kotlin/com/clienttools/sdk/model/WebViewFile.kt`
-- Test: `packages/android/sdk/src/test/kotlin/com/clienttools/sdk/webview/WebViewFileStoreTest.kt`
+- Create: `packages/android/sdk/src/main/kotlin/com/clienttools/sdk/inspector/InspectorFileStore.kt`
+- Create: `packages/android/sdk/src/androidTest/kotlin/com/clienttools/sdk/inspector/InspectorFileStoreTest.kt`
 
-#### 数据模型
+- [ ] **Step 1: 写测试（先失败）**
 
-- [ ] **Step 1: 定义 WebViewFile 数据类**
+创建 `packages/android/sdk/src/androidTest/kotlin/com/clienttools/sdk/inspector/InspectorFileStoreTest.kt`：
 
 ```kotlin
-// packages/android/sdk/src/main/kotlin/com/clienttools/sdk/model/WebViewFile.kt
-package com.clienttools.sdk.model
+package com.clienttools.sdk.inspector
 
-import kotlinx.serialization.Serializable
+import android.content.Context
+import androidx.test.core.app.ApplicationProvider
+import androidx.test.ext.junit.runners.AndroidJUnit4
+import org.junit.Before
+import org.junit.Test
+import org.junit.runner.RunWith
 
-@Serializable
-data class WebViewFile(
-    val tag: String,
-    val timestamp: String,  // MMdd-HHmm format
-    val filePath: String,   // absolute path on disk
-    val fileSize: Long,     // bytes
-    val isCurrent: Boolean = false
-)
+@RunWith(AndroidJUnit4::class)
+class InspectorFileStoreTest {
+
+    private lateinit var store: InspectorFileStore
+
+    @Before
+    fun setUp() {
+        val context: Context = ApplicationProvider.getApplicationContext()
+        store = InspectorFileStore(context)
+        store.deleteAll()
+    }
+
+    @Test
+    fun saveHtmlFile_returnsCorrectMetadata() {
+        val result = store.saveHtmlFile("login", "0418-1430", "<html>Test</html>")
+        assert(result != null)
+        assert(result!!.tag == "login")
+        assert(result.timestamp == "0418-1430")
+        assert(result.fileUrl.startsWith("file://"))
+        assert(result.fileUrl.endsWith("login_0418-1430.html"))
+    }
+
+    @Test
+    fun getAllFiles_returnsAllSaved() {
+        store.saveHtmlFile("login", "0418-1430", "<html>A</html>")
+        store.saveHtmlFile("login", "0418-1440", "<html>B</html>")
+        store.saveHtmlFile("home", "0418-1500", "<html>C</html>")
+        val files = store.getAllFiles()
+        assert(files.size == 3)
+    }
+
+    @Test
+    fun getFilePath_returnsFileUrl() {
+        store.saveHtmlFile("login", "0418-1430", "<html>Test</html>")
+        val url = store.getFilePath("login", "0418-1430")
+        assert(url != null)
+        assert(url!!.startsWith("file://"))
+    }
+
+    @Test
+    fun getFilePath_returnsNullForMissing() {
+        val url = store.getFilePath("notexist", "0000-0000")
+        assert(url == null)
+    }
+
+    @Test
+    fun deleteAll_clearsAllFiles() {
+        store.saveHtmlFile("login", "0418-1430", "<html>A</html>")
+        store.deleteAll()
+        assert(store.getAllFiles().isEmpty())
+    }
+
+    @Test
+    fun generateTimestamp_hasCorrectFormat() {
+        val ts = store.generateTimestamp()
+        // MMdd-HHmm: 4 digits, dash, 4 digits
+        assert(ts.matches(Regex("""\d{4}-\d{4}""")))
+    }
+}
 ```
 
-- [ ] **Step 2: 创建 WebViewFileStore 类框架**
+- [ ] **Step 2: 运行测试，确认失败**
+
+```bash
+cd /Users/zzc/Desktop/works/client-tools/packages
+./gradlew :sdk:connectedDebugAndroidTest --tests "*.InspectorFileStoreTest"
+```
+
+期望：编译失败（InspectorFileStore 未定义）。
+
+- [ ] **Step 3: 实现 InspectorFileStore**
+
+创建 `packages/android/sdk/src/main/kotlin/com/clienttools/sdk/inspector/InspectorFileStore.kt`：
 
 ```kotlin
-// packages/android/sdk/src/main/kotlin/com/clienttools/sdk/webview/WebViewFileStore.kt
-package com.clienttools.sdk.webview
+package com.clienttools.sdk.inspector
 
 import android.content.Context
 import android.util.Log
-import com.clienttools.sdk.model.WebViewFile
 import java.io.File
 import java.text.SimpleDateFormat
 import java.util.*
 
-object WebViewFileStore {
-    private lateinit var cacheDir: File
-    private val TAG = "WebViewFileStore"
-    
-    fun init(context: Context) {
-        cacheDir = File(context.cacheDir, "webview")
-        if (!cacheDir.exists()) {
-            cacheDir.mkdirs()
-        }
+class InspectorFileStore(context: Context) {
+    private val cacheDir = File(context.cacheDir, "inspector")
+    private val TAG = "InspectorFileStore"
+
+    init {
+        cacheDir.mkdirs()
     }
-    
-    // placeholder: add methods below
-}
-```
 
-#### 文件保存功能
-
-- [ ] **Step 3: 编写测试 - 保存 HTML 文件**
-
-```kotlin
-// packages/android/sdk/src/test/kotlin/com/clienttools/sdk/webview/WebViewFileStoreTest.kt
-package com.clienttools.sdk.webview
-
-import android.content.Context
-import androidx.test.core.app.ApplicationProvider
-import org.junit.Before
-import org.junit.Test
-import org.junit.runner.RunWith
-import androidx.test.ext.junit.runners.AndroidJUnit4
-import java.io.File
-
-@RunWith(AndroidJUnit4::class)
-class WebViewFileStoreTest {
-    
-    private lateinit var context: Context
-    
-    @Before
-    fun setUp() {
-        context = ApplicationProvider.getApplicationContext()
-        WebViewFileStore.init(context)
-        // Clean up before each test
-        WebViewFileStore.deleteAll()
-    }
-    
-    @Test
-    fun testSaveHtmlFile() {
-        val tag = "login"
-        val timestamp = "0418-1430"
-        val htmlContent = "<html><body>Test</body></html>"
-        
-        val result = WebViewFileStore.saveHtmlFile(tag, timestamp, htmlContent)
-        
-        assert(result != null)
-        assert(result?.fileSize == htmlContent.length.toLong())
-        assert(result?.tag == tag)
-        assert(result?.timestamp == timestamp)
-        assert(result?.isCurrent == true)  // First file should be marked as current
-        assert(result?.filePath?.endsWith("login_0418-1430.html") == true)
-    }
-}
-```
-
-- [ ] **Step 4: 实现 saveHtmlFile 方法**
-
-```kotlin
-// Add to WebViewFileStore in webview/WebViewFileStore.kt
-fun saveHtmlFile(tag: String, timestamp: String, htmlContent: String): WebViewFile? = try {
-    // Create tag directory
-    val tagDir = File(cacheDir, tag)
-    if (!tagDir.exists()) {
-        tagDir.mkdirs()
-    }
-    
-    // Generate filename and save
-    val filename = "${tag}_${timestamp}.html"
-    val file = File(tagDir, filename)
-    file.writeText(htmlContent, Charsets.UTF_8)
-    
-    // Mark previous file as not current
-    val existingFiles = listFilesByTag(tag)
-    existingFiles.forEach { existingFile ->
-        updateCurrentMarker(existingFile.filePath, false)
-    }
-    
-    WebViewFile(
-        tag = tag,
-        timestamp = timestamp,
-        filePath = file.absolutePath,
-        fileSize = file.length(),
-        isCurrent = true
-    )
-} catch (e: Exception) {
-    Log.e(TAG, "Error saving HTML file", e)
-    null
-}
-
-private fun updateCurrentMarker(filePath: String, isCurrent: Boolean) {
-    // Store current marker in a separate metadata file if needed
-    // For now, we track in-memory with currentFile variable
-}
-```
-
-#### 文件查询功能
-
-- [ ] **Step 5: 编写测试 - 获取文件列表**
-
-```kotlin
-// Add to WebViewFileStoreTest
-@Test
-fun testGetAllFiles() {
-    WebViewFileStore.saveHtmlFile("login", "0418-1430", "<html>Login1</html>")
-    WebViewFileStore.saveHtmlFile("login", "0418-1440", "<html>Login2</html>")
-    WebViewFileStore.saveHtmlFile("home", "0418-1500", "<html>Home</html>")
-    
-    val allFiles = WebViewFileStore.getAllFiles()
-    
-    assert(allFiles.size == 3)
-    assert(allFiles.count { it.tag == "login" } == 2)
-    assert(allFiles.count { it.isCurrent && it.tag == "login" } == 1)
-    assert(allFiles[0].timestamp == "0418-1440")  // Latest for login
-}
-
-@Test
-fun testListFilesByTag() {
-    WebViewFileStore.saveHtmlFile("login", "0417-1400", "<html>Old</html>")
-    WebViewFileStore.saveHtmlFile("login", "0418-1430", "<html>New</html>")
-    
-    val files = WebViewFileStore.listFilesByTag("login")
-    
-    assert(files.size == 2)
-    assert(files[0].timestamp == "0418-1430")
-}
-```
-
-- [ ] **Step 6: 实现文件查询方法**
-
-```kotlin
-// Add to WebViewFileStore
-private var currentFile: Pair<String, String>? = null  // (tag, timestamp)
-
-fun getAllFiles(): List<WebViewFile> = try {
-    val files = mutableListOf<WebViewFile>()
-    cacheDir.listFiles()?.forEach { tagDir ->
-        if (tagDir.isDirectory) {
-            tagDir.listFiles()?.forEach { file ->
-                if (file.name.endsWith(".html")) {
-                    val timestamp = parseTimestamp(file.name)
-                    files.add(WebViewFile(
-                        tag = tagDir.name,
-                        timestamp = timestamp,
-                        filePath = file.absolutePath,
-                        fileSize = file.length(),
-                        isCurrent = currentFile == Pair(tagDir.name, timestamp)
-                    ))
-                }
-            }
-        }
-    }
-    files.sortByDescending { it.timestamp }
-    files
-} catch (e: Exception) {
-    Log.e(TAG, "Error getting all files", e)
-    emptyList()
-}
-
-fun listFilesByTag(tag: String): List<WebViewFile> {
-    return getAllFiles().filter { it.tag == tag }
-}
-
-fun getCurrentFile(): Pair<String, String>? = currentFile
-
-fun setCurrentFile(tag: String, timestamp: String) {
-    currentFile = Pair(tag, timestamp)
-}
-
-private fun parseTimestamp(filename: String): String {
-    // Extract timestamp from "tag_0418-1430.html"
-    val regex = """_(\d{4}-\d{4})\.html$""".toRegex()
-    return regex.find(filename)?.groupValues?.get(1) ?: ""
-}
-```
-
-#### 文件删除和清理
-
-- [ ] **Step 7: 编写测试 - 删除文件**
-
-```kotlin
-// Add to WebViewFileStoreTest
-@Test
-fun testDeleteFile() {
-    val file1 = WebViewFileStore.saveHtmlFile("login", "0418-1430", "<html>Test</html>")!!
-    WebViewFileStore.saveHtmlFile("login", "0418-1440", "<html>Test2</html>")
-    
-    val deleted = WebViewFileStore.deleteFile(file1.filePath)
-    
-    assert(deleted == true)
-    assert(WebViewFileStore.getAllFiles().size == 1)
-}
-
-@Test
-fun testDeleteAll() {
-    WebViewFileStore.saveHtmlFile("login", "0418-1430", "<html>Test</html>")
-    WebViewFileStore.saveHtmlFile("home", "0418-1500", "<html>Test</html>")
-    
-    WebViewFileStore.deleteAll()
-    
-    assert(WebViewFileStore.getAllFiles().isEmpty())
-}
-```
-
-- [ ] **Step 8: 实现删除方法**
-
-```kotlin
-// Add to WebViewFileStore
-fun deleteFile(filePath: String): Boolean = try {
-    val file = File(filePath)
-    file.delete().also { success ->
-        if (success && currentFile != null) {
-            val isCurrentFile = filePath.endsWith("_${currentFile!!.second}.html")
-            if (isCurrentFile) {
-                currentFile = null
-            }
-        }
-    }
-} catch (e: Exception) {
-    Log.e(TAG, "Error deleting file", e)
-    false
-}
-
-fun deleteAll(): Boolean = try {
-    cacheDir.deleteRecursively()
-    currentFile = null
-    cacheDir.mkdirs()
-    true
-} catch (e: Exception) {
-    Log.e(TAG, "Error deleting all files", e)
-    false
-}
-```
-
-- [ ] **Step 9: 运行所有 WebViewFileStore 测试**
-
-```bash
-cd packages && ./gradlew :sdk:testDebugUnitTest -k WebViewFileStoreTest
-```
-
-Expected: All 6 tests pass
-
-- [ ] **Step 10: 提交 Task 1**
-
-```bash
-git add packages/android/sdk/src/main/kotlin/com/clienttools/sdk/webview/
-git add packages/android/sdk/src/main/kotlin/com/clienttools/sdk/model/WebViewFile.kt
-git add packages/android/sdk/src/test/kotlin/com/clienttools/sdk/webview/WebViewFileStoreTest.kt
-git commit -m "feat: implement WebViewFileStore for local HTML storage management"
-```
-
----
-
-### Task 2: OverlayManager 增强 - 位移控制
-
-**Files:**
-- Modify: `packages/android/sdk/src/main/kotlin/com/clienttools/sdk/runtime/OverlayManager.kt`
-- Test: `packages/android/sdk/src/test/kotlin/com/clienttools/sdk/runtime/OverlayManagerTest.kt`
-
-- [ ] **Step 1: 编写测试 - 位移控制**
-
-```kotlin
-// packages/android/sdk/src/test/kotlin/com/clienttools/sdk/runtime/OverlayManagerTest.kt
-package com.clienttools.sdk.runtime
-
-import android.content.Context
-import androidx.test.core.app.ApplicationProvider
-import androidx.test.ext.junit.runners.AndroidJUnit4
-import org.junit.Before
-import org.junit.Test
-import org.junit.runner.RunWith
-
-@RunWith(AndroidJUnit4::class)
-class OverlayManagerTest {
-    
-    private lateinit var context: Context
-    
-    @Before
-    fun setUp() {
-        context = ApplicationProvider.getApplicationContext()
-    }
-    
-    @Test
-    fun testSetOffset() {
-        val offsetX = 50
-        val offsetY = -100
-        
-        val success = OverlayManager.setOffset(offsetX, offsetY)
-        
-        // Note: This test is limited because we can't easily test WindowManager
-        // In real testing, you'd use a mock WindowManager
-        assert(success == false || success == true)  // Just verify no exception
-    }
-    
-    @Test
-    fun testGetOffset() {
-        OverlayManager.setOffset(25, -50)
-        
-        val (x, y) = OverlayManager.getOffset()
-        
-        // Offset tracking logic will be implemented
-        assert(x >= 0 && y >= 0 || x <= 0 && y <= 0)  // Valid values
-    }
-}
-```
-
-- [ ] **Step 2: 在 OverlayManager 中添加位移字段和方法**
-
-```kotlin
-// Modify OverlayManager.kt - add to class level
-private var currentOffsetX: Int = 0
-private var currentOffsetY: Int = 0
-
-// Add new methods
-fun setOffset(offsetX: Int, offsetY: Int): Boolean = try {
-    val activity = ClientToolsSDK.getCurrentActivity() ?: return false
-    currentOffsetX = offsetX
-    currentOffsetY = offsetY
-    
-    if (webView == null || layoutParams == null) {
-        return false
-    }
-    
-    if (Looper.myLooper() == Looper.getMainLooper()) {
-        updateWebViewOffset(activity)
-    } else {
-        activity.runOnUiThread { updateWebViewOffset(activity) }
-    }
-    true
-} catch (e: Exception) {
-    false
-}
-
-fun getOffset(): Pair<Int, Int> = Pair(currentOffsetX, currentOffsetY)
-
-private fun updateWebViewOffset(activity: Activity) {
-    try {
-        layoutParams?.let {
-            it.x = currentOffsetX
-            it.y = currentOffsetY
-            windowManager?.updateViewLayout(webView, it)
-        }
+    fun saveHtmlFile(tag: String, timestamp: String, htmlContent: String): FileInfo? = try {
+        val tagDir = File(cacheDir, tag).also { it.mkdirs() }
+        val file = File(tagDir, "${tag}_${timestamp}.html")
+        file.writeText(htmlContent, Charsets.UTF_8)
+        FileInfo(
+            tag = tag,
+            timestamp = timestamp,
+            fileUrl = "file://${file.absolutePath}"
+        )
     } catch (e: Exception) {
-        Log.e("OverlayManager", "Error updating offset", e)
+        Log.e(TAG, "Error saving HTML file", e)
+        null
     }
+
+    fun getAllFiles(): List<FileInfo> = try {
+        val result = mutableListOf<FileInfo>()
+        cacheDir.listFiles()?.forEach { tagDir ->
+            if (!tagDir.isDirectory) return@forEach
+            tagDir.listFiles()?.forEach { file ->
+                if (!file.name.endsWith(".html")) return@forEach
+                val timestamp = parseTimestamp(file.name) ?: return@forEach
+                result.add(FileInfo(tagDir.name, timestamp, "file://${file.absolutePath}"))
+            }
+        }
+        result.sortedByDescending { it.timestamp }
+    } catch (e: Exception) {
+        Log.e(TAG, "Error listing files", e)
+        emptyList()
+    }
+
+    fun getFilePath(tag: String, timestamp: String): String? {
+        val file = File(File(cacheDir, tag), "${tag}_${timestamp}.html")
+        return if (file.exists()) "file://${file.absolutePath}" else null
+    }
+
+    fun deleteAll(): Boolean = try {
+        cacheDir.deleteRecursively()
+        cacheDir.mkdirs()
+        true
+    } catch (e: Exception) {
+        Log.e(TAG, "Error deleting all", e)
+        false
+    }
+
+    fun generateTimestamp(): String =
+        SimpleDateFormat("MMdd-HHmm", Locale.US).format(Date())
+
+    private fun parseTimestamp(filename: String): String? =
+        Regex("""_(\d{4}-\d{4})\.html$""").find(filename)?.groupValues?.get(1)
 }
 ```
 
-- [ ] **Step 3: 运行 OverlayManager 测试**
+- [ ] **Step 4: 运行测试，确认通过**
 
 ```bash
-cd packages && ./gradlew :sdk:testDebugUnitTest -k OverlayManagerTest
+cd /Users/zzc/Desktop/works/client-tools/packages
+./gradlew :sdk:connectedDebugAndroidTest --tests "*.InspectorFileStoreTest"
 ```
 
-Expected: Tests pass
+期望：所有测试 PASS。
 
-- [ ] **Step 4: 提交 Task 2**
+- [ ] **Step 5: Commit**
 
 ```bash
-git add packages/android/sdk/src/main/kotlin/com/clienttools/sdk/runtime/OverlayManager.kt
-git add packages/android/sdk/src/test/kotlin/com/clienttools/sdk/runtime/OverlayManagerTest.kt
-git commit -m "feat: add offset control methods to OverlayManager"
+git add packages/android/sdk/src/main/kotlin/com/clienttools/sdk/inspector/InspectorFileStore.kt \
+        packages/android/sdk/src/androidTest/kotlin/com/clienttools/sdk/inspector/InspectorFileStoreTest.kt
+git commit -m "feat(inspector): add InspectorFileStore with file:// URL support"
 ```
 
 ---
 
-### Task 3: WebViewManager - 核心协调器
+## Task 3: InspectorApiHandler
 
 **Files:**
-- Create: `packages/android/sdk/src/main/kotlin/com/clienttools/sdk/webview/WebViewManager.kt`
-- Create: `packages/android/sdk/src/main/kotlin/com/clienttools/sdk/model/WebViewState.kt`
-- Test: `packages/android/sdk/src/test/kotlin/com/clienttools/sdk/webview/WebViewManagerTest.kt`
+- Create: `packages/android/sdk/src/main/kotlin/com/clienttools/sdk/inspector/InspectorApiHandler.kt`
+- Create: `packages/android/sdk/src/androidTest/kotlin/com/clienttools/sdk/inspector/InspectorApiHandlerTest.kt`
 
-- [ ] **Step 1: 定义 WebViewState 数据类**
+- [ ] **Step 1: 写测试（先失败）**
 
-```kotlin
-// packages/android/sdk/src/main/kotlin/com/clienttools/sdk/model/WebViewState.kt
-package com.clienttools.sdk.model
-
-import kotlinx.serialization.Serializable
-
-@Serializable
-data class WebViewState(
-    val currentTag: String? = null,
-    val currentTimestamp: String? = null,
-    val isVisible: Boolean = false,
-    val opacity: Float = 1.0f,
-    val offsetX: Int = 0,
-    val offsetY: Int = 0
-)
-```
-
-- [ ] **Step 2: 创建 WebViewManager 框架**
+创建 `packages/android/sdk/src/androidTest/kotlin/com/clienttools/sdk/inspector/InspectorApiHandlerTest.kt`：
 
 ```kotlin
-// packages/android/sdk/src/main/kotlin/com/clienttools/sdk/webview/WebViewManager.kt
-package com.clienttools.sdk.webview
-
-import android.content.Context
-import android.util.Log
-import com.clienttools.sdk.model.WebViewFile
-import com.clienttools.sdk.model.WebViewState
-import com.clienttools.sdk.runtime.OverlayManager
-
-object WebViewManager {
-    private val TAG = "WebViewManager"
-    private var state = WebViewState()
-    
-    fun init(context: Context) {
-        WebViewFileStore.init(context)
-        loadStateFromStorage(context)
-    }
-    
-    private fun loadStateFromStorage(context: Context) {
-        // State will be restored from ViewModel in Activity
-        // This is for initialization of default state
-    }
-    
-    fun setState(newState: WebViewState) {
-        state = newState
-    }
-    
-    fun getState(): WebViewState = state
-}
-```
-
-- [ ] **Step 3: 实现 pushHtml 方法**
-
-```kotlin
-// Add to WebViewManager
-fun pushHtml(tag: String, htmlContent: String, timestamp: String? = null): Map<String, Any> = try {
-    val finalTimestamp = timestamp ?: generateTimestamp()
-    val savedFile = WebViewFileStore.saveHtmlFile(tag, finalTimestamp, htmlContent)
-    
-    if (savedFile != null) {
-        mapOf(
-            "code" to 0,
-            "message" to "success",
-            "data" to mapOf(
-                "tag" to savedFile.tag,
-                "timestamp" to savedFile.timestamp,
-                "filePath" to savedFile.filePath,
-                "fileSize" to savedFile.fileSize
-            )
-        )
-    } else {
-        mapOf(
-            "code" to 400,
-            "message" to "Failed to save HTML file"
-        )
-    }
-} catch (e: Exception) {
-    Log.e(TAG, "Error pushing HTML", e)
-    mapOf(
-        "code" to 400,
-        "message" to "Invalid HTML content or tag: ${e.message}"
-    )
-}
-
-private fun generateTimestamp(): String {
-    val sdf = java.text.SimpleDateFormat("MMdd-HHmm", java.util.Locale.US)
-    return sdf.format(java.util.Date())
-}
-```
-
-- [ ] **Step 4: 实现 showWebView 方法**
-
-```kotlin
-// Add to WebViewManager
-fun showWebView(tag: String, timestamp: String): Map<String, Any> = try {
-    val files = WebViewFileStore.listFilesByTag(tag)
-    val file = files.find { it.timestamp == timestamp }
-    
-    if (file == null) {
-        return mapOf(
-            "code" to 404,
-            "message" to "File not found"
-        )
-    }
-    
-    val success = OverlayManager.show("file://${file.filePath}", state.opacity)
-    if (success) {
-        state = state.copy(
-            currentTag = tag,
-            currentTimestamp = timestamp,
-            isVisible = true
-        )
-        WebViewFileStore.setCurrentFile(tag, timestamp)
-        
-        mapOf(
-            "code" to 0,
-            "message" to "success",
-            "data" to mapOf(
-                "tag" to tag,
-                "timestamp" to timestamp,
-                "opacity" to state.opacity,
-                "offsetX" to state.offsetX,
-                "offsetY" to state.offsetY
-            )
-        )
-    } else {
-        mapOf(
-            "code" to 500,
-            "message" to "Failed to show WebView"
-        )
-    }
-} catch (e: Exception) {
-    Log.e(TAG, "Error showing WebView", e)
-    mapOf(
-        "code" to 500,
-        "message" to "Error: ${e.message}"
-    )
-}
-```
-
-- [ ] **Step 5: 实现 hideWebView 和 adjustWebView 方法**
-
-```kotlin
-// Add to WebViewManager
-fun hideWebView(): Map<String, Any> = try {
-    val success = OverlayManager.hide()
-    if (success) {
-        state = state.copy(isVisible = false)
-        mapOf(
-            "code" to 0,
-            "message" to "success"
-        )
-    } else {
-        mapOf(
-            "code" to 500,
-            "message" to "Failed to hide WebView"
-        )
-    }
-} catch (e: Exception) {
-    Log.e(TAG, "Error hiding WebView", e)
-    mapOf(
-        "code" to 500,
-        "message" to "Error: ${e.message}"
-    )
-}
-
-fun adjustWebView(offsetXDelta: Int, offsetYDelta: Int, opacity: Float?): Map<String, Any> = try {
-    val newOffsetX = state.offsetX + offsetXDelta
-    val newOffsetY = state.offsetY + offsetYDelta
-    val newOpacity = opacity?.coerceIn(0.0f, 1.0f) ?: state.opacity
-    
-    val offsetSuccess = OverlayManager.setOffset(newOffsetX, newOffsetY)
-    val opacitySuccess = OverlayManager.setOpacity(newOpacity)
-    
-    if (offsetSuccess || opacitySuccess) {
-        state = state.copy(
-            offsetX = newOffsetX,
-            offsetY = newOffsetY,
-            opacity = newOpacity
-        )
-        
-        mapOf(
-            "code" to 0,
-            "data" to mapOf(
-                "offsetX" to newOffsetX,
-                "offsetY" to newOffsetY,
-                "opacity" to newOpacity
-            )
-        )
-    } else {
-        mapOf(
-            "code" to 500,
-            "message" to "Failed to adjust WebView"
-        )
-    }
-} catch (e: Exception) {
-    Log.e(TAG, "Error adjusting WebView", e)
-    mapOf(
-        "code" to 500,
-        "message" to "Error: ${e.message}"
-    )
-}
-
-fun getFiles(): Map<String, Any> = try {
-    val files = WebViewFileStore.getAllFiles()
-    mapOf(
-        "code" to 0,
-        "data" to mapOf(
-            "files" to files.map { f ->
-                mapOf(
-                    "tag" to f.tag,
-                    "timestamp" to f.timestamp,
-                    "size" to f.fileSize,
-                    "isCurrent" to f.isCurrent
-                )
-            }
-        )
-    )
-} catch (e: Exception) {
-    Log.e(TAG, "Error getting files", e)
-    mapOf(
-        "code" to 500,
-        "message" to "Error: ${e.message}"
-    )
-}
-```
-
-- [ ] **Step 6: 编写 WebViewManager 测试**
-
-```kotlin
-// packages/android/sdk/src/test/kotlin/com/clienttools/sdk/webview/WebViewManagerTest.kt
-package com.clienttools.sdk.webview
+package com.clienttools.sdk.inspector
 
 import android.content.Context
 import androidx.test.core.app.ApplicationProvider
@@ -718,851 +320,1282 @@ import org.junit.Test
 import org.junit.runner.RunWith
 
 @RunWith(AndroidJUnit4::class)
-class WebViewManagerTest {
-    
-    private lateinit var context: Context
-    
+class InspectorApiHandlerTest {
+
+    private lateinit var store: InspectorFileStore
+    private lateinit var handler: InspectorApiHandler
+
     @Before
     fun setUp() {
-        context = ApplicationProvider.getApplicationContext()
-        WebViewManager.init(context)
-        WebViewFileStore.deleteAll()
+        val context: Context = ApplicationProvider.getApplicationContext()
+        store = InspectorFileStore(context)
+        store.deleteAll()
+        handler = InspectorApiHandler(store, getTopViewModel = { null })
     }
-    
+
     @Test
-    fun testPushHtml() {
-        val result = WebViewManager.pushHtml("login", "<html>Test</html>")
-        
-        assert((result["code"] as Int) == 0)
-        val data = result["data"] as Map<*, *>
-        assert(data["tag"] == "login")
-        assert((data["fileSize"] as Long) > 0)
+    fun pushHtml_savesFileAndReturns200() {
+        val body = """{"tag":"login","html":"<html>Test</html>","timestamp":"0418-1430"}"""
+        val response = handler.handlePushHtml(body)
+        assert(response.status.requestStatus == 200)
+        val files = store.getAllFiles()
+        assert(files.any { it.tag == "login" && it.timestamp == "0418-1430" })
     }
-    
+
     @Test
-    fun testGetFiles() {
-        WebViewManager.pushHtml("login", "<html>Test1</html>")
-        WebViewManager.pushHtml("login", "<html>Test2</html>")
-        
-        val result = WebViewManager.getFiles()
-        
-        assert((result["code"] as Int) == 0)
-        val data = result["data"] as Map<*, *>
-        val files = data["files"] as List<*>
-        assert(files.size == 2)
+    fun pushHtml_missingTag_returns400() {
+        val body = """{"html":"<html>Test</html>"}"""
+        val response = handler.handlePushHtml(body)
+        assert(response.status.requestStatus == 400)
+    }
+
+    @Test
+    fun getFiles_returnsAllFiles() {
+        store.saveHtmlFile("login", "0418-1430", "<html>A</html>")
+        store.saveHtmlFile("home", "0418-1500", "<html>B</html>")
+        val response = handler.handleGetFiles(currentFile = null)
+        assert(response.status.requestStatus == 200)
+    }
+
+    @Test
+    fun show_fileNotFound_returns404() {
+        val body = """{"tag":"notexist","timestamp":"0000-0000"}"""
+        val response = handler.handleShow(body)
+        assert(response.status.requestStatus == 404)
+    }
+
+    @Test
+    fun hide_returnsSuccess() {
+        val response = handler.handleHide()
+        assert(response.status.requestStatus == 200)
+    }
+
+    @Test
+    fun adjust_returnsUpdatedValues() {
+        // viewModel is null → should still return 200 with current state
+        val body = """{"offsetX":10,"offsetY":-5,"opacity":0.7}"""
+        val response = handler.handleAdjust(body, currentOffsetX = 0, currentOffsetY = 0, currentOpacity = 0.5f)
+        assert(response.status.requestStatus == 200)
     }
 }
 ```
 
-- [ ] **Step 7: 运行 WebViewManager 测试**
+- [ ] **Step 2: 运行测试，确认失败**
 
 ```bash
-cd packages && ./gradlew :sdk:testDebugUnitTest -k WebViewManagerTest
+cd /Users/zzc/Desktop/works/client-tools/packages
+./gradlew :sdk:connectedDebugAndroidTest --tests "*.InspectorApiHandlerTest"
 ```
 
-Expected: All tests pass
+期望：编译失败（InspectorApiHandler 未定义）。
 
-- [ ] **Step 8: 提交 Task 3**
+- [ ] **Step 3: 实现 InspectorApiHandler**
 
-```bash
-git add packages/android/sdk/src/main/kotlin/com/clienttools/sdk/webview/WebViewManager.kt
-git add packages/android/sdk/src/main/kotlin/com/clienttools/sdk/model/WebViewState.kt
-git add packages/android/sdk/src/test/kotlin/com/clienttools/sdk/webview/WebViewManagerTest.kt
-git commit -m "feat: implement WebViewManager core orchestrator with state management"
-```
-
----
-
-### Task 4: WebViewApiHandler - HTTP 接口
-
-**Files:**
-- Create: `packages/android/sdk/src/main/kotlin/com/clienttools/sdk/webview/WebViewApiHandler.kt`
-- Modify: `packages/android/sdk/src/main/kotlin/com/clienttools/sdk/http/ApiHandler.kt`
-- Modify: `packages/android/sdk/src/main/kotlin/com/clienttools/sdk/http/HttpServer.kt`
-
-- [ ] **Step 1: 创建 WebViewApiHandler**
+创建 `packages/android/sdk/src/main/kotlin/com/clienttools/sdk/inspector/InspectorApiHandler.kt`：
 
 ```kotlin
-// packages/android/sdk/src/main/kotlin/com/clienttools/sdk/webview/WebViewApiHandler.kt
-package com.clienttools.sdk.webview
+package com.clienttools.sdk.inspector
 
 import android.util.Log
+import fi.iki.elonen.NanoHTTPD
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
-import fi.iki.elonen.NanoHTTPD
 
-object WebViewApiHandler {
-    private val TAG = "WebViewApiHandler"
-    
-    fun handlePushHtml(body: String): NanoHTTPD.Response {
-        return try {
-            val json = Json.parseToJsonElement(body)
-            val tag = json.jsonObject["tag"]?.jsonPrimitive?.content
-                ?: return errorResponse(400, "Missing tag")
-            val html = json.jsonObject["html"]?.jsonPrimitive?.content
-                ?: return errorResponse(400, "Missing html")
-            val timestamp = json.jsonObject["timestamp"]?.jsonPrimitive?.content
-            
-            val result = WebViewManager.pushHtml(tag, html, timestamp)
-            successResponse(result)
-        } catch (e: Exception) {
-            Log.e(TAG, "Error in handlePushHtml", e)
-            errorResponse(400, "Invalid request body")
+class InspectorApiHandler(
+    private val fileStore: InspectorFileStore,
+    private val getTopViewModel: () -> InspectorViewModel?
+) {
+    private val TAG = "InspectorApiHandler"
+    private val json = Json { ignoreUnknownKeys = true }
+
+    fun handlePushHtml(body: String): NanoHTTPD.Response = try {
+        val obj = json.parseToJsonElement(body).jsonObject
+        val tag = obj["tag"]?.jsonPrimitive?.content ?: return error(400, "Missing tag")
+        val html = obj["html"]?.jsonPrimitive?.content ?: return error(400, "Missing html")
+        val timestamp = obj["timestamp"]?.jsonPrimitive?.content ?: fileStore.generateTimestamp()
+
+        val saved = fileStore.saveHtmlFile(tag, timestamp, html)
+            ?: return error(500, "Failed to save file")
+
+        ok("""{"code":0,"message":"success","data":{"tag":"$tag","timestamp":"$timestamp","filePath":"${saved.fileUrl}","fileSize":${html.length}}}""")
+    } catch (e: Exception) {
+        Log.e(TAG, "pushHtml error", e)
+        error(400, "Invalid request: ${e.message}")
+    }
+
+    fun handleShow(body: String): NanoHTTPD.Response = try {
+        val obj = json.parseToJsonElement(body).jsonObject
+        val tag = obj["tag"]?.jsonPrimitive?.content ?: return error(400, "Missing tag")
+        val timestamp = obj["timestamp"]?.jsonPrimitive?.content ?: return error(400, "Missing timestamp")
+
+        val fileUrl = fileStore.getFilePath(tag, timestamp) ?: return error(404, "File not found")
+
+        getTopViewModel()?.let { vm ->
+            vm.currentFile.value = FileInfo(tag, timestamp, fileUrl)
+            vm.isVisible.value = true
+            val opacity = vm.opacity.value
+            val offsetX = vm.offsetX.value
+            val offsetY = vm.offsetY.value
+            ok("""{"code":0,"message":"success","data":{"tag":"$tag","timestamp":"$timestamp","opacity":$opacity,"offsetX":$offsetX,"offsetY":$offsetY}}""")
+        } ?: ok("""{"code":0,"message":"success","data":{"tag":"$tag","timestamp":"$timestamp"}}""")
+    } catch (e: Exception) {
+        Log.e(TAG, "show error", e)
+        error(500, "Internal error: ${e.message}")
+    }
+
+    fun handleHide(): NanoHTTPD.Response = try {
+        getTopViewModel()?.isVisible?.value = false
+        ok("""{"code":0,"message":"success"}""")
+    } catch (e: Exception) {
+        Log.e(TAG, "hide error", e)
+        error(500, "Internal error: ${e.message}")
+    }
+
+    fun handleAdjust(body: String, currentOffsetX: Int = 0, currentOffsetY: Int = 0, currentOpacity: Float = 0.5f): NanoHTTPD.Response = try {
+        val obj = json.parseToJsonElement(body).jsonObject
+        val dx = obj["offsetX"]?.jsonPrimitive?.content?.toIntOrNull() ?: 0
+        val dy = obj["offsetY"]?.jsonPrimitive?.content?.toIntOrNull() ?: 0
+        val opacity = obj["opacity"]?.jsonPrimitive?.content?.toFloatOrNull()
+
+        val vm = getTopViewModel()
+        val newX = (vm?.offsetX?.value ?: currentOffsetX) + dx
+        val newY = (vm?.offsetY?.value ?: currentOffsetY) + dy
+        val newOpacity = opacity?.coerceIn(0f, 1f) ?: (vm?.opacity?.value ?: currentOpacity)
+
+        vm?.offsetX?.value = newX
+        vm?.offsetY?.value = newY
+        if (opacity != null) vm?.opacity?.value = newOpacity
+
+        ok("""{"code":0,"data":{"offsetX":$newX,"offsetY":$newY,"opacity":$newOpacity}}""")
+    } catch (e: Exception) {
+        Log.e(TAG, "adjust error", e)
+        error(500, "Internal error: ${e.message}")
+    }
+
+    fun handleGetFiles(currentFile: FileInfo?): NanoHTTPD.Response = try {
+        val vmCurrentFile = getTopViewModel()?.currentFile?.value ?: currentFile
+        val files = fileStore.getAllFiles()
+        val filesJson = files.joinToString(",") { f ->
+            val isCurrent = vmCurrentFile?.tag == f.tag && vmCurrentFile.timestamp == f.timestamp
+            val size = f.fileUrl.let { java.io.File(it.removePrefix("file://")).length() }
+            """{"tag":"${f.tag}","timestamp":"${f.timestamp}","size":$size,"isCurrent":$isCurrent}"""
         }
+        ok("""{"code":0,"data":{"files":[$filesJson]}}""")
+    } catch (e: Exception) {
+        Log.e(TAG, "getFiles error", e)
+        error(500, "Internal error: ${e.message}")
     }
-    
-    fun handleShow(body: String): NanoHTTPD.Response {
-        return try {
-            val json = Json.parseToJsonElement(body)
-            val tag = json.jsonObject["tag"]?.jsonPrimitive?.content
-                ?: return errorResponse(400, "Missing tag")
-            val timestamp = json.jsonObject["timestamp"]?.jsonPrimitive?.content
-                ?: return errorResponse(400, "Missing timestamp")
-            
-            val result = WebViewManager.showWebView(tag, timestamp)
-            successResponse(result)
-        } catch (e: Exception) {
-            Log.e(TAG, "Error in handleShow", e)
-            errorResponse(400, "Invalid request body")
-        }
-    }
-    
-    fun handleHide(): NanoHTTPD.Response {
-        return try {
-            val result = WebViewManager.hideWebView()
-            successResponse(result)
-        } catch (e: Exception) {
-            Log.e(TAG, "Error in handleHide", e)
-            errorResponse(500, "Internal error")
-        }
-    }
-    
-    fun handleAdjust(body: String): NanoHTTPD.Response {
-        return try {
-            val json = Json.parseToJsonElement(body)
-            val offsetX = json.jsonObject["offsetX"]?.jsonPrimitive?.content?.toIntOrNull() ?: 0
-            val offsetY = json.jsonObject["offsetY"]?.jsonPrimitive?.content?.toIntOrNull() ?: 0
-            val opacity = json.jsonObject["opacity"]?.jsonPrimitive?.content?.toFloatOrNull()
-            
-            val result = WebViewManager.adjustWebView(offsetX, offsetY, opacity)
-            successResponse(result)
-        } catch (e: Exception) {
-            Log.e(TAG, "Error in handleAdjust", e)
-            errorResponse(400, "Invalid request body")
-        }
-    }
-    
-    fun handleGetFiles(): NanoHTTPD.Response {
-        return try {
-            val result = WebViewManager.getFiles()
-            successResponse(result)
-        } catch (e: Exception) {
-            Log.e(TAG, "Error in handleGetFiles", e)
-            errorResponse(500, "Internal error")
-        }
-    }
-    
-    private fun successResponse(data: Map<String, Any>): NanoHTTPD.Response {
-        val json = Json.encodeToString(
-            kotlinx.serialization.json.JsonElement.serializer(),
-            Json.parseToJsonElement(Json.encodeToString(data))
-        )
-        return NanoHTTPD.newFixedLengthResponse(
-            NanoHTTPD.Response.Status.OK,
-            "application/json",
-            json
-        )
-    }
-    
-    private fun errorResponse(code: Int, message: String): NanoHTTPD.Response {
-        val json = """{"code":$code,"message":"$message"}"""
-        return NanoHTTPD.newFixedLengthResponse(
-            if (code >= 500) NanoHTTPD.Response.Status.INTERNAL_ERROR else NanoHTTPD.Response.Status.BAD_REQUEST,
-            "application/json",
-            json
-        )
+
+    private fun ok(json: String) = NanoHTTPD.newFixedLengthResponse(
+        NanoHTTPD.Response.Status.OK, "application/json", json
+    )
+
+    private fun error(code: Int, message: String): NanoHTTPD.Response {
+        val status = if (code == 404) NanoHTTPD.Response.Status.NOT_FOUND
+                     else if (code >= 500) NanoHTTPD.Response.Status.INTERNAL_ERROR
+                     else NanoHTTPD.Response.Status.BAD_REQUEST
+        return NanoHTTPD.newFixedLengthResponse(status, "application/json",
+            """{"code":$code,"message":"$message"}""")
     }
 }
 ```
 
-- [ ] **Step 2: 在 HttpServer 中注册 WebView 接口**
-
-```kotlin
-// Modify HttpServer.kt - add routing for WebView endpoints
-// Find the serve() method in HttpServer and add:
-
-when {
-    uri.startsWith("/webview/push-html") && method == Method.POST -> {
-        WebViewApiHandler.handlePushHtml(bodyText)
-    }
-    uri.startsWith("/webview/show") && method == Method.POST -> {
-        WebViewApiHandler.handleShow(bodyText)
-    }
-    uri.startsWith("/webview/hide") && method == Method.POST -> {
-        WebViewApiHandler.handleHide()
-    }
-    uri.startsWith("/webview/adjust") && method == Method.POST -> {
-        WebViewApiHandler.handleAdjust(bodyText)
-    }
-    uri.startsWith("/webview/files") && method == Method.GET -> {
-        WebViewApiHandler.handleGetFiles()
-    }
-    // ... rest of existing routes
-}
-```
-
-- [ ] **Step 3: 在 SDK 初始化时启动 WebViewManager**
-
-```kotlin
-// Modify ApiHandler.kt - add WebViewManager initialization in appropriate location
-// Usually in a static block or init function called by SdkInitProvider
-
-// In SdkInitProvider.kt, add to onCreate():
-WebViewManager.init(context)
-```
-
-- [ ] **Step 4: 编译 SDK**
+- [ ] **Step 4: 运行测试，确认通过**
 
 ```bash
-cd packages && ./gradlew :sdk:assembleDebug
+cd /Users/zzc/Desktop/works/client-tools/packages
+./gradlew :sdk:connectedDebugAndroidTest --tests "*.InspectorApiHandlerTest"
 ```
 
-Expected: Build succeeds
+期望：所有测试 PASS。
 
-- [ ] **Step 5: 提交 Task 4**
+- [ ] **Step 5: Commit**
 
 ```bash
-git add packages/android/sdk/src/main/kotlin/com/clienttools/sdk/webview/WebViewApiHandler.kt
-git add packages/android/sdk/src/main/kotlin/com/clienttools/sdk/http/ApiHandler.kt
-git add packages/android/sdk/src/main/kotlin/com/clienttools/sdk/http/HttpServer.kt
-git commit -m "feat: implement WebView HTTP API endpoints (push-html, show, hide, adjust, files)"
+git add packages/android/sdk/src/main/kotlin/com/clienttools/sdk/inspector/InspectorApiHandler.kt \
+        packages/android/sdk/src/androidTest/kotlin/com/clienttools/sdk/inspector/InspectorApiHandlerTest.kt
+git commit -m "feat(inspector): add InspectorApiHandler for HTTP routes"
 ```
 
 ---
 
-### Task 5: FloatingControlPanel - UI 实现
+## Task 4: XML 布局（inspector_overlay + inspector_panel）
 
 **Files:**
-- Create: `packages/android/sdk/src/main/kotlin/com/clienttools/sdk/webview/ui/FloatingControlPanel.kt`
-- Create: `packages/android/sdk/src/main/kotlin/com/clienttools/sdk/webview/ui/WebViewModule.kt`
-- Create: `packages/android/sdk/src/main/kotlin/com/clienttools/sdk/webview/ui/AdjustModule.kt`
-- Create: `packages/android/sdk/src/main/kotlin/com/clienttools/sdk/webview/ui/ControlModule.kt`
-- Create: `packages/android/demo/src/main/kotlin/com/clienttools/demo/WebViewViewModel.kt`
-- Modify: `packages/android/demo/src/main/kotlin/com/clienttools/demo/MainActivity.kt`
+- Create: `packages/android/sdk/src/main/res/layout/inspector_overlay.xml`
+- Create: `packages/android/sdk/src/main/res/layout/inspector_panel.xml`
 
-- [ ] **Step 1: 创建 WebViewViewModel**
+- [ ] **Step 1: 创建 inspector_overlay.xml**
 
-```kotlin
-// packages/android/demo/src/main/kotlin/com/clienttools/demo/WebViewViewModel.kt
-package com.clienttools.demo
+创建 `packages/android/sdk/src/main/res/layout/inspector_overlay.xml`：
 
-import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.ViewModel
-import com.clienttools.sdk.model.WebViewFile
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 统一根布局，FrameLayout 层叠：WebView（底）→ 看板（中）→ 悬浮按钮（顶） -->
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
 
-class WebViewViewModel : ViewModel() {
-    val currentFile = MutableLiveData<Pair<String, String>?>()  // (tag, timestamp)
-    val isWebViewVisible = MutableLiveData<Boolean>(false)
-    val offsetX = MutableLiveData<Int>(0)
-    val offsetY = MutableLiveData<Int>(0)
-    val opacity = MutableLiveData<Float>(1.0f)
-    val savedFiles = MutableLiveData<List<WebViewFile>>(emptyList())
-    
-    fun updateState(
-        tag: String?,
-        timestamp: String?,
-        visible: Boolean,
-        offsetX: Int,
-        offsetY: Int,
-        opacity: Float
-    ) {
-        this.currentFile.value = if (tag != null && timestamp != null) Pair(tag, timestamp) else null
-        this.isWebViewVisible.value = visible
-        this.offsetX.value = offsetX
-        this.offsetY.value = offsetY
-        this.opacity.value = opacity
-    }
-}
+    <!-- 层级 1：WebView，全屏透明，默认隐藏 -->
+    <WebView
+        android:id="@+id/overlay_webview"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@android:color/transparent"
+        android:visibility="gone" />
+
+    <!-- 层级 2：看板面板，默认隐藏 -->
+    <include
+        android:id="@+id/inspector_panel_container"
+        layout="@layout/inspector_panel"
+        android:visibility="gone" />
+
+    <!-- 层级 3：悬浮按钮，始终可见，初始位置右下角 -->
+    <TextView
+        android:id="@+id/float_btn"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:layout_gravity="bottom|end"
+        android:layout_margin="16dp"
+        android:background="#CC6200EE"
+        android:gravity="center"
+        android:text="⚙"
+        android:textColor="#FFFFFF"
+        android:textSize="20sp"
+        android:elevation="8dp" />
+
+</FrameLayout>
 ```
 
-- [ ] **Step 2: 创建控制模块 UI**
+- [ ] **Step 2: 创建 inspector_panel.xml**
+
+创建 `packages/android/sdk/src/main/res/layout/inspector_panel.xml`：
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/panel_root"
+    android:layout_width="280dp"
+    android:layout_height="wrap_content"
+    android:layout_gravity="bottom|end"
+    android:layout_margin="16dp"
+    android:background="#F0F0F0"
+    android:elevation="16dp"
+    android:orientation="vertical"
+    android:minHeight="200dp">
+
+    <!-- 拖动条 -->
+    <View
+        android:id="@+id/drag_handle"
+        android:layout_width="match_parent"
+        android:layout_height="40dp"
+        android:background="#6200EE" />
+
+    <!-- WebView 模块：标题（可折叠） -->
+    <TextView
+        android:id="@+id/section_webview_title"
+        android:layout_width="match_parent"
+        android:layout_height="44dp"
+        android:gravity="center_vertical"
+        android:paddingStart="12dp"
+        android:text="▼ WebView"
+        android:textSize="14sp"
+        android:textStyle="bold"
+        android:background="#E0E0E0" />
+
+    <LinearLayout
+        android:id="@+id/section_webview_content"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="8dp">
+
+        <TextView
+            android:id="@+id/current_file_label"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="当前：无"
+            android:textSize="12sp"
+            android:paddingBottom="4dp" />
+
+        <!-- 文件列表：动态添加 -->
+        <LinearLayout
+            android:id="@+id/file_list_container"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical" />
+
+    </LinearLayout>
+
+    <!-- 调整模块：标题（可折叠） -->
+    <TextView
+        android:id="@+id/section_adjust_title"
+        android:layout_width="match_parent"
+        android:layout_height="44dp"
+        android:gravity="center_vertical"
+        android:paddingStart="12dp"
+        android:text="▼ 调整"
+        android:textSize="14sp"
+        android:textStyle="bold"
+        android:background="#E0E0E0" />
+
+    <LinearLayout
+        android:id="@+id/section_adjust_content"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="8dp">
+
+        <!-- 档位选择 -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginBottom="4dp">
+
+            <Button
+                android:id="@+id/btn_step_1"
+                style="?android:attr/buttonStyleSmall"
+                android:layout_width="0dp"
+                android:layout_height="36dp"
+                android:layout_weight="1"
+                android:text="1dp"
+                android:textSize="11sp" />
+
+            <Button
+                android:id="@+id/btn_step_10"
+                style="?android:attr/buttonStyleSmall"
+                android:layout_width="0dp"
+                android:layout_height="36dp"
+                android:layout_weight="1"
+                android:text="10dp"
+                android:textSize="11sp" />
+
+            <Button
+                android:id="@+id/btn_step_50"
+                style="?android:attr/buttonStyleSmall"
+                android:layout_width="0dp"
+                android:layout_height="36dp"
+                android:layout_weight="1"
+                android:text="50dp"
+                android:textSize="11sp" />
+
+        </LinearLayout>
+
+        <!-- 方向按钮：一行，均匀排布 -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginBottom="4dp">
+
+            <Button
+                android:id="@+id/btn_left"
+                android:layout_width="0dp"
+                android:layout_height="44dp"
+                android:layout_weight="1"
+                android:text="◀"
+                android:textSize="16sp" />
+
+            <Button
+                android:id="@+id/btn_up"
+                android:layout_width="0dp"
+                android:layout_height="44dp"
+                android:layout_weight="1"
+                android:text="△"
+                android:textSize="16sp" />
+
+            <Button
+                android:id="@+id/btn_down"
+                android:layout_width="0dp"
+                android:layout_height="44dp"
+                android:layout_weight="1"
+                android:text="▽"
+                android:textSize="16sp" />
+
+            <Button
+                android:id="@+id/btn_right"
+                android:layout_width="0dp"
+                android:layout_height="44dp"
+                android:layout_weight="1"
+                android:text="▶"
+                android:textSize="16sp" />
+
+        </LinearLayout>
+
+        <!-- 透明度 -->
+        <TextView
+            android:id="@+id/opacity_label"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="透明度：50%"
+            android:textSize="12sp" />
+
+        <SeekBar
+            android:id="@+id/opacity_seekbar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:max="100"
+            android:progress="50" />
+
+        <!-- 偏移显示 -->
+        <TextView
+            android:id="@+id/offset_label"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="偏移：X: 0dp  Y: 0dp"
+            android:textSize="12sp"
+            android:layout_marginTop="4dp" />
+
+    </LinearLayout>
+
+    <!-- 控制模块：不可折叠 -->
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="44dp"
+        android:gravity="center_vertical"
+        android:paddingStart="12dp"
+        android:text="控制"
+        android:textSize="14sp"
+        android:textStyle="bold"
+        android:background="#E0E0E0" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="8dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginBottom="8dp">
+
+            <Button
+                android:id="@+id/btn_show"
+                android:layout_width="0dp"
+                android:layout_height="48dp"
+                android:layout_weight="1"
+                android:text="显示"
+                android:layout_marginEnd="4dp" />
+
+            <Button
+                android:id="@+id/btn_hide"
+                android:layout_width="0dp"
+                android:layout_height="48dp"
+                android:layout_weight="1"
+                android:text="隐藏" />
+
+        </LinearLayout>
+
+        <Button
+            android:id="@+id/btn_close_panel"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:text="关闭面板" />
+
+    </LinearLayout>
+
+</LinearLayout>
+```
+
+- [ ] **Step 3: 验证编译**
+
+```bash
+cd /Users/zzc/Desktop/works/client-tools/packages
+./gradlew :sdk:compileDebugKotlin
+```
+
+期望：BUILD SUCCESSFUL。
+
+- [ ] **Step 4: Commit**
+
+```bash
+git add packages/android/sdk/src/main/res/layout/inspector_overlay.xml \
+        packages/android/sdk/src/main/res/layout/inspector_panel.xml
+git commit -m "feat(inspector): add XML layouts inspector_overlay + inspector_panel"
+```
+
+---
+
+## Task 5: WebViewRenderer
+
+**Files:**
+- Create: `packages/android/sdk/src/main/kotlin/com/clienttools/sdk/inspector/WebViewRenderer.kt`
+
+- [ ] **Step 1: 实现 WebViewRenderer**
+
+创建 `packages/android/sdk/src/main/kotlin/com/clienttools/sdk/inspector/WebViewRenderer.kt`：
 
 ```kotlin
-// packages/android/sdk/src/main/kotlin/com/clienttools/sdk/webview/ui/ControlModule.kt
-package com.clienttools.sdk.webview.ui
+package com.clienttools.sdk.inspector
 
-import android.content.Context
-import android.util.AttributeSet
-import android.view.Gravity
-import android.widget.Button
-import android.widget.LinearLayout
+import android.graphics.Color
+import android.util.TypedValue
+import android.view.View
+import android.webkit.WebView
+import com.clienttools.sdk.R
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.filterNotNull
+import kotlinx.coroutines.launch
 
-class ControlModule @JvmOverloads constructor(
-    context: Context,
-    attrs: AttributeSet? = null,
-    defStyleAttr: Int = 0
-) : LinearLayout(context, attrs, defStyleAttr) {
-    
-    val showButton = Button(context)
-    val hideButton = Button(context)
-    val closeButton = Button(context)
-    
+// scope 由 InspectorPage 传入（activity.lifecycleScope），与 Activity 生命周期绑定
+class WebViewRenderer(rootView: View, private val viewModel: InspectorViewModel) {
+
+    private val webView: WebView = rootView.findViewById(R.id.overlay_webview)
+    private var job: Job? = null
+
     init {
-        orientation = VERTICAL
-        layoutParams = LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT)
-        
-        // Show/Hide row
-        val row1 = LinearLayout(context).apply {
-            orientation = HORIZONTAL
-            layoutParams = LayoutParams(LayoutParams.MATCH_PARENT, 48)
-        }
-        
-        showButton.apply {
-            text = "Show WebView"
-            layoutParams = LayoutParams(0, LayoutParams.MATCH_PARENT, 1f)
-        }
-        row1.addView(showButton)
-        
-        hideButton.apply {
-            text = "Hide"
-            layoutParams = LayoutParams(0, LayoutParams.MATCH_PARENT, 1f)
-        }
-        row1.addView(hideButton)
-        
-        addView(row1)
-        
-        // Close panel button
-        closeButton.apply {
-            text = "Close Panel"
-            layoutParams = LayoutParams(LayoutParams.MATCH_PARENT, 48).apply {
-                setMargins(0, 8, 0, 0)
+        // WebView 初始化配置
+        webView.setBackgroundColor(Color.TRANSPARENT)
+        webView.settings.javaScriptEnabled = true
+        webView.settings.domStorageEnabled = true
+        webView.settings.allowFileAccess = true
+        @Suppress("DEPRECATION")
+        webView.settings.allowFileAccessFromFileURLs = true
+    }
+
+    fun startObserving(scope: CoroutineScope) {
+        job = scope.launch {
+            // 显隐
+            launch {
+                viewModel.isVisible.collect { visible ->
+                    webView.visibility = if (visible) View.VISIBLE else View.GONE
+                }
+            }
+            // 加载 URL（currentFile 变化且非 null 时重新加载）
+            launch {
+                viewModel.currentFile.filterNotNull().collect { file ->
+                    webView.loadUrl(file.fileUrl)
+                }
+            }
+            // 透明度
+            launch {
+                viewModel.opacity.collect { alpha ->
+                    webView.alpha = alpha
+                }
+            }
+            // 位移（dp → px）
+            launch {
+                combine(viewModel.offsetX, viewModel.offsetY) { x, y -> x to y }
+                    .collect { (x, y) ->
+                        webView.translationX = dpToPx(x)
+                        webView.translationY = dpToPx(y)
+                    }
             }
         }
-        addView(closeButton)
     }
+
+    fun stopObserving() {
+        job?.cancel()
+        job = null
+    }
+
+    private fun dpToPx(dp: Int): Float = TypedValue.applyDimension(
+        TypedValue.COMPLEX_UNIT_DIP,
+        dp.toFloat(),
+        webView.context.resources.displayMetrics
+    )
 }
 ```
 
-- [ ] **Step 3: 创建位移调整模块 UI**
+- [ ] **Step 2: 验证编译**
 
-```kotlin
-// packages/android/sdk/src/main/kotlin/com/clienttools/sdk/webview/ui/AdjustModule.kt
-package com.clienttools.sdk.webview.ui
-
-import android.content.Context
-import android.util.AttributeSet
-import android.view.Gravity
-import android.widget.*
-import androidx.constraintlayout.widget.ConstraintLayout
-
-class AdjustModule @JvmOverloads constructor(
-    context: Context,
-    attrs: AttributeSet? = null,
-    defStyleAttr: Int = 0
-) : LinearLayout(context, attrs, defStyleAttr) {
-    
-    val upButton = ImageButton(context)
-    val downButton = ImageButton(context)
-    val leftButton = ImageButton(context)
-    val rightButton = ImageButton(context)
-    
-    val step1Button = Button(context)
-    val step10Button = Button(context)
-    val step50Button = Button(context)
-    
-    val opacitySlider = SeekBar(context)
-    val opacityLabel = TextView(context)
-    val offsetLabel = TextView(context)
-    
-    var currentStep = 10  // Default step
-    var currentOffsetX = 0
-    var currentOffsetY = 0
-    
-    init {
-        orientation = VERTICAL
-        layoutParams = LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT)
-        setPadding(16, 12, 16, 12)
-        
-        // Direction controls
-        val directionLayout = LinearLayout(context).apply {
-            orientation = VERTICAL
-            layoutParams = LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT)
-        }
-        
-        // Up button
-        upButton.apply {
-            layoutParams = LayoutParams(48, 48).apply {
-                gravity = Gravity.CENTER_HORIZONTAL
-            }
-        }
-        directionLayout.addView(upButton)
-        
-        // Left, Center, Right row
-        val horizontalRow = LinearLayout(context).apply {
-            orientation = HORIZONTAL
-            layoutParams = LayoutParams(LayoutParams.MATCH_PARENT, 48)
-            gravity = Gravity.CENTER
-        }
-        leftButton.apply {
-            layoutParams = LayoutParams(48, 48)
-        }
-        horizontalRow.addView(leftButton)
-        
-        val spacer = Space(context).apply {
-            layoutParams = LayoutParams(0, 0, 1f)
-        }
-        horizontalRow.addView(spacer)
-        
-        rightButton.apply {
-            layoutParams = LayoutParams(48, 48)
-        }
-        horizontalRow.addView(rightButton)
-        
-        directionLayout.addView(horizontalRow)
-        
-        // Down button
-        downButton.apply {
-            layoutParams = LayoutParams(48, 48).apply {
-                gravity = Gravity.CENTER_HORIZONTAL
-            }
-        }
-        directionLayout.addView(downButton)
-        
-        addView(directionLayout)
-        
-        // Step buttons
-        val stepLayout = LinearLayout(context).apply {
-            orientation = HORIZONTAL
-            layoutParams = LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT).apply {
-                setMargins(0, 8, 0, 0)
-            }
-        }
-        
-        step1Button.apply {
-            text = "1dp"
-            layoutParams = LayoutParams(0, 36, 1f)
-        }
-        stepLayout.addView(step1Button)
-        
-        step10Button.apply {
-            text = "10dp"
-            layoutParams = LayoutParams(0, 36, 1f)
-        }
-        stepLayout.addView(step10Button)
-        
-        step50Button.apply {
-            text = "50dp"
-            layoutParams = LayoutParams(0, 36, 1f)
-        }
-        stepLayout.addView(step50Button)
-        
-        addView(stepLayout)
-        
-        // Opacity control
-        opacityLabel.apply {
-            text = "Opacity: 100%"
-            layoutParams = LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT).apply {
-                setMargins(0, 12, 0, 4)
-            }
-            textSize = 12f
-        }
-        addView(opacityLabel)
-        
-        opacitySlider.apply {
-            max = 100
-            progress = 100
-            layoutParams = LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT)
-        }
-        addView(opacitySlider)
-        
-        // Offset display
-        offsetLabel.apply {
-            text = "Offset: X: 0 Y: 0"
-            layoutParams = LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT).apply {
-                setMargins(0, 12, 0, 0)
-            }
-            textSize = 12f
-        }
-        addView(offsetLabel)
-    }
-    
-    fun updateOffsetDisplay() {
-        offsetLabel.text = "Offset: X: ${currentOffsetX}dp Y: ${currentOffsetY}dp"
-    }
-}
+```bash
+cd /Users/zzc/Desktop/works/client-tools/packages
+./gradlew :sdk:compileDebugKotlin
 ```
 
-- [ ] **Step 4: 创建 WebView 文件列表模块 UI**
+期望：BUILD SUCCESSFUL。
 
-```kotlin
-// packages/android/sdk/src/main/kotlin/com/clienttools/sdk/webview/ui/WebViewModule.kt
-package com.clienttools.sdk.webview.ui
+- [ ] **Step 3: Commit**
 
-import android.content.Context
-import android.util.AttributeSet
-import android.widget.*
-import com.clienttools.sdk.model.WebViewFile
-
-class WebViewModule @JvmOverloads constructor(
-    context: Context,
-    attrs: AttributeSet? = null,
-    defStyleAttr: Int = 0
-) : LinearLayout(context, attrs, defStyleAttr) {
-    
-    val currentFileLabel = TextView(context)
-    val fileListView = ListView(context)
-    
-    private val fileAdapter = ArrayAdapter<String>(context, android.R.layout.simple_list_item_1)
-    
-    init {
-        orientation = VERTICAL
-        layoutParams = LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT)
-        setPadding(16, 12, 16, 12)
-        
-        // Current file display
-        currentFileLabel.apply {
-            text = "Current: None"
-            layoutParams = LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT).apply {
-                setMargins(0, 0, 0, 8)
-            }
-            textSize = 14f
-        }
-        addView(currentFileLabel)
-        
-        // File list header
-        val headerLabel = TextView(context).apply {
-            text = "Saved Files:"
-            layoutParams = LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT).apply {
-                setMargins(0, 8, 0, 4)
-            }
-            textSize = 12f
-        }
-        addView(headerLabel)
-        
-        // File list
-        fileListView.apply {
-            adapter = fileAdapter
-            layoutParams = LayoutParams(LayoutParams.MATCH_PARENT, 200)
-        }
-        addView(fileListView)
-    }
-    
-    fun updateFiles(files: List<WebViewFile>, currentFile: Pair<String, String>?) {
-        val items = files.map { file ->
-            val marker = if (currentFile == Pair(file.tag, file.timestamp)) "◐ ★" else "○"
-            "$marker ${file.tag}_${file.timestamp} (${file.fileSize / 1024}KB)"
-        }
-        
-        fileAdapter.clear()
-        fileAdapter.addAll(items)
-        fileAdapter.notifyDataSetChanged()
-        
-        currentFileLabel.text = if (currentFile != null) {
-            "Current: ${currentFile.first} (${currentFile.second})"
-        } else {
-            "Current: None"
-        }
-    }
-}
+```bash
+git add packages/android/sdk/src/main/kotlin/com/clienttools/sdk/inspector/WebViewRenderer.kt
+git commit -m "feat(inspector): add WebViewRenderer collecting ViewModel to drive WebView"
 ```
 
-- [ ] **Step 5: 创建主悬浮窗面板**
+---
+
+## Task 6: InspectorPanel
+
+**Files:**
+- Create: `packages/android/sdk/src/main/kotlin/com/clienttools/sdk/inspector/InspectorPanel.kt`
+
+- [ ] **Step 1: 实现 InspectorPanel**
+
+创建 `packages/android/sdk/src/main/kotlin/com/clienttools/sdk/inspector/InspectorPanel.kt`：
 
 ```kotlin
-// packages/android/sdk/src/main/kotlin/com/clienttools/sdk/webview/ui/FloatingControlPanel.kt
-package com.clienttools.sdk.webview.ui
+package com.clienttools.sdk.inspector
 
-import android.content.Context
-import android.util.AttributeSet
-import android.view.Gravity
+import android.app.AlertDialog
 import android.view.MotionEvent
+import android.view.View
+import android.view.ViewGroup
 import android.widget.*
-import androidx.core.view.marginTop
+import com.clienttools.sdk.R
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.launch
 
-class FloatingControlPanel @JvmOverloads constructor(
-    context: Context,
-    attrs: AttributeSet? = null,
-    defStyleAttr: Int = 0
-) : FrameLayout(context, attrs, defStyleAttr) {
-    
-    // Floating button
-    val floatingButton = Button(context)
-    var isExpanded = false
-    
-    // Expandable panel
-    val expandedPanel = FrameLayout(context)
-    val dragHandle = View(context)
-    val contentScroll = ScrollView(context)
-    val contentLayout = LinearLayout(context)
-    
-    // Modules
-    val webViewModule = WebViewModule(context)
-    val adjustModule = AdjustModule(context)
-    val controlModule = ControlModule(context)
-    
-    // Drag tracking
-    private var lastX = 0f
-    private var lastY = 0f
-    
+class InspectorPanel(
+    private val rootView: View,
+    private val viewModel: InspectorViewModel
+) {
+    private val floatBtn: TextView = rootView.findViewById(R.id.float_btn)
+    private val panelContainer: View = rootView.findViewById(R.id.inspector_panel_container)
+    private val dragHandle: View = rootView.findViewById(R.id.drag_handle)
+    private val currentFileLabel: TextView = rootView.findViewById(R.id.current_file_label)
+    private val fileListContainer: LinearLayout = rootView.findViewById(R.id.file_list_container)
+    private val sectionWebviewTitle: TextView = rootView.findViewById(R.id.section_webview_title)
+    private val sectionWebviewContent: View = rootView.findViewById(R.id.section_webview_content)
+    private val sectionAdjustTitle: TextView = rootView.findViewById(R.id.section_adjust_title)
+    private val sectionAdjustContent: View = rootView.findViewById(R.id.section_adjust_content)
+    private val btnStep1: Button = rootView.findViewById(R.id.btn_step_1)
+    private val btnStep10: Button = rootView.findViewById(R.id.btn_step_10)
+    private val btnStep50: Button = rootView.findViewById(R.id.btn_step_50)
+    private val btnUp: Button = rootView.findViewById(R.id.btn_up)
+    private val btnDown: Button = rootView.findViewById(R.id.btn_down)
+    private val btnLeft: Button = rootView.findViewById(R.id.btn_left)
+    private val btnRight: Button = rootView.findViewById(R.id.btn_right)
+    private val opacityLabel: TextView = rootView.findViewById(R.id.opacity_label)
+    private val opacitySeekBar: SeekBar = rootView.findViewById(R.id.opacity_seekbar)
+    private val offsetLabel: TextView = rootView.findViewById(R.id.offset_label)
+    private val btnShow: Button = rootView.findViewById(R.id.btn_show)
+    private val btnHide: Button = rootView.findViewById(R.id.btn_hide)
+    private val btnClosePanel: Button = rootView.findViewById(R.id.btn_close_panel)
+
+    private var stepDp = 10
+    private var job: Job? = null
+
     init {
-        layoutParams = FrameLayout.LayoutParams(
-            FrameLayout.LayoutParams.MATCH_PARENT,
-            FrameLayout.LayoutParams.MATCH_PARENT
-        )
-        
-        // Setup floating button
-        floatingButton.apply {
-            text = "⚙"
-            layoutParams = FrameLayout.LayoutParams(48, 48).apply {
-                gravity = Gravity.BOTTOM or Gravity.END
-                setMargins(0, 0, 10, 10)
+        setupInteractions()
+    }
+
+    private fun setupInteractions() {
+        // 悬浮按钮：点击展开/收起，可拖动
+        setupDraggableClick(floatBtn) {
+            panelContainer.visibility =
+                if (panelContainer.visibility == View.VISIBLE) View.GONE else View.VISIBLE
+        }
+
+        // 面板拖动（通过拖动条）
+        setupDraggableMove(dragHandle, panelContainer)
+
+        // 折叠 section
+        sectionWebviewTitle.setOnClickListener {
+            sectionWebviewContent.visibility =
+                if (sectionWebviewContent.visibility == View.VISIBLE) View.GONE else View.VISIBLE
+        }
+        sectionAdjustTitle.setOnClickListener {
+            sectionAdjustContent.visibility =
+                if (sectionAdjustContent.visibility == View.VISIBLE) View.GONE else View.VISIBLE
+        }
+
+        // 档位选择（默认 10dp 高亮）
+        selectStep(10)
+        btnStep1.setOnClickListener { selectStep(1) }
+        btnStep10.setOnClickListener { selectStep(10) }
+        btnStep50.setOnClickListener { selectStep(50) }
+
+        // 方向按钮：直接写 ViewModel，增量累加
+        btnUp.setOnClickListener    { viewModel.offsetY.value -= stepDp }
+        btnDown.setOnClickListener  { viewModel.offsetY.value += stepDp }
+        btnLeft.setOnClickListener  { viewModel.offsetX.value -= stepDp }
+        btnRight.setOnClickListener { viewModel.offsetX.value += stepDp }
+
+        // 透明度：直接写 ViewModel
+        opacitySeekBar.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
+            override fun onProgressChanged(sb: SeekBar, progress: Int, fromUser: Boolean) {
+                if (fromUser) {
+                    viewModel.opacity.value = progress / 100f
+                }
             }
-            setBackgroundColor(0xFF6200EE.toInt())
-            setTextColor(0xFFFFFFFF.toInt())
-        }
-        addView(floatingButton)
-        
-        // Setup expanded panel
-        expandedPanel.apply {
-            layoutParams = FrameLayout.LayoutParams(280, FrameLayout.LayoutParams.WRAP_CONTENT).apply {
-                gravity = Gravity.BOTTOM or Gravity.END
-                setMargins(0, 0, 10, 70)
-            }
-            setBackgroundColor(0xFF1F1F1F.toInt())
-        }
-        
-        // Drag handle
-        dragHandle.apply {
-            layoutParams = FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT, 40)
-            setBackgroundColor(0xFF333333.toInt())
-        }
-        expandedPanel.addView(dragHandle)
-        
-        // Content scroll
-        contentScroll.apply {
-            layoutParams = FrameLayout.LayoutParams(
-                FrameLayout.LayoutParams.MATCH_PARENT,
-                FrameLayout.LayoutParams.WRAP_CONTENT
-            ).apply {
-                topMargin = 40
+            override fun onStartTrackingTouch(sb: SeekBar) {}
+            override fun onStopTrackingTouch(sb: SeekBar) {}
+        })
+
+        // 显示/隐藏
+        btnShow.setOnClickListener {
+            viewModel.currentFile.value?.let {
+                viewModel.isVisible.value = true
             }
         }
-        
-        // Content layout
-        contentLayout.apply {
-            orientation = LinearLayout.VERTICAL
-            layoutParams = FrameLayout.LayoutParams(
-                LinearLayout.LayoutParams.MATCH_PARENT,
-                LinearLayout.LayoutParams.WRAP_CONTENT
-            )
+        btnHide.setOnClickListener { viewModel.isVisible.value = false }
+
+        // 关闭面板
+        btnClosePanel.setOnClickListener { panelContainer.visibility = View.GONE }
+    }
+
+    fun startObserving(scope: CoroutineScope) {
+        job = scope.launch {
+            // 当前文件 label
+            launch {
+                viewModel.currentFile.collect { file ->
+                    currentFileLabel.text = if (file != null) "当前：${file.tag} (${file.timestamp})" else "当前：无"
+                }
+            }
+            // 透明度 label + seekbar
+            launch {
+                viewModel.opacity.collect { opacity ->
+                    val progress = (opacity * 100).toInt()
+                    opacityLabel.text = "透明度：$progress%"
+                    if (opacitySeekBar.progress != progress) {
+                        opacitySeekBar.progress = progress
+                    }
+                }
+            }
+            // 偏移 label
+            launch {
+                kotlinx.coroutines.flow.combine(viewModel.offsetX, viewModel.offsetY) { x, y -> x to y }
+                    .collect { (x, y) ->
+                        offsetLabel.text = "偏移：X: ${x}dp  Y: ${y}dp"
+                    }
+            }
         }
-        
-        contentLayout.addView(webViewModule)
-        contentLayout.addView(divider())
-        contentLayout.addView(adjustModule)
-        contentLayout.addView(divider())
-        contentLayout.addView(controlModule)
-        
-        contentScroll.addView(contentLayout)
-        expandedPanel.addView(contentScroll)
-        
-        addView(expandedPanel)
-        
-        // Initially hide expanded panel
-        expandedPanel.visibility = GONE
-        
-        // Setup click listeners
-        floatingButton.setOnClickListener {
-            togglePanel()
+    }
+
+    fun stopObserving() {
+        job?.cancel()
+        job = null
+    }
+
+    // 展示文件选择 Dialog（由外部调用，传入文件列表）
+    fun showFileSelectDialog(files: List<FileInfo>, onSelect: (FileInfo) -> Unit) {
+        if (files.isEmpty()) {
+            Toast.makeText(rootView.context, "暂无已保存的 HTML 文件", Toast.LENGTH_SHORT).show()
+            return
         }
-        
-        dragHandle.setOnTouchListener { v, event ->
+        val currentFile = viewModel.currentFile.value
+        val labels = files.map { f ->
+            val cur = if (f.tag == currentFile?.tag && f.timestamp == currentFile.timestamp) " ★" else ""
+            "${f.tag}  ${f.timestamp}$cur"
+        }.toTypedArray()
+
+        AlertDialog.Builder(rootView.context)
+            .setTitle("选择 HTML 文件")
+            .setItems(labels) { _, idx -> onSelect(files[idx]) }
+            .setNegativeButton("取消", null)
+            .show()
+    }
+
+    private fun selectStep(dp: Int) {
+        stepDp = dp
+        val active = 0xFF6200EE.toInt()
+        val inactive = 0xFF888888.toInt()
+        btnStep1.backgroundTintList  = android.content.res.ColorStateList.valueOf(if (dp == 1)  active else inactive)
+        btnStep10.backgroundTintList = android.content.res.ColorStateList.valueOf(if (dp == 10) active else inactive)
+        btnStep50.backgroundTintList = android.content.res.ColorStateList.valueOf(if (dp == 50) active else inactive)
+    }
+
+    // 拖动：点击 + 拖动分离
+    private fun setupDraggableClick(v: View, onClick: () -> Unit) {
+        var startX = 0f; var startY = 0f
+        var viewStartX = 0f; var viewStartY = 0f
+        var moved = false
+        v.setOnTouchListener { view, event ->
             when (event.action) {
                 MotionEvent.ACTION_DOWN -> {
-                    lastX = event.rawX
-                    lastY = event.rawY
-                    true
+                    startX = event.rawX; startY = event.rawY
+                    viewStartX = view.x; viewStartY = view.y
+                    moved = false; true
                 }
                 MotionEvent.ACTION_MOVE -> {
-                    val dx = event.rawX - lastX
-                    val dy = event.rawY - lastY
-                    val params = expandedPanel.layoutParams as FrameLayout.LayoutParams
-                    params.rightMargin = (params.rightMargin - dx.toInt()).coerceAtLeast(0)
-                    params.bottomMargin = (params.bottomMargin - dy.toInt()).coerceAtLeast(0)
-                    expandedPanel.layoutParams = params
-                    lastX = event.rawX
-                    lastY = event.rawY
+                    val dx = event.rawX - startX; val dy = event.rawY - startY
+                    if (!moved && (Math.abs(dx) > 8 || Math.abs(dy) > 8)) moved = true
+                    if (moved) clampMove(view, viewStartX + dx, viewStartY + dy)
+                    true
+                }
+                MotionEvent.ACTION_UP -> { if (!moved) onClick(); true }
+                else -> false
+            }
+        }
+    }
+
+    private fun setupDraggableMove(handle: View, target: View) {
+        var startX = 0f; var startY = 0f
+        var targetStartX = 0f; var targetStartY = 0f
+        handle.setOnTouchListener { _, event ->
+            when (event.action) {
+                MotionEvent.ACTION_DOWN -> {
+                    startX = event.rawX; startY = event.rawY
+                    targetStartX = target.x; targetStartY = target.y; true
+                }
+                MotionEvent.ACTION_MOVE -> {
+                    clampMove(target, targetStartX + event.rawX - startX, targetStartY + event.rawY - startY)
                     true
                 }
                 else -> false
             }
         }
     }
-    
-    private fun divider(): View {
-        return View(context).apply {
-            layoutParams = FrameLayout.LayoutParams(
-                FrameLayout.LayoutParams.MATCH_PARENT,
-                1
-            ).apply {
-                setMargins(0, 4, 0, 4)
-            }
-            setBackgroundColor(0xFF333333.toInt())
-        }
-    }
-    
-    private fun togglePanel() {
-        isExpanded = !isExpanded
-        expandedPanel.visibility = if (isExpanded) VISIBLE else GONE
-    }
-    
-    fun showPanel() {
-        isExpanded = true
-        expandedPanel.visibility = VISIBLE
-    }
-    
-    fun hidePanel() {
-        isExpanded = false
-        expandedPanel.visibility = GONE
+
+    private fun clampMove(v: View, x: Float, y: Float) {
+        val parent = v.parent as? ViewGroup ?: return
+        v.x = x.coerceIn(0f, (parent.width - v.width).toFloat().coerceAtLeast(0f))
+        v.y = y.coerceIn(0f, (parent.height - v.height).toFloat().coerceAtLeast(0f))
     }
 }
 ```
 
-- [ ] **Step 6: 在 MainActivity 中集成悬浮窗**
+- [ ] **Step 2: 验证编译**
+
+```bash
+cd /Users/zzc/Desktop/works/client-tools/packages
+./gradlew :sdk:compileDebugKotlin
+```
+
+期望：BUILD SUCCESSFUL。
+
+- [ ] **Step 3: Commit**
+
+```bash
+git add packages/android/sdk/src/main/kotlin/com/clienttools/sdk/inspector/InspectorPanel.kt
+git commit -m "feat(inspector): add InspectorPanel with drag, fold, step controls"
+```
+
+---
+
+## Task 7: InspectorPage + ClientToolsSDK 接入
+
+**Files:**
+- Create: `packages/android/sdk/src/main/kotlin/com/clienttools/sdk/inspector/InspectorPage.kt`
+- Modify: `packages/android/sdk/src/main/kotlin/com/clienttools/sdk/ClientToolsSDK.kt`
+- Modify: `packages/android/sdk/src/main/kotlin/com/clienttools/sdk/http/HttpServer.kt`
+
+- [ ] **Step 1: 创建 InspectorPage**
+
+创建 `packages/android/sdk/src/main/kotlin/com/clienttools/sdk/inspector/InspectorPage.kt`：
 
 ```kotlin
-// Modify MainActivity.kt
-// Add to imports
+package com.clienttools.sdk.inspector
+
+import android.app.Activity
+import android.view.LayoutInflater
+import android.view.View
+import android.widget.FrameLayout
+import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.ViewModelProvider
-import com.clienttools.sdk.webview.ui.FloatingControlPanel
-import com.clienttools.demo.WebViewViewModel
+import androidx.lifecycle.lifecycleScope
+import com.clienttools.sdk.R
 
-// Add to class
-private lateinit var floatingPanel: FloatingControlPanel
-private lateinit var webViewViewModel: WebViewViewModel
+class InspectorPage(val activity: Activity) {
 
-// In onCreate(), after setContentView():
-floatingPanel = FloatingControlPanel(this)
-webViewViewModel = ViewModelProvider(this).get(WebViewViewModel::class.java)
+    val viewModel: InspectorViewModel =
+        ViewModelProvider(activity as androidx.activity.ComponentActivity)[InspectorViewModel::class.java]
 
-// Add floating panel to root layout
-val rootLayout = findViewById<FrameLayout>(R.id.root_container)
-rootLayout.addView(floatingPanel)
+    private val rootView: View = LayoutInflater.from(activity)
+        .inflate(R.layout.inspector_overlay, null)
 
-// Setup observers
-webViewViewModel.currentFile.observe(this) { file ->
-    // Update UI when file changes
-}
+    val panel: InspectorPanel = InspectorPanel(rootView, viewModel)
+    val renderer: WebViewRenderer = WebViewRenderer(rootView, viewModel)
 
-webViewViewModel.isWebViewVisible.observe(this) { visible ->
-    // Update show/hide button state
-}
-
-// Setup button listeners
-floatingPanel.controlModule.showButton.setOnClickListener {
-    // Call /webview/show endpoint
-}
-
-floatingPanel.controlModule.hideButton.setOnClickListener {
-    // Call /webview/hide endpoint
-}
-
-floatingPanel.controlModule.closeButton.setOnClickListener {
-    floatingPanel.hidePanel()
-}
-
-floatingPanel.adjustModule.upButton.setOnClickListener {
-    floatingPanel.adjustModule.currentOffsetY -= floatingPanel.adjustModule.currentStep
-    floatingPanel.adjustModule.updateOffsetDisplay()
-    // Call /webview/adjust with delta
-}
-
-// ... similar for other direction buttons
-
-floatingPanel.adjustModule.opacitySlider.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
-    override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
-        floatingPanel.adjustModule.opacityLabel.text = "Opacity: ${progress}%"
-        // Call /webview/adjust with opacity
+    fun attach() {
+        val content = activity.findViewById<android.view.ViewGroup>(android.R.id.content)
+        content.addView(rootView, FrameLayout.LayoutParams(
+            FrameLayout.LayoutParams.MATCH_PARENT,
+            FrameLayout.LayoutParams.MATCH_PARENT
+        ))
+        val scope = (activity as LifecycleOwner).lifecycleScope
+        panel.startObserving(scope)
+        renderer.startObserving(scope)
     }
-    override fun onStartTrackingTouch(seekBar: SeekBar?) {}
-    override fun onStopTrackingTouch(seekBar: SeekBar?) {}
-})
+
+    fun detach() {
+        panel.stopObserving()
+        renderer.stopObserving()
+    }
+}
 ```
 
-- [ ] **Step 7: 在 Demo 中创建布局文件**
+- [ ] **Step 2: 修改 ClientToolsSDK，添加 InspectorPage 栈**
 
-```xml
-<!-- packages/android/demo/src/main/res/layout/activity_main.xml -->
-<?xml version="1.0" encoding="utf-8"?>
-<FrameLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
-    android:id="@+id/root_container"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent">
-    
-    <LinearLayout
-        android:id="@+id/button_container"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:orientation="vertical"
-        android:padding="16dp">
-        
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="SDK Demo"
-            android:textSize="20sp"
-            android:textStyle="bold"
-            android:layout_marginBottom="16dp"/>
-        
-    </LinearLayout>
-    
-</FrameLayout>
+完整替换 `packages/android/sdk/src/main/kotlin/com/clienttools/sdk/ClientToolsSDK.kt`：
+
+```kotlin
+package com.clienttools.sdk
+
+import android.app.Activity
+import android.app.Application
+import android.content.Context
+import android.os.Bundle
+import android.util.Log
+import com.clienttools.sdk.http.EventManager
+import com.clienttools.sdk.http.HttpServer
+import com.clienttools.sdk.inspector.InspectorFileStore
+import com.clienttools.sdk.inspector.InspectorPage
+import com.clienttools.sdk.listener.PageChangeListener
+import com.clienttools.sdk.model.ModifyRequest
+import com.clienttools.sdk.model.ViewInfo
+import com.clienttools.sdk.runtime.ViewModifier
+import com.clienttools.sdk.runtime.ViewQueryService
+import java.util.WeakHashMap
+
+object ClientToolsSDK {
+    private var httpServer: HttpServer? = null
+    private var eventManager: EventManager? = null
+    private var pageChangeListener: PageChangeListener? = null
+    private var isInitialized = false
+    private const val TAG = "ClientToolsSDK"
+
+    // InspectorPage 栈：有序，lastOrNull() = 当前前台页面
+    private val pageStack = mutableListOf<InspectorPage>()
+    private val pageMap = WeakHashMap<Activity, InspectorPage>()
+
+    internal lateinit var fileStore: InspectorFileStore
+
+    fun getTop(): InspectorPage? = pageStack.lastOrNull()
+
+    fun init(context: Context) {
+        if (isInitialized) return
+        try {
+            fileStore = InspectorFileStore(context)
+            eventManager = EventManager()
+            httpServer = HttpServer(context, eventManager!!)
+            httpServer!!.startServer()
+            pageChangeListener = PageChangeListener(eventManager!!)
+            pageChangeListener!!.register(context)
+            registerInspectorLifecycle(context)
+            isInitialized = true
+            Log.d(TAG, "ClientToolsSDK initialized")
+        } catch (e: Exception) {
+            Log.e(TAG, "Failed to initialize", e)
+        }
+    }
+
+    private fun registerInspectorLifecycle(context: Context) {
+        val app = context.applicationContext as? Application ?: return
+        app.registerActivityLifecycleCallbacks(object : Application.ActivityLifecycleCallbacks {
+            override fun onActivityResumed(activity: Activity) {
+                if (pageMap[activity] == null) {
+                    try {
+                        val page = InspectorPage(activity)
+                        page.attach()
+                        pageMap[activity] = page
+                        pageStack.add(page)
+                        Log.d(TAG, "InspectorPage attached: ${activity::class.simpleName}")
+                    } catch (e: Exception) {
+                        Log.e(TAG, "Failed to attach InspectorPage", e)
+                    }
+                }
+            }
+
+            override fun onActivityDestroyed(activity: Activity) {
+                pageMap.remove(activity)?.let { page ->
+                    page.detach()
+                    pageStack.remove(page)
+                    Log.d(TAG, "InspectorPage removed: ${activity::class.simpleName}")
+                }
+            }
+
+            override fun onActivityCreated(activity: Activity, savedInstanceState: Bundle?) {}
+            override fun onActivityStarted(activity: Activity) {}
+            override fun onActivityPaused(activity: Activity) {}
+            override fun onActivityStopped(activity: Activity) {}
+            override fun onActivitySaveInstanceState(activity: Activity, outState: Bundle) {}
+        })
+    }
+
+    fun getViewInfo(viewId: String): ViewInfo? = ViewQueryService.getViewInfo(viewId)
+    fun modify(request: ModifyRequest): Boolean = ViewModifier.apply(request.id, request.props)
+
+    fun addPageChangeListener(callback: (pageName: String, timestamp: Long) -> Unit) {
+        pageChangeListener?.addListener(callback)
+    }
+
+    fun shutdown() {
+        httpServer?.stopServer()
+        pageChangeListener?.unregister()
+        isInitialized = false
+    }
+
+    // 保留旧接口兼容（空实现）
+    internal fun setCurrentActivity(activity: Activity?) {}
+    internal fun getCurrentActivity(): Activity? = getTop()?.activity
+}
 ```
 
-- [ ] **Step 8: 编译 Demo App**
+- [ ] **Step 3: 修改 HttpServer，路由接入 InspectorApiHandler**
+
+修改 `packages/android/sdk/src/main/kotlin/com/clienttools/sdk/http/HttpServer.kt`，在 `serve()` 中将 `/webview/*` 路由替换为：
+
+```kotlin
+// 在 serve() 中，将原来调用 WebViewApiHandler 的所有 when 分支替换为：
+method == Method.POST && uri == "/webview/push-html" -> {
+    val body = readBody(session)
+    inspectorApiHandler().handlePushHtml(body)
+}
+method == Method.POST && uri == "/webview/show" -> {
+    val body = readBody(session)
+    inspectorApiHandler().handleShow(body)
+}
+method == Method.POST && uri == "/webview/hide" -> {
+    inspectorApiHandler().handleHide()
+}
+method == Method.POST && uri == "/webview/adjust" -> {
+    val body = readBody(session)
+    val vm = ClientToolsSDK.getTop()?.viewModel
+    inspectorApiHandler().handleAdjust(
+        body,
+        currentOffsetX = vm?.offsetX?.value ?: 0,
+        currentOffsetY = vm?.offsetY?.value ?: 0,
+        currentOpacity = vm?.opacity?.value ?: 0.5f
+    )
+}
+method == Method.GET && uri == "/webview/files" -> {
+    inspectorApiHandler().handleGetFiles(
+        currentFile = ClientToolsSDK.getTop()?.viewModel?.currentFile?.value
+    )
+}
+```
+
+并在 HttpServer 类中添加辅助方法：
+
+```kotlin
+private fun inspectorApiHandler() = com.clienttools.sdk.inspector.InspectorApiHandler(
+    fileStore = ClientToolsSDK.fileStore,
+    getTopViewModel = { ClientToolsSDK.getTop()?.viewModel }
+)
+```
+
+完整修改后的 `HttpServer.kt`：
+
+```kotlin
+package com.clienttools.sdk.http
+
+import android.content.Context
+import android.util.Log
+import com.clienttools.sdk.ClientToolsSDK
+import com.clienttools.sdk.inspector.InspectorApiHandler
+import fi.iki.elonen.NanoHTTPD
+
+class HttpServer(
+    private val context: Context,
+    private val eventManager: EventManager
+) : NanoHTTPD(8080) {
+
+    override fun serve(session: IHTTPSession?): Response {
+        return try {
+            if (session == null) return newFixedLengthResponse(Response.Status.BAD_REQUEST, MIME_PLAINTEXT, "Bad request")
+            val uri = session.uri
+            val method = session.method
+            when {
+                method == Method.GET && uri.startsWith("/api/nodes/") -> {
+                    val id = uri.removePrefix("/api/nodes/")
+                    ApiHandler.handleGetNode(id)
+                }
+                method == Method.POST && uri == "/api/modify" -> {
+                    ApiHandler.handleModify(readBody(session))
+                }
+                method == Method.GET && uri == "/api/events" -> {
+                    eventManager.subscribeSSE(session)
+                }
+                method == Method.POST && uri == "/webview/push-html" -> {
+                    inspectorHandler().handlePushHtml(readBody(session))
+                }
+                method == Method.POST && uri == "/webview/show" -> {
+                    inspectorHandler().handleShow(readBody(session))
+                }
+                method == Method.POST && uri == "/webview/hide" -> {
+                    inspectorHandler().handleHide()
+                }
+                method == Method.POST && uri == "/webview/adjust" -> {
+                    val vm = ClientToolsSDK.getTop()?.viewModel
+                    inspectorHandler().handleAdjust(
+                        readBody(session),
+                        currentOffsetX = vm?.offsetX?.value ?: 0,
+                        currentOffsetY = vm?.offsetY?.value ?: 0,
+                        currentOpacity = vm?.opacity?.value ?: 0.5f
+                    )
+                }
+                method == Method.GET && uri == "/webview/files" -> {
+                    inspectorHandler().handleGetFiles(
+                        currentFile = ClientToolsSDK.getTop()?.viewModel?.currentFile?.value
+                    )
+                }
+                else -> newFixedLengthResponse(Response.Status.NOT_FOUND, MIME_PLAINTEXT, "Not found")
+            }
+        } catch (e: Exception) {
+            Log.e("HttpServer", "Error handling request", e)
+            newFixedLengthResponse(Response.Status.INTERNAL_ERROR, MIME_PLAINTEXT, e.message ?: "Internal error")
+        }
+    }
+
+    private fun inspectorHandler() = InspectorApiHandler(
+        fileStore = ClientToolsSDK.fileStore,
+        getTopViewModel = { ClientToolsSDK.getTop()?.viewModel }
+    )
+
+    private fun readBody(session: IHTTPSession): String {
+        val contentLength = session.headers["content-length"]?.toIntOrNull() ?: 0
+        val buffer = ByteArray(contentLength)
+        session.inputStream.read(buffer)
+        return String(buffer)
+    }
+
+    fun startServer() {
+        try {
+            super.start()
+            Log.d("HttpServer", "HTTP server started on port 8080")
+        } catch (e: Exception) {
+            Log.e("HttpServer", "Failed to start server", e)
+        }
+    }
+
+    fun stopServer() {
+        try {
+            super.closeAllConnections()
+            super.stop()
+            Log.d("HttpServer", "HTTP server stopped")
+        } catch (e: Exception) {
+            Log.e("HttpServer", "Failed to stop server", e)
+        }
+    }
+}
+```
+
+- [ ] **Step 4: 验证编译**
 
 ```bash
-cd packages && ./gradlew :demo:assembleDebug
+cd /Users/zzc/Desktop/works/client-tools/packages
+./gradlew :sdk:compileDebugKotlin :demo:compileDebugKotlin
 ```
 
-Expected: Build succeeds
+期望：BUILD SUCCESSFUL，无编译错误。
 
-- [ ] **Step 9: 提交 Task 5**
+- [ ] **Step 5: Commit**
 
 ```bash
-git add packages/android/sdk/src/main/kotlin/com/clienttools/sdk/webview/ui/
-git add packages/android/demo/src/main/kotlin/com/clienttools/demo/WebViewViewModel.kt
-git add packages/android/demo/src/main/kotlin/com/clienttools/demo/MainActivity.kt
-git add packages/android/demo/src/main/res/layout/activity_main.xml
-git commit -m "feat: implement FloatingControlPanel UI with modules and ViewModel integration"
+git add packages/android/sdk/src/main/kotlin/com/clienttools/sdk/inspector/InspectorPage.kt \
+        packages/android/sdk/src/main/kotlin/com/clienttools/sdk/ClientToolsSDK.kt \
+        packages/android/sdk/src/main/kotlin/com/clienttools/sdk/http/HttpServer.kt
+git commit -m "feat(inspector): wire InspectorPage into ClientToolsSDK lifecycle + HTTP routes"
 ```
 
 ---
 
-## 完成后的验收标准
+## Task 8: 废弃旧文件 + 安装验证
 
-| 功能 | 验收方法 |
-|-----|--------|
-| HTML 推送 | POST 到 /webview/push-html，验证文件被保存 |
-| WebView 显示 | POST 到 /webview/show，验证 WebView 出现在屏幕上 |
-| WebView 隐藏 | POST 到 /webview/hide，验证 WebView 消失 |
-| 位移调整 | 点击方向按钮，验证 WebView 移动 |
-| 透明度调整 | 拖动透明度滑块，验证 WebView 透明度变化 |
-| 文件列表 | GET /webview/files，验证返回所有保存的文件 |
-| 快速切换 | 点击列表中的文件，验证 WebView 加载对应 HTML |
-| 悬浮窗拖动 | 拖动面板，验证可以移动，保持在屏幕内 |
-| 模块折叠 | 点击模块标题，验证可以展开/隐藏 |
-| Activity 重启 | 旋转屏幕，验证 WebView 状态恢复 |
+**Files:**
+- Modify: `packages/android/sdk/src/main/kotlin/com/clienttools/sdk/runtime/OverlayManager.kt`
+- Modify: `packages/android/sdk/src/main/kotlin/com/clienttools/sdk/webview/WebViewManager.kt`
+- Modify: `packages/android/sdk/src/main/kotlin/com/clienttools/sdk/webview/WebViewApiHandler.kt`
+- Modify: `packages/android/sdk/src/main/kotlin/com/clienttools/sdk/webview/ui/FloatingControlPanel.kt`
+
+- [ ] **Step 1: 清空旧文件为空存根**
+
+将以下文件各自替换为最小合法存根（保留 package，删除所有实现），避免编译引用错误：
+
+`packages/android/sdk/src/main/kotlin/com/clienttools/sdk/runtime/OverlayManager.kt`：
+```kotlin
+package com.clienttools.sdk.runtime
+// Deprecated: replaced by WebViewRenderer + InspectorPage
+object OverlayManager {
+    fun show(url: String, opacity: Float = 1.0f): Boolean = false
+    fun hide(): Boolean = false
+    fun setOpacity(opacity: Float): Boolean = false
+    fun setOffset(offsetX: Int, offsetY: Int): Boolean = false
+    fun getOffset(): Pair<Int, Int> = 0 to 0
+    fun isVisible(): Boolean = false
+    fun reattachIfNeeded(activity: android.app.Activity) {}
+    fun destroy() {}
+}
+```
+
+`packages/android/sdk/src/main/kotlin/com/clienttools/sdk/webview/WebViewManager.kt`：
+```kotlin
+package com.clienttools.sdk.webview
+import android.content.Context
+// Deprecated: replaced by InspectorPage + InspectorApiHandler
+object WebViewManager {
+    fun init(context: Context) {}
+}
+```
+
+`packages/android/sdk/src/main/kotlin/com/clienttools/sdk/webview/WebViewApiHandler.kt`：
+```kotlin
+package com.clienttools.sdk.webview
+import fi.iki.elonen.NanoHTTPD
+// Deprecated: replaced by InspectorApiHandler
+object WebViewApiHandler {
+    fun handlePushHtml(body: String): NanoHTTPD.Response = stub()
+    fun handleShow(body: String): NanoHTTPD.Response = stub()
+    fun handleHide(): NanoHTTPD.Response = stub()
+    fun handleAdjust(body: String): NanoHTTPD.Response = stub()
+    fun handleGetFiles(): NanoHTTPD.Response = stub()
+    private fun stub() = NanoHTTPD.newFixedLengthResponse(NanoHTTPD.Response.Status.NOT_FOUND, "application/json", "{}")
+}
+```
+
+`packages/android/sdk/src/main/kotlin/com/clienttools/sdk/webview/ui/FloatingControlPanel.kt`：
+```kotlin
+package com.clienttools.sdk.webview.ui
+import android.content.Context
+import android.widget.FrameLayout
+// Deprecated: replaced by InspectorPanel
+class FloatingControlPanel(context: Context) : FrameLayout(context)
+```
+
+- [ ] **Step 2: 完整编译**
+
+```bash
+cd /Users/zzc/Desktop/works/client-tools/packages
+./gradlew :sdk:assembleDebug :demo:assembleDebug
+```
+
+期望：BUILD SUCCESSFUL，生成 APK。
+
+- [ ] **Step 3: 安装到设备并验证**
+
+```bash
+cd /Users/zzc/Desktop/works/client-tools/packages
+./gradlew :demo:installDebug
+```
+
+手动验证：
+1. 打开 demo App → 看到右下角悬浮按钮（⚙，40×40dp，紫色）
+2. 点击悬浮按钮 → 展开看板面板
+3. 使用 curl 推送 HTML：
+   ```bash
+   curl -X POST http://<device-ip>:8080/webview/push-html \
+     -H "Content-Type: application/json" \
+     -d '{"tag":"test","html":"<html><body style=\"background:red\">Hello Inspector</body></html>"}'
+   ```
+4. 在面板中点击「显示」→ 看到红色 WebView 叠加在 Activity 上
+5. 点击方向按钮 → WebView 移动
+6. 拖动透明度滑块 → WebView 透明度变化
+7. 切换到另一个 Activity → 新 Activity 也出现悬浮按钮（独立状态）
+
+- [ ] **Step 4: Commit**
+
+```bash
+git add packages/android/sdk/src/main/kotlin/com/clienttools/sdk/runtime/OverlayManager.kt \
+        packages/android/sdk/src/main/kotlin/com/clienttools/sdk/webview/WebViewManager.kt \
+        packages/android/sdk/src/main/kotlin/com/clienttools/sdk/webview/WebViewApiHandler.kt \
+        packages/android/sdk/src/main/kotlin/com/clienttools/sdk/webview/ui/FloatingControlPanel.kt
+git commit -m "feat(inspector): deprecate old overlay/webview files, full inspector system live"
+```
 
 ---
 
-## 后续集成步骤（不在本计划中）
+## 验收检查表
 
-1. 在 SDK 初始化 (SdkInitProvider) 中正式集成 WebViewManager
-2. 在 HttpServer 中正式注册所有 WebView 路由
-3. 添加单元测试覆盖所有 HTTP 端点
-4. 添加集成测试，验证端到端流程
-5. 性能测试：大文件处理、多个文件切换
-6. 兼容性测试：不同 Android 版本和设备
+| 功能 | 验证方式 |
+|------|---------|
+| 悬浮按钮出现在每个 Activity | 打开 Login/Form 页面，右下角均有 ⚙ 按钮 |
+| 点击展开/收起面板 | 点击 ⚙ 按钮 |
+| 面板可拖动 | 拖动面板顶部拖动条 |
+| 悬浮按钮可拖动 | 长按拖动 ⚙ 按钮 |
+| HTML 推送 | curl POST /webview/push-html |
+| WebView 显示 | 点击面板「显示」或 curl POST /webview/show |
+| WebView 隐藏 | 点击「隐藏」或 curl POST /webview/hide |
+| 位移调整 | 选档位 + 点方向按钮，WebView 移动 |
+| 透明度调整 | 拖动滑块，WebView 透明度变化 |
+| 文件列表 | curl GET /webview/files |
+| Activity 独立状态 | 两个页面各自 currentFile 互不影响 |
+| Activity 旋转恢复 | 旋转屏幕，WebView 显示状态保持 |
