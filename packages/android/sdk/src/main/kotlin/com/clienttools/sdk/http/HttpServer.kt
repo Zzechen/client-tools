@@ -61,6 +61,19 @@ class HttpServer(
                 method == Method.POST && uri == "/inspector/adjust" -> {
                     inspectorHandler().handleAdjust(readBody(session))
                 }
+                method == Method.GET && uri == "/dom/all" -> {
+                    val webView = ClientToolsSDK.getTop()?.renderer?.webView
+                    kotlinx.coroutines.runBlocking {
+                        inspectorHandler().handleDomAll(webView)
+                    }
+                }
+                method == Method.GET && uri.startsWith("/dom/") -> {
+                    val id = uri.removePrefix("/dom/")
+                    val webView = ClientToolsSDK.getTop()?.renderer?.webView
+                    kotlinx.coroutines.runBlocking {
+                        inspectorHandler().handleDomById(webView, id)
+                    }
+                }
                 else -> newFixedLengthResponse(Response.Status.NOT_FOUND, MIME_PLAINTEXT, "Not found")
             }
         } catch (e: Exception) {

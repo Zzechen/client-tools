@@ -13,7 +13,7 @@ import kotlinx.coroutines.launch
 
 class WebViewRenderer(rootView: View, private val viewModel: InspectorViewModel) {
 
-    private val webView: WebView = rootView.findViewById(R.id.overlay_webview)
+    internal val webView: WebView = rootView.findViewById(R.id.overlay_webview)
     private var job: Job? = null
 
     init {
