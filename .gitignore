@@ -36,3 +36,4 @@ DerivedData/
 *.iml
 .DS_Store
 packages/.kotlin
+mcp/dist/
