@@ -67,4 +67,24 @@ class InspectorApiHandlerTest {
         val response = handler.handleAdjust(body)
         assert(response.status.requestStatus == 200)
     }
+
+    @Test
+    fun domAll_noWebView_returnsCode3() {
+        val response = kotlinx.coroutines.runBlocking {
+            handler.handleDomAll(webView = null)
+        }
+        assert(response.status.requestStatus == 200)
+        val body = response.data?.bufferedReader()?.readText() ?: ""
+        assert(body.contains("\"code\":3")) { "Expected code 3, got: $body" }
+    }
+
+    @Test
+    fun domById_noWebView_returnsCode3() {
+        val response = kotlinx.coroutines.runBlocking {
+            handler.handleDomById(webView = null, id = "some-id")
+        }
+        assert(response.status.requestStatus == 200)
+        val body = response.data?.bufferedReader()?.readText() ?: ""
+        assert(body.contains("\"code\":3")) { "Expected code 3, got: $body" }
+    }
 }

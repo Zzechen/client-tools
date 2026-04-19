@@ -192,6 +192,48 @@ class InspectorApiHandler(
         error(500, "Internal error: ${e.message}")
     }
 
+    // ── DOM 查询 ────────────────────────────────────────────────────────────────
+
+    private val domQueryService = DomQueryService(timeoutMs = 3000L)
+
+    suspend fun handleDomAll(webView: android.webkit.WebView?): NanoHTTPD.Response {
+        if (webView == null) return domError(3, "webview not ready")
+        val vm = getTopViewModel()
+        val offsetX = vm?.webView?.value?.offsetX ?: 0
+        val offsetY = vm?.webView?.value?.offsetY ?: 0
+        return try {
+            val nodes = domQueryService.queryAll(webView, offsetX, offsetY)
+            val nodesJson = nodes.joinToString(",") { n ->
+                """{"id":"${n.id}","tagName":"${n.tagName}","x":${n.x},"y":${n.y},"width":${n.width},"height":${n.height},"text":${org.json.JSONObject.quote(n.text)}}"""
+            }
+            ok("""{"code":0,"data":{"count":${nodes.size},"nodes":[$nodesJson]}}""")
+        } catch (e: kotlinx.coroutines.TimeoutCancellationException) {
+            domError(2, "timeout")
+        } catch (e: Exception) {
+            Log.e(TAG, "domAll error", e)
+            domError(1, "parse error")
+        }
+    }
+
+    suspend fun handleDomById(webView: android.webkit.WebView?, id: String): NanoHTTPD.Response {
+        if (webView == null) return domError(3, "webview not ready")
+        val vm = getTopViewModel()
+        val offsetX = vm?.webView?.value?.offsetX ?: 0
+        val offsetY = vm?.webView?.value?.offsetY ?: 0
+        return try {
+            val node = domQueryService.queryById(webView, id, offsetX, offsetY)
+                ?: return domError(1, "not found")
+            ok("""{"code":0,"data":{"id":"${node.id}","tagName":"${node.tagName}","x":${node.x},"y":${node.y},"width":${node.width},"height":${node.height},"text":${org.json.JSONObject.quote(node.text)}}}""")
+        } catch (e: kotlinx.coroutines.TimeoutCancellationException) {
+            domError(2, "timeout")
+        } catch (e: Exception) {
+            Log.e(TAG, "domById error", e)
+            domError(1, "parse error")
+        }
+    }
+
+    private fun domError(code: Int, message: String) = ok("""{"code":$code,"message":"$message"}""")
+
     // ── 内部工具 ───────────────────────────────────────────────────────────────
 
     private fun ok(json: String) = NanoHTTPD.newFixedLengthResponse(
