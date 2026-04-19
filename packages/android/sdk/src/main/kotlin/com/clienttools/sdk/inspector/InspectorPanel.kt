@@ -8,22 +8,38 @@ import android.widget.*
 import com.clienttools.sdk.R
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 
 class InspectorPanel(
     private val rootView: View,
     private val viewModel: InspectorViewModel,
-    private val fileStore: InspectorFileStore? = null
+    private val fileStore: InspectorFileStore? = null,
+    private val imageFileStore: ImageFileStore? = null
 ) {
     private val floatBtn: TextView = rootView.findViewById(R.id.float_btn)
-    // inspector_panel_container 是 <include> 的根 View（即 panel_root LinearLayout 本身）
     private val panelContainer: View = rootView.findViewById(R.id.inspector_panel_container)
     private val dragHandle: View = rootView.findViewById(R.id.drag_handle)
     private val btnClosePanel: TextView = rootView.findViewById(R.id.btn_close_panel)
-    private val currentFileLabel: TextView = rootView.findViewById(R.id.current_file_label)
-    private val fileListContainer: LinearLayout = rootView.findViewById(R.id.file_list_container)
+
+    // Tab
+    private val tabWebview: Button = rootView.findViewById(R.id.tab_webview)
+    private val tabImage: Button = rootView.findViewById(R.id.tab_image)
+
+    // WebView section
     private val sectionWebviewTitle: TextView = rootView.findViewById(R.id.section_webview_title)
     private val sectionWebviewContent: View = rootView.findViewById(R.id.section_webview_content)
+    private val currentFileLabel: TextView = rootView.findViewById(R.id.current_file_label)
+    private val btnSelectFile: Button = rootView.findViewById(R.id.btn_select_file)
+    private val fileListContainer: LinearLayout = rootView.findViewById(R.id.file_list_container)
+
+    // Image file section
+    private val sectionImageFileTitle: TextView = rootView.findViewById(R.id.section_image_file_title)
+    private val sectionImageFileContent: View = rootView.findViewById(R.id.section_image_file_content)
+    private val currentImageLabel: TextView = rootView.findViewById(R.id.current_image_label)
+    private val btnSelectImage: Button = rootView.findViewById(R.id.btn_select_image)
+
+    // 共用 section
     private val sectionAdjustTitle: TextView = rootView.findViewById(R.id.section_adjust_title)
     private val sectionAdjustContent: View = rootView.findViewById(R.id.section_adjust_content)
     private val sectionControlTitle: TextView = rootView.findViewById(R.id.section_control_title)
@@ -38,7 +54,6 @@ class InspectorPanel(
     private val opacityLabel: TextView = rootView.findViewById(R.id.opacity_label)
     private val opacitySeekBar: SeekBar = rootView.findViewById(R.id.opacity_seekbar)
     private val offsetLabel: TextView = rootView.findViewById(R.id.offset_label)
-    private val btnSelectFile: Button = rootView.findViewById(R.id.btn_select_file)
     private val btnShow: Button = rootView.findViewById(R.id.btn_show)
     private val btnHide: Button = rootView.findViewById(R.id.btn_hide)
 
@@ -50,32 +65,38 @@ class InspectorPanel(
     }
 
     private fun setupInteractions() {
-        // 悬浮按钮：点击展开/收起 + 可拖动
         setupDraggableClick(floatBtn) {
             panelContainer.visibility =
                 if (panelContainer.visibility == View.VISIBLE) View.GONE else View.VISIBLE
         }
-
         btnClosePanel.setOnClickListener { panelContainer.visibility = View.GONE }
 
-        // 折叠 section
+        tabWebview.setOnClickListener { viewModel.activeTab.value = ActiveTab.WEBVIEW }
+        tabImage.setOnClickListener   { viewModel.activeTab.value = ActiveTab.IMAGE }
+
         sectionWebviewTitle.setOnClickListener { toggleSection(sectionWebviewTitle, sectionWebviewContent) }
+        sectionImageFileTitle.setOnClickListener { toggleSection(sectionImageFileTitle, sectionImageFileContent) }
         sectionAdjustTitle.setOnClickListener { toggleSection(sectionAdjustTitle, sectionAdjustContent) }
         sectionControlTitle.setOnClickListener { toggleSection(sectionControlTitle, sectionControlContent) }
 
         selectStep(10)
-        btnStep1.setOnClickListener { selectStep(1) }
+        btnStep1.setOnClickListener  { selectStep(1) }
         btnStep10.setOnClickListener { selectStep(10) }
         btnStep50.setOnClickListener { selectStep(50) }
 
-        btnUp.setOnClickListener    { viewModel.offsetY.value -= stepDp }
-        btnDown.setOnClickListener  { viewModel.offsetY.value += stepDp }
-        btnLeft.setOnClickListener  { viewModel.offsetX.value -= stepDp }
-        btnRight.setOnClickListener { viewModel.offsetX.value += stepDp }
+        btnUp.setOnClickListener    { applyOffset(0, -stepDp) }
+        btnDown.setOnClickListener  { applyOffset(0, stepDp) }
+        btnLeft.setOnClickListener  { applyOffset(-stepDp, 0) }
+        btnRight.setOnClickListener { applyOffset(stepDp, 0) }
 
         opacitySeekBar.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
             override fun onProgressChanged(sb: SeekBar, progress: Int, fromUser: Boolean) {
-                if (fromUser) viewModel.opacity.value = progress / 100f
+                if (!fromUser) return
+                val alpha = progress / 100f
+                when (viewModel.activeTab.value) {
+                    ActiveTab.WEBVIEW -> viewModel.webView.value = viewModel.webView.value.copy(opacity = alpha)
+                    ActiveTab.IMAGE   -> viewModel.image.value = viewModel.image.value.copy(opacity = alpha)
+                }
             }
             override fun onStartTrackingTouch(sb: SeekBar) {}
             override fun onStopTrackingTouch(sb: SeekBar) {}
@@ -84,36 +105,103 @@ class InspectorPanel(
         btnSelectFile.setOnClickListener {
             val files = fileStore?.getAllFiles() ?: emptyList()
             showFileSelectDialog(files) { selected ->
-                viewModel.currentFile.value = selected
-                viewModel.isVisible.value = true
+                viewModel.webView.value = viewModel.webView.value.copy(currentFile = selected, isVisible = true)
+            }
+        }
+
+        btnSelectImage.setOnClickListener {
+            val images = imageFileStore?.getAllImages() ?: emptyList()
+            showImageSelectDialog(images) { selected ->
+                viewModel.image.value = viewModel.image.value.copy(currentImage = selected, isVisible = true)
             }
         }
 
         btnShow.setOnClickListener {
-            viewModel.currentFile.value?.let { viewModel.isVisible.value = true }
+            when (viewModel.activeTab.value) {
+                ActiveTab.WEBVIEW -> {
+                    if (viewModel.webView.value.currentFile != null)
+                        viewModel.webView.value = viewModel.webView.value.copy(isVisible = true)
+                }
+                ActiveTab.IMAGE -> {
+                    if (viewModel.image.value.currentImage != null)
+                        viewModel.image.value = viewModel.image.value.copy(isVisible = true)
+                }
+            }
         }
-        btnHide.setOnClickListener { viewModel.isVisible.value = false }
+        btnHide.setOnClickListener {
+            when (viewModel.activeTab.value) {
+                ActiveTab.WEBVIEW -> viewModel.webView.value = viewModel.webView.value.copy(isVisible = false)
+                ActiveTab.IMAGE   -> viewModel.image.value = viewModel.image.value.copy(isVisible = false)
+            }
+        }
+    }
+
+    private fun applyOffset(dx: Int, dy: Int) {
+        when (viewModel.activeTab.value) {
+            ActiveTab.WEBVIEW -> viewModel.webView.value = viewModel.webView.value.let {
+                it.copy(offsetX = it.offsetX + dx, offsetY = it.offsetY + dy)
+            }
+            ActiveTab.IMAGE -> viewModel.image.value = viewModel.image.value.let {
+                it.copy(offsetX = it.offsetX + dx, offsetY = it.offsetY + dy)
+            }
+        }
     }
 
     fun startObserving(scope: CoroutineScope) {
         job = scope.launch {
             launch {
-                viewModel.currentFile.collect { file ->
+                viewModel.activeTab.collect { tab ->
+                    val wvActive = tab == ActiveTab.WEBVIEW
+                    tabWebview.setBackgroundColor(if (wvActive) 0xFF6200EE.toInt() else 0xFF1E1E3A.toInt())
+                    tabWebview.setTextColor(if (wvActive) 0xFFFFFFFF.toInt() else 0xFFBB86FC.toInt())
+                    tabImage.setBackgroundColor(if (!wvActive) 0xFF6200EE.toInt() else 0xFF1E1E3A.toInt())
+                    tabImage.setTextColor(if (!wvActive) 0xFFFFFFFF.toInt() else 0xFFBB86FC.toInt())
+
+                    sectionWebviewTitle.visibility = if (wvActive) View.VISIBLE else View.GONE
+                    sectionWebviewContent.visibility = View.GONE
+                    sectionImageFileTitle.visibility = if (!wvActive) View.VISIBLE else View.GONE
+                    sectionImageFileContent.visibility = View.GONE
+                }
+            }
+            launch {
+                viewModel.webView.map { it.currentFile }.collect { file ->
                     currentFileLabel.text = if (file != null) "当前：${file.tag}  ${file.timestamp}" else "当前：无"
                 }
             }
             launch {
-                viewModel.opacity.collect { opacity ->
-                    val progress = (opacity * 100).toInt()
-                    opacityLabel.text = "透明度：$progress%"
-                    if (opacitySeekBar.progress != progress) opacitySeekBar.progress = progress
+                viewModel.image.map { it.currentImage }.collect { img ->
+                    currentImageLabel.text = if (img != null) "当前：${img.tag}  ${img.timestamp}" else "当前：无"
                 }
             }
             launch {
-                kotlinx.coroutines.flow.combine(viewModel.offsetX, viewModel.offsetY) { x, y -> x to y }
-                    .collect { (x, y) -> offsetLabel.text = "偏移：X: ${x}dp  Y: ${y}dp" }
+                viewModel.webView.map { it.opacity }.collect { opacity ->
+                    if (viewModel.activeTab.value == ActiveTab.WEBVIEW) syncOpacityUI(opacity)
+                }
+            }
+            launch {
+                viewModel.image.map { it.opacity }.collect { opacity ->
+                    if (viewModel.activeTab.value == ActiveTab.IMAGE) syncOpacityUI(opacity)
+                }
+            }
+            launch {
+                viewModel.webView.map { it.offsetX to it.offsetY }.collect { (x, y) ->
+                    if (viewModel.activeTab.value == ActiveTab.WEBVIEW)
+                        offsetLabel.text = "偏移：X: ${x}dp  Y: ${y}dp"
+                }
+            }
+            launch {
+                viewModel.image.map { it.offsetX to it.offsetY }.collect { (x, y) ->
+                    if (viewModel.activeTab.value == ActiveTab.IMAGE)
+                        offsetLabel.text = "偏移：X: ${x}dp  Y: ${y}dp"
+                }
             }
         }
+    }
+
+    private fun syncOpacityUI(opacity: Float) {
+        val progress = (opacity * 100).toInt()
+        opacityLabel.text = "透明度：$progress%"
+        if (opacitySeekBar.progress != progress) opacitySeekBar.progress = progress
     }
 
     fun stopObserving() {
@@ -126,7 +214,7 @@ class InspectorPanel(
             Toast.makeText(rootView.context, "暂无已保存的 HTML 文件", Toast.LENGTH_SHORT).show()
             return
         }
-        val currentFile = viewModel.currentFile.value
+        val currentFile = viewModel.webView.value.currentFile
         val labels = files.map { f ->
             val cur = if (f.tag == currentFile?.tag && f.timestamp == currentFile.timestamp) " ★" else ""
             "${f.tag}  ${f.timestamp}$cur"
@@ -138,11 +226,27 @@ class InspectorPanel(
             .show()
     }
 
+    private fun showImageSelectDialog(images: List<ImageInfo>, onSelect: (ImageInfo) -> Unit) {
+        if (images.isEmpty()) {
+            Toast.makeText(rootView.context, "暂无已保存的图片", Toast.LENGTH_SHORT).show()
+            return
+        }
+        val currentImage = viewModel.image.value.currentImage
+        val labels = images.map { img ->
+            val cur = if (img.tag == currentImage?.tag && img.timestamp == currentImage.timestamp) " ★" else ""
+            "${img.tag}  ${img.timestamp} (${img.ext})$cur"
+        }.toTypedArray()
+        AlertDialog.Builder(rootView.context)
+            .setTitle("选择图片")
+            .setItems(labels) { _, idx -> onSelect(images[idx]) }
+            .setNegativeButton("取消", null)
+            .show()
+    }
+
     private fun toggleSection(title: TextView, content: View) {
         val visible = content.visibility == View.VISIBLE
         content.visibility = if (visible) View.GONE else View.VISIBLE
         val arrow = if (visible) "▶" else "▼"
-        // 替换标题开头的箭头字符
         title.text = title.text.toString().replaceFirst(Regex("^[▼▶]"), arrow)
     }
 
@@ -173,39 +277,6 @@ class InspectorPanel(
                     true
                 }
                 MotionEvent.ACTION_UP -> { if (!moved) onClick(); true }
-                else -> false
-            }
-        }
-    }
-
-    private fun setupDraggableMove(handle: View, target: View) {
-        var startX = 0f; var startY = 0f
-        var targetStartX = 0f; var targetStartY = 0f
-        var dragging = false
-        handle.setOnTouchListener { _, event ->
-            when (event.action) {
-                MotionEvent.ACTION_DOWN -> {
-                    startX = event.rawX; startY = event.rawY
-                    targetStartX = target.x; targetStartY = target.y
-                    dragging = false; true
-                }
-                MotionEvent.ACTION_MOVE -> {
-                    val dx = event.rawX - startX; val dy = event.rawY - startY
-                    if (!dragging && (Math.abs(dx) > 8 || Math.abs(dy) > 8)) dragging = true
-                    if (dragging) clampMove(target, targetStartX + dx, targetStartY + dy)
-                    true
-                }
-                MotionEvent.ACTION_UP -> {
-                    // 没有拖动且触点落在关闭按钮范围内，触发关闭
-                    if (!dragging) {
-                        val loc = IntArray(2)
-                        btnClosePanel.getLocationOnScreen(loc)
-                        val inClose = event.rawX >= loc[0] && event.rawX <= loc[0] + btnClosePanel.width &&
-                                      event.rawY >= loc[1] && event.rawY <= loc[1] + btnClosePanel.height
-                        if (inClose) panelContainer.visibility = View.GONE
-                    }
-                    dragging = false; true
-                }
                 else -> false
             }
         }

@@ -42,7 +42,39 @@
 
     </LinearLayout>
 
-    <!-- WebView 模块 -->
+    <!-- Tab 行：WebView / 图片 -->
+    <LinearLayout
+        android:id="@+id/tab_row"
+        android:layout_width="match_parent"
+        android:layout_height="36dp"
+        android:orientation="horizontal"
+        android:background="#0D0D1A">
+
+        <Button
+            android:id="@+id/tab_webview"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:background="#6200EE"
+            android:text="WebView"
+            android:textColor="#FFFFFF"
+            android:textSize="11sp"
+            android:stateListAnimator="@null" />
+
+        <Button
+            android:id="@+id/tab_image"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:background="#1E1E3A"
+            android:text="图片"
+            android:textColor="#BB86FC"
+            android:textSize="11sp"
+            android:stateListAnimator="@null" />
+
+    </LinearLayout>
+
+    <!-- WebView 文件 section -->
     <TextView
         android:id="@+id/section_webview_title"
         android:layout_width="match_parent"
@@ -93,6 +125,55 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical" />
+
+    </LinearLayout>
+
+    <!-- 图片文件 section（初始隐藏，activeTab=IMAGE 时显示） -->
+    <TextView
+        android:id="@+id/section_image_file_title"
+        android:layout_width="match_parent"
+        android:layout_height="40dp"
+        android:background="@drawable/inspector_section_bg"
+        android:gravity="center_vertical"
+        android:paddingStart="14dp"
+        android:paddingEnd="14dp"
+        android:text="▶  图片文件"
+        android:textColor="#BB86FC"
+        android:textSize="12sp"
+        android:textStyle="bold"
+        android:letterSpacing="0.05"
+        android:visibility="gone" />
+
+    <LinearLayout
+        android:id="@+id/section_image_file_content"
+        android:visibility="gone"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:background="#0D0D1A"
+        android:paddingStart="12dp"
+        android:paddingEnd="12dp"
+        android:paddingTop="8dp"
+        android:paddingBottom="8dp">
+
+        <TextView
+            android:id="@+id/current_image_label"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="当前：无"
+            android:textColor="#9E9E9E"
+            android:textSize="11sp"
+            android:paddingBottom="6dp" />
+
+        <Button
+            android:id="@+id/btn_select_image"
+            android:layout_width="match_parent"
+            android:layout_height="34dp"
+            android:background="#6200EE"
+            android:text="选择本地图片"
+            android:textColor="#FFFFFF"
+            android:textSize="12sp"
+            android:stateListAnimator="@null" />
 
     </LinearLayout>
 
@@ -253,7 +334,7 @@
 
     </LinearLayout>
 
-    <!-- 控制模块（可折叠） -->
+    <!-- 控制模块 -->
     <TextView
         android:id="@+id/section_control_title"
         android:layout_width="match_parent"

@@ -18,9 +18,13 @@ class InspectorPage(val activity: Activity) {
     private val rootView: View = LayoutInflater.from(activity)
         .inflate(R.layout.inspector_overlay, null)
 
-    val panel: InspectorPanel = InspectorPanel(rootView, viewModel,
-        fileStore = if (ClientToolsSDK.isInitialized) ClientToolsSDK.fileStore else null)
+    val panel: InspectorPanel = InspectorPanel(
+        rootView, viewModel,
+        fileStore = if (ClientToolsSDK.isInitialized) ClientToolsSDK.fileStore else null,
+        imageFileStore = if (ClientToolsSDK.isInitialized) ClientToolsSDK.imageFileStore else null
+    )
     val renderer: WebViewRenderer = WebViewRenderer(rootView, viewModel)
+    val imageRenderer: ImageRenderer = ImageRenderer(rootView, viewModel)
 
     fun attach() {
         val content = activity.findViewById<android.view.ViewGroup>(android.R.id.content)
@@ -31,10 +35,12 @@ class InspectorPage(val activity: Activity) {
         val scope = (activity as LifecycleOwner).lifecycleScope
         panel.startObserving(scope)
         renderer.startObserving(scope)
+        imageRenderer.startObserving(scope)
     }
 
     fun detach() {
         panel.stopObserving()
         renderer.stopObserving()
+        imageRenderer.stopObserving()
     }
 }

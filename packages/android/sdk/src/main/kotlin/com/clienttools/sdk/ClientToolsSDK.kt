@@ -7,6 +7,7 @@ import android.os.Bundle
 import android.util.Log
 import com.clienttools.sdk.http.EventManager
 import com.clienttools.sdk.http.HttpServer
+import com.clienttools.sdk.inspector.ImageFileStore
 import com.clienttools.sdk.inspector.InspectorFileStore
 import com.clienttools.sdk.inspector.InspectorPage
 import com.clienttools.sdk.listener.PageChangeListener
@@ -28,6 +29,7 @@ object ClientToolsSDK {
     private val pageMap = WeakHashMap<Activity, InspectorPage>()
 
     internal lateinit var fileStore: InspectorFileStore
+    internal lateinit var imageFileStore: ImageFileStore
 
     fun getTop(): InspectorPage? = pageStack.lastOrNull()
 
@@ -35,6 +37,7 @@ object ClientToolsSDK {
         if (isInitialized) return
         try {
             fileStore = InspectorFileStore(context)
+            imageFileStore = ImageFileStore(context)
             eventManager = EventManager()
             httpServer = HttpServer(context, eventManager!!)
             httpServer!!.startServer()

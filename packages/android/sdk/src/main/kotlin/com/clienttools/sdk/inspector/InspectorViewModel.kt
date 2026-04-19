@@ -7,13 +7,29 @@ import kotlinx.coroutines.flow.MutableStateFlow
 data class FileInfo(
     val tag: String,
     val timestamp: String,
-    val fileUrl: String  // file:// 绝对路径，供 WebView.loadUrl() 使用
+    val fileUrl: String
 )
 
+data class WebViewState(
+    val currentFile: FileInfo? = null,
+    val isVisible: Boolean = false,
+    val offsetX: Int = 0,
+    val offsetY: Int = 0,
+    val opacity: Float = 0.5f
+)
+
+data class ImageState(
+    val currentImage: ImageInfo? = null,
+    val isVisible: Boolean = false,
+    val offsetX: Int = 0,
+    val offsetY: Int = 0,
+    val opacity: Float = 0.5f
+)
+
+enum class ActiveTab { WEBVIEW, IMAGE }
+
 class InspectorViewModel(app: Application) : AndroidViewModel(app) {
-    val currentFile = MutableStateFlow<FileInfo?>(null)
-    val isVisible   = MutableStateFlow(false)
-    val offsetX     = MutableStateFlow(0)     // dp，累计绝对值
-    val offsetY     = MutableStateFlow(0)     // dp，累计绝对值
-    val opacity     = MutableStateFlow(0.5f)  // 0.0-1.0，默认 0.5
+    val activeTab = MutableStateFlow(ActiveTab.WEBVIEW)
+    val webView   = MutableStateFlow(WebViewState())
+    val image     = MutableStateFlow(ImageState())
 }

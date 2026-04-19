@@ -11,6 +11,14 @@
         android:background="@android:color/transparent"
         android:visibility="gone" />
 
+    <!-- 层级 1b：设计稿图片，全屏叠加，默认隐藏 -->
+    <com.clienttools.sdk.inspector.FitWidthImageView
+        android:id="@+id/overlay_imageview"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@android:color/transparent"
+        android:visibility="gone" />
+
     <!-- 层级 2：看板面板，默认隐藏 -->
     <include
         android:id="@+id/inspector_panel_container"

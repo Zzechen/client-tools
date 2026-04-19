@@ -34,21 +34,32 @@ class HttpServer(
                     inspectorHandler().handleShow(readBody(session))
                 }
                 method == Method.POST && uri == "/webview/hide" -> {
-                    inspectorHandler().handleHide()
+                    inspectorHandler().handleHide("{}")
                 }
                 method == Method.POST && uri == "/webview/adjust" -> {
-                    val vm = ClientToolsSDK.getTop()?.viewModel
-                    inspectorHandler().handleAdjust(
-                        readBody(session),
-                        currentOffsetX = vm?.offsetX?.value ?: 0,
-                        currentOffsetY = vm?.offsetY?.value ?: 0,
-                        currentOpacity = vm?.opacity?.value ?: 0.5f
-                    )
+                    inspectorHandler().handleAdjust(readBody(session))
                 }
                 method == Method.GET && uri == "/webview/files" -> {
                     inspectorHandler().handleGetFiles(
-                        currentFile = ClientToolsSDK.getTop()?.viewModel?.currentFile?.value
+                        currentFile = ClientToolsSDK.getTop()?.viewModel?.webView?.value?.currentFile
                     )
+                }
+                method == Method.POST && uri == "/inspector/push-image" -> {
+                    inspectorHandler().handlePushImage(readBody(session))
+                }
+                method == Method.POST && uri == "/inspector/show-image" -> {
+                    inspectorHandler().handleShowImage(readBody(session))
+                }
+                method == Method.GET && uri == "/inspector/images" -> {
+                    inspectorHandler().handleGetImages(
+                        currentImage = ClientToolsSDK.getTop()?.viewModel?.image?.value?.currentImage
+                    )
+                }
+                method == Method.POST && uri == "/inspector/hide" -> {
+                    inspectorHandler().handleHide(readBody(session))
+                }
+                method == Method.POST && uri == "/inspector/adjust" -> {
+                    inspectorHandler().handleAdjust(readBody(session))
                 }
                 else -> newFixedLengthResponse(Response.Status.NOT_FOUND, MIME_PLAINTEXT, "Not found")
             }
@@ -60,6 +71,7 @@ class HttpServer(
 
     private fun inspectorHandler() = InspectorApiHandler(
         fileStore = ClientToolsSDK.fileStore,
+        imageFileStore = ClientToolsSDK.imageFileStore,
         getTopViewModel = { ClientToolsSDK.getTop()?.viewModel }
     )
 

@@ -11,6 +11,7 @@ import org.junit.runner.RunWith
 class InspectorApiHandlerTest {
 
     private lateinit var store: InspectorFileStore
+    private lateinit var imageStore: ImageFileStore
     private lateinit var handler: InspectorApiHandler
 
     @Before
@@ -18,7 +19,9 @@ class InspectorApiHandlerTest {
         val context: Context = ApplicationProvider.getApplicationContext()
         store = InspectorFileStore(context)
         store.deleteAll()
-        handler = InspectorApiHandler(store, getTopViewModel = { null })
+        imageStore = ImageFileStore(context)
+        imageStore.deleteAll()
+        handler = InspectorApiHandler(store, imageStore, getTopViewModel = { null })
     }
 
     @Test
@@ -54,15 +57,14 @@ class InspectorApiHandlerTest {
 
     @Test
     fun hide_returnsSuccess() {
-        val response = handler.handleHide()
+        val response = handler.handleHide("{}")
         assert(response.status.requestStatus == 200)
     }
 
     @Test
     fun adjust_returnsUpdatedValues() {
-        // viewModel is null → should still return 200 with current state
         val body = """{"offsetX":10,"offsetY":-5,"opacity":0.7}"""
-        val response = handler.handleAdjust(body, currentOffsetX = 0, currentOffsetY = 0, currentOpacity = 0.5f)
+        val response = handler.handleAdjust(body)
         assert(response.status.requestStatus == 200)
     }
 }

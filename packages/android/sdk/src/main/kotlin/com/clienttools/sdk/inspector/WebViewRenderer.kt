@@ -7,11 +7,10 @@ import android.webkit.WebView
 import com.clienttools.sdk.R
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.filterNotNull
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 
-// scope 由 InspectorPage 传入（activity.lifecycleScope），与 Activity 生命周期绑定
 class WebViewRenderer(rootView: View, private val viewModel: InspectorViewModel) {
 
     private val webView: WebView = rootView.findViewById(R.id.overlay_webview)
@@ -29,26 +28,25 @@ class WebViewRenderer(rootView: View, private val viewModel: InspectorViewModel)
     fun startObserving(scope: CoroutineScope) {
         job = scope.launch {
             launch {
-                viewModel.isVisible.collect { visible ->
+                viewModel.webView.map { it.isVisible }.collect { visible ->
                     webView.visibility = if (visible) View.VISIBLE else View.GONE
                 }
             }
             launch {
-                viewModel.currentFile.filterNotNull().collect { file ->
+                viewModel.webView.map { it.currentFile }.filterNotNull().collect { file ->
                     webView.loadUrl(file.fileUrl)
                 }
             }
             launch {
-                viewModel.opacity.collect { alpha ->
+                viewModel.webView.map { it.opacity }.collect { alpha ->
                     webView.alpha = alpha
                 }
             }
             launch {
-                combine(viewModel.offsetX, viewModel.offsetY) { x, y -> x to y }
-                    .collect { (x, y) ->
-                        webView.translationX = dpToPx(x)
-                        webView.translationY = dpToPx(y)
-                    }
+                viewModel.webView.map { it.offsetX to it.offsetY }.collect { (x, y) ->
+                    webView.translationX = dpToPx(x)
+                    webView.translationY = dpToPx(y)
+                }
             }
         }
     }
