@@ -7,6 +7,7 @@ import android.widget.FrameLayout
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
+import com.clienttools.sdk.ClientToolsSDK
 import com.clienttools.sdk.R
 
 class InspectorPage(val activity: Activity) {
@@ -17,7 +18,8 @@ class InspectorPage(val activity: Activity) {
     private val rootView: View = LayoutInflater.from(activity)
         .inflate(R.layout.inspector_overlay, null)
 
-    val panel: InspectorPanel = InspectorPanel(rootView, viewModel)
+    val panel: InspectorPanel = InspectorPanel(rootView, viewModel,
+        fileStore = if (ClientToolsSDK.isInitialized) ClientToolsSDK.fileStore else null)
     val renderer: WebViewRenderer = WebViewRenderer(rootView, viewModel)
 
     fun attach() {

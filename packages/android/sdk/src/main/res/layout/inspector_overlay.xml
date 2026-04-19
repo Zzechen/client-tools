@@ -17,18 +17,18 @@
         layout="@layout/inspector_panel"
         android:visibility="gone" />
 
-    <!-- 层级 3：悬浮按钮，始终可见，初始位置右下角 -->
+    <!-- 层级 3：悬浮按钮，圆形，始终可见，初始位置右下角 -->
     <TextView
         android:id="@+id/float_btn"
         android:layout_width="40dp"
         android:layout_height="40dp"
         android:layout_gravity="bottom|end"
         android:layout_margin="16dp"
-        android:background="#CC6200EE"
+        android:background="@drawable/inspector_float_btn_bg"
         android:gravity="center"
         android:text="⚙"
         android:textColor="#FFFFFF"
-        android:textSize="20sp"
+        android:textSize="18sp"
         android:elevation="8dp" />
 
 </FrameLayout>

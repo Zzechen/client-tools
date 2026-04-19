@@ -20,7 +20,7 @@ object ClientToolsSDK {
     private var httpServer: HttpServer? = null
     private var eventManager: EventManager? = null
     private var pageChangeListener: PageChangeListener? = null
-    private var isInitialized = false
+    internal var isInitialized = false
     private const val TAG = "ClientToolsSDK"
 
     // InspectorPage 栈：有序，lastOrNull() = 当前前台页面

@@ -1,50 +1,93 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<com.clienttools.sdk.inspector.DraggableLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/panel_root"
-    android:layout_width="280dp"
+    android:layout_width="288dp"
     android:layout_height="wrap_content"
     android:layout_gravity="bottom|end"
-    android:layout_margin="16dp"
-    android:background="#F0F0F0"
-    android:elevation="16dp"
+    android:layout_margin="12dp"
+    android:background="@drawable/inspector_panel_bg"
+    android:elevation="20dp"
     android:orientation="vertical"
-    android:minHeight="200dp">
+    android:clipToOutline="true">
 
-    <!-- 拖动条 -->
-    <View
+    <!-- 顶栏：标题 + 整体可拖拽区域 -->
+    <LinearLayout
         android:id="@+id/drag_handle"
         android:layout_width="match_parent"
-        android:layout_height="40dp"
-        android:background="#6200EE" />
+        android:layout_height="44dp"
+        android:background="#6200EE"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:paddingStart="14dp"
+        android:paddingEnd="14dp">
 
-    <!-- WebView 模块：标题（可折叠） -->
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="⬡  Inspector"
+            android:textColor="#FFFFFF"
+            android:textSize="13sp"
+            android:textStyle="bold"
+            android:letterSpacing="0.08" />
+
+        <TextView
+            android:id="@+id/btn_close_panel"
+            android:layout_width="28dp"
+            android:layout_height="28dp"
+            android:gravity="center"
+            android:text="✕"
+            android:textColor="#CCFFFFFF"
+            android:textSize="14sp" />
+
+    </LinearLayout>
+
+    <!-- WebView 模块 -->
     <TextView
         android:id="@+id/section_webview_title"
         android:layout_width="match_parent"
-        android:layout_height="44dp"
+        android:layout_height="40dp"
+        android:background="@drawable/inspector_section_bg"
         android:gravity="center_vertical"
-        android:paddingStart="12dp"
-        android:text="▼ WebView"
-        android:textSize="14sp"
+        android:paddingStart="14dp"
+        android:paddingEnd="14dp"
+        android:text="▶  WebView"
+        android:textColor="#BB86FC"
+        android:textSize="12sp"
         android:textStyle="bold"
-        android:background="#E0E0E0" />
+        android:letterSpacing="0.05" />
 
     <LinearLayout
         android:id="@+id/section_webview_content"
+        android:visibility="gone"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:padding="8dp">
+        android:background="#0D0D1A"
+        android:paddingStart="12dp"
+        android:paddingEnd="12dp"
+        android:paddingTop="8dp"
+        android:paddingBottom="8dp">
 
         <TextView
             android:id="@+id/current_file_label"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="当前：无"
-            android:textSize="12sp"
-            android:paddingBottom="4dp" />
+            android:textColor="#9E9E9E"
+            android:textSize="11sp"
+            android:paddingBottom="6dp" />
 
-        <!-- 文件列表：动态添加 -->
+        <Button
+            android:id="@+id/btn_select_file"
+            android:layout_width="match_parent"
+            android:layout_height="34dp"
+            android:background="#6200EE"
+            android:text="选择本地文件"
+            android:textColor="#FFFFFF"
+            android:textSize="12sp"
+            android:stateListAnimator="@null" />
+
         <LinearLayout
             android:id="@+id/file_list_container"
             android:layout_width="match_parent"
@@ -53,99 +96,130 @@
 
     </LinearLayout>
 
-    <!-- 调整模块：标题（可折叠） -->
+    <!-- 调整模块 -->
     <TextView
         android:id="@+id/section_adjust_title"
         android:layout_width="match_parent"
-        android:layout_height="44dp"
+        android:layout_height="40dp"
+        android:background="@drawable/inspector_section_bg"
         android:gravity="center_vertical"
-        android:paddingStart="12dp"
-        android:text="▼ 调整"
-        android:textSize="14sp"
+        android:paddingStart="14dp"
+        android:paddingEnd="14dp"
+        android:text="▶  调整"
+        android:textColor="#BB86FC"
+        android:textSize="12sp"
         android:textStyle="bold"
-        android:background="#E0E0E0" />
+        android:letterSpacing="0.05" />
 
     <LinearLayout
         android:id="@+id/section_adjust_content"
+        android:visibility="gone"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:padding="8dp">
+        android:background="#0D0D1A"
+        android:paddingStart="12dp"
+        android:paddingEnd="12dp"
+        android:paddingTop="8dp"
+        android:paddingBottom="8dp">
 
         <!-- 档位选择 -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
-            android:layout_marginBottom="4dp">
+            android:layout_marginBottom="6dp">
 
             <Button
                 android:id="@+id/btn_step_1"
-                style="?android:attr/buttonStyleSmall"
                 android:layout_width="0dp"
-                android:layout_height="36dp"
+                android:layout_height="32dp"
                 android:layout_weight="1"
+                android:layout_marginEnd="4dp"
+                android:background="#1E1E3A"
                 android:text="1dp"
-                android:textSize="11sp" />
+                android:textColor="#BB86FC"
+                android:textSize="11sp"
+                android:stateListAnimator="@null" />
 
             <Button
                 android:id="@+id/btn_step_10"
-                style="?android:attr/buttonStyleSmall"
                 android:layout_width="0dp"
-                android:layout_height="36dp"
+                android:layout_height="32dp"
                 android:layout_weight="1"
+                android:layout_marginEnd="4dp"
+                android:background="#6200EE"
                 android:text="10dp"
-                android:textSize="11sp" />
+                android:textColor="#FFFFFF"
+                android:textSize="11sp"
+                android:stateListAnimator="@null" />
 
             <Button
                 android:id="@+id/btn_step_50"
-                style="?android:attr/buttonStyleSmall"
                 android:layout_width="0dp"
-                android:layout_height="36dp"
+                android:layout_height="32dp"
                 android:layout_weight="1"
+                android:background="#1E1E3A"
                 android:text="50dp"
-                android:textSize="11sp" />
+                android:textColor="#BB86FC"
+                android:textSize="11sp"
+                android:stateListAnimator="@null" />
 
         </LinearLayout>
 
-        <!-- 方向按钮：一行，均匀排布 -->
+        <!-- 方向按钮 -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
-            android:layout_marginBottom="4dp">
+            android:layout_marginBottom="6dp">
 
             <Button
                 android:id="@+id/btn_left"
                 android:layout_width="0dp"
-                android:layout_height="44dp"
+                android:layout_height="40dp"
                 android:layout_weight="1"
+                android:layout_marginEnd="3dp"
+                android:background="#1E1E3A"
                 android:text="◀"
-                android:textSize="16sp" />
+                android:textColor="#BB86FC"
+                android:textSize="15sp"
+                android:stateListAnimator="@null" />
 
             <Button
                 android:id="@+id/btn_up"
                 android:layout_width="0dp"
-                android:layout_height="44dp"
+                android:layout_height="40dp"
                 android:layout_weight="1"
+                android:layout_marginEnd="3dp"
+                android:background="#1E1E3A"
                 android:text="△"
-                android:textSize="16sp" />
+                android:textColor="#BB86FC"
+                android:textSize="15sp"
+                android:stateListAnimator="@null" />
 
             <Button
                 android:id="@+id/btn_down"
                 android:layout_width="0dp"
-                android:layout_height="44dp"
+                android:layout_height="40dp"
                 android:layout_weight="1"
+                android:layout_marginEnd="3dp"
+                android:background="#1E1E3A"
                 android:text="▽"
-                android:textSize="16sp" />
+                android:textColor="#BB86FC"
+                android:textSize="15sp"
+                android:stateListAnimator="@null" />
 
             <Button
                 android:id="@+id/btn_right"
                 android:layout_width="0dp"
-                android:layout_height="44dp"
+                android:layout_height="40dp"
                 android:layout_weight="1"
+                android:background="#1E1E3A"
                 android:text="▶"
-                android:textSize="16sp" />
+                android:textColor="#BB86FC"
+                android:textSize="15sp"
+                android:stateListAnimator="@null" />
 
         </LinearLayout>
 
@@ -155,72 +229,80 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="透明度：50%"
-            android:textSize="12sp" />
+            android:textColor="#9E9E9E"
+            android:textSize="11sp"
+            android:paddingBottom="2dp" />
 
         <SeekBar
             android:id="@+id/opacity_seekbar"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:max="100"
-            android:progress="50" />
+            android:progress="50"
+            android:progressTint="#BB86FC"
+            android:thumbTint="#6200EE" />
 
-        <!-- 偏移显示 -->
         <TextView
             android:id="@+id/offset_label"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="偏移：X: 0dp  Y: 0dp"
-            android:textSize="12sp"
+            android:textColor="#9E9E9E"
+            android:textSize="11sp"
             android:layout_marginTop="4dp" />
 
     </LinearLayout>
 
-    <!-- 控制模块：不可折叠 -->
+    <!-- 控制模块（可折叠） -->
     <TextView
+        android:id="@+id/section_control_title"
         android:layout_width="match_parent"
-        android:layout_height="44dp"
+        android:layout_height="40dp"
+        android:background="@drawable/inspector_section_bg"
         android:gravity="center_vertical"
-        android:paddingStart="12dp"
-        android:text="控制"
-        android:textSize="14sp"
+        android:paddingStart="14dp"
+        android:paddingEnd="14dp"
+        android:text="▶  控制"
+        android:textColor="#BB86FC"
+        android:textSize="12sp"
         android:textStyle="bold"
-        android:background="#E0E0E0" />
+        android:letterSpacing="0.05" />
 
     <LinearLayout
+        android:id="@+id/section_control_content"
+        android:visibility="gone"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:padding="8dp">
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:layout_marginBottom="8dp">
-
-            <Button
-                android:id="@+id/btn_show"
-                android:layout_width="0dp"
-                android:layout_height="48dp"
-                android:layout_weight="1"
-                android:text="显示"
-                android:layout_marginEnd="4dp" />
-
-            <Button
-                android:id="@+id/btn_hide"
-                android:layout_width="0dp"
-                android:layout_height="48dp"
-                android:layout_weight="1"
-                android:text="隐藏" />
-
-        </LinearLayout>
+        android:orientation="horizontal"
+        android:background="#0D0D1A"
+        android:paddingStart="12dp"
+        android:paddingEnd="12dp"
+        android:paddingTop="8dp"
+        android:paddingBottom="12dp">
 
         <Button
-            android:id="@+id/btn_close_panel"
-            android:layout_width="match_parent"
-            android:layout_height="48dp"
-            android:text="关闭面板" />
+            android:id="@+id/btn_show"
+            android:layout_width="0dp"
+            android:layout_height="38dp"
+            android:layout_weight="1"
+            android:layout_marginEnd="6dp"
+            android:background="#6200EE"
+            android:text="显示"
+            android:textColor="#FFFFFF"
+            android:textSize="13sp"
+            android:stateListAnimator="@null" />
+
+        <Button
+            android:id="@+id/btn_hide"
+            android:layout_width="0dp"
+            android:layout_height="38dp"
+            android:layout_weight="1"
+            android:background="#1E1E3A"
+            android:text="隐藏"
+            android:textColor="#BB86FC"
+            android:textSize="13sp"
+            android:stateListAnimator="@null" />
 
     </LinearLayout>
 
-</LinearLayout>
+</com.clienttools.sdk.inspector.DraggableLayout>
