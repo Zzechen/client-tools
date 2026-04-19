@@ -2,7 +2,9 @@
   "mcpServers": {
     "client-tools": {
       "command": "node",
-      "args": ["/Users/zzc/Desktop/works/client-tools/mcp/dist/index.js"],
+      "args": [
+        "/Users/zzc/Desktop/works/client-tools/mcp/dist/index.js"
+      ],
       "env": {
         "CLIENT_TOOLS_PORT": "8080"
       }
