@@ -12,9 +12,11 @@ import androidx.recyclerview.widget.RecyclerView
 
 class MainActivity : AppCompatActivity() {
 
-    private val pages = listOf(
-        Page("Login Screen") { startActivity(Intent(this, LoginActivity::class.java)) }
-    )
+    private val pages by lazy {
+        listOf(
+            Page("Login Screen") { startActivity(Intent(this, LoginActivity::class.java)) }
+        )
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -47,5 +49,5 @@ class MainActivity : AppCompatActivity() {
         override fun getItemCount() = items.size
     }
 
-    private data class Page(val name: String, val action: MainActivity.() -> Unit)
+    private data class Page(val name: String, val action: () -> Unit)
 }
