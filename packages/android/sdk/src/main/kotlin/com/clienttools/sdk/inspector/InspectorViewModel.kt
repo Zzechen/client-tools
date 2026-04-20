@@ -26,7 +26,7 @@ data class ImageState(
     val opacity: Float = 0.5f
 )
 
-enum class ActiveTab { WEBVIEW, IMAGE }
+enum class ActiveTab { WEBVIEW, IMAGE, STATUS }
 
 class InspectorViewModel(app: Application) : AndroidViewModel(app) {
     val activeTab = MutableStateFlow(ActiveTab.WEBVIEW)

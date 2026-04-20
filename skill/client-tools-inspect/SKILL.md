@@ -5,7 +5,7 @@ description: Use when user wants to visually inspect or correct an Android scree
 
 # client-tools:inspect
 
-运行时视觉校正工作流。将设计稿叠加到 Android App 上，逐节点比对差异，AI 自动调整 View 属性直到通过验收。
+运行时视觉校正工作流。将设计稿叠加到 Android App 上，通过坐标自动匹配 DOM 节点与 Android View，批量调整直到通过验收。
 
 ## 触发条件
 
@@ -14,89 +14,106 @@ description: Use when user wants to visually inspect or correct an Android scree
 
 ## 前置条件
 
-- design.json 已生成，包含节点列表
-- App 已运行到目标页面（由 `client-tools:implement` 确认）
-- MCP client-tools 工具已连接（`get_last_event` 可用）
+- 设计稿 HTML 文件已准备好（无需添加 id）
+- App 已运行到目标页面
+- MCP client-tools 工具已连接
 
 ## 工作流程
 
-### 阶段一：WebView 叠加
+### 阶段一：叠加对齐
 
-1. 读取设计稿 HTML 文件（路径从 design.json 同目录推断，或询问用户）
-2. 调用 `push_html(tag, html)` 推送并显示设计稿叠加层
-3. 提示用户手动调整偏移/透明度，对齐锚点节点后告知 AI 继续
+1. 调用 `push_html(tag, html)` 推送设计稿叠加层
+2. 提示用户手动调整偏移/透明度，使叠加层与 App 视觉对齐
+3. 用户确认对齐后继续
 
-### 阶段二：逐节点局部校对
+### 阶段二：全量数据采集 + 自动匹配
 
-从 design.json 的 `nodes` 列表中，**按从左到右、从上到下**（即 screenY 升序，同 Y 则 screenX 升序）依次处理每个节点。
+1. 调用 `dom_all()` 获取全量 DOM 节点（含 x、y、w、h、tagName、text）
+2. 调用 `get_all_nodes()` 获取全量 Android View 节点
+3. 根据用户对齐时参照的锚点元素计算坐标系偏移量：
+   - 选取一个在两侧都能识别的元素（如顶部关闭按钮）
+   - offsetX = view.screenX - dom.x，offsetY = view.screenY - dom.y
+4. 对所有 DOM 坐标做偏移修正：corrX = dom.x + offsetX，corrY = dom.y + offsetY
+5. 对每个 Android View，按以下优先级在 DOM 中寻找最佳匹配：
+   - **文字内容**（View text == DOM textContent，强信号，优先）
+   - **坐标距离**（|dx| + |dy| 最小）
+   - **尺寸接近度**（|dw| + |dh| 最小）
+   - **类型兼容性**（TextView ↔ p/span/h1-h6/button，ImageView ↔ img，ViewGroup ↔ div）
+6. 双向验证：View A 匹配 DOM B，且 DOM B 反向也最近邻 View A，否则标记「可疑」
+7. 输出匹配表，可疑匹配请用户确认后再进入校对
 
-**跳过规则：** type 为 `container` 的节点跳过样式属性校对，但仍校对位置和尺寸。
+匹配表格式：
+```
+View id                DOM 元素      文字        dx    dy    dw    dh
+login_text_title       h1           欢迎回来      0     0     0     0
+login_btn_submit       button       获取验证码     0     1    -1     0
+⚠️ login_logo_name     div(可疑)     PULSE        3     2     5     4
+```
 
-**每个节点的校对循环（最多 10 轮）：**
+### 阶段三：批量校对循环
+
+使用匹配表，按从上到下（screenY 升序）顺序校对每个节点。
+
+**跳过规则：** type 为 CONTAINER 且无文字内容的节点，仅校对位置和尺寸，跳过样式属性。
+
+**验收阈值：** 所有维度差异 < 1dp 即通过。
+
+**每轮校对流程（最多 5 轮）：**
 
 ```
-① 调用 dom_by_id(id) → 获取 DOM 节点屏幕坐标和尺寸
-② 调用 get_node(id) → 获取 Android View 屏幕坐标和尺寸
-③ 计算差异：
-   - dx = dom.screenX - view.screenX
-   - dy = dom.screenY - view.screenY
-   - dw = dom.widthDp - view.widthDp
-   - dh = dom.heightDp - view.heightDp
-④ 差异在阈值内（|dx|≤2dp, |dy|≤2dp, |dw|≤2dp, |dh|≤2dp）？
-   → 是：该节点通过，继续下一个
-   → 否：AI 推理调整策略（见下）
-⑤ 调用 modify_view(id, props) 应用调整
-⑥ 重回 ① 重新获取数据
+① 找出本轮所有差异 ≥ 1dp 的节点
+② 优先处理父容器（位置靠上），每轮最多调整 5 个节点
+③ 对每个节点推断调整策略（margin/padding/width/height）
+④ 批量调用 modify_view 应用所有调整
+⑤ 调用 get_all_nodes() 获取全量快照
+⑥ 全局比对更新所有节点差异状态
+⑦ 差异全部 < 1dp → 进入验收；否则进入下一轮
 ```
 
-**AI 推理调整策略：**
+**调整策略原则：**
+- 每次调整后必须用最新 get_all_nodes() 数据，不得基于旧数据叠加计算
+- 若连续 2 轮某节点差异无改善（变化 < 0.5dp），标记为「未收敛」，跳过该节点
 
-根据差异方向、大小和节点 type，自行决定调整哪个属性（margin/padding/width/height）和调整量。原则：
-- 每次调整后必须重新获取数据，不得基于旧数据叠加计算
-- 若连续 2 轮差异无改善（变化 < 0.5dp），提前终止该节点并标记为「未收敛」
+**注意：校对阶段不修改 XML 代码，所有调整仅通过 modify_view 运行时生效。差异记录到 checklist，用户确认后再集中写回 XML。**
 
-**modify_view props 字段说明：**
-- `marginTopDiffDp` / `marginBottomDiffDp` / `marginLeftDiffDp` / `marginRightDiffDp`：margin 增量（dp，可负）
-- `paddingTopDiffDp` / `paddingBottomDiffDp` / `paddingLeftDiffDp` / `paddingRightDiffDp`：padding 增量（dp，可负）
-- `widthDp` / `heightDp`：尺寸绝对值（dp）
+### 阶段四：全屏验收
 
-### 阶段三：全屏验收
+1. 调用 `get_all_nodes()` 获取最终全量快照
+2. 对照匹配表，逐一检查每个节点差异是否 < 1dp
+3. 全部通过 → 验收成功，进入阶段五
+4. 有未通过节点 → 重新进入阶段三，最多重复 3 次
 
-所有节点局部校对完成后：
+### 阶段五：输出 checklist + 隐藏叠加层
 
-1. 调用 `dom_all()` 获取全量 DOM 数据
-2. 对所有节点 id 批量调用 `get_node(id)` 获取 View 数据
-3. 逐一检查每个节点的差异是否在阈值内
-4. 全部通过 → 验收成功，进入阶段四
-5. 有未通过节点 → 对这些节点重新进入阶段二局部校对循环
-
-### 阶段四：输出报告
-
-**验收成功时：**
+**验收成功时，输出 checklist：**
 
 ```
 ✅ 校正完成，共 N 个节点通过验收
-节点详情：
-- text_title: dx=0.5dp, dy=1.0dp, dw=0dp, dh=0dp ✓
-- img_avatar: dx=0dp, dy=0.5dp, dw=0dp, dh=0dp ✓
-...
+
+| View id | 匹配 DOM | dx | dy | dw | dh | 建议 XML 改动 |
+|---------|---------|-----|-----|-----|-----|--------------|
+| login_text_title | h1 | 0 | 0 | 0 | 0 | 无需改动 |
+| login_btn_submit | button | 0 | 0.5 | 0 | 0 | 无需改动 |
+| login_tabs | div | 0 | 0 | 0 | 0 | marginTop: 12dp→20dp |
 ```
 
 **存在未收敛节点时：**
 
 ```
 ⚠️ 校正完成，N 个节点通过，M 个节点未收敛，需人工介入：
-- login_list_feed: 最终差异 dx=5dp, dy=0dp（超出阈值）
+- login_logo_section: 最终差异 dy=3dp（超出阈值），建议检查 marginTop 约束链
 ```
 
-5. 调用 `hide_overlay()` 隐藏叠加层
+调用 `hide_overlay()` 隐藏叠加层。
 
-## 验收阈值（默认）
+等用户确认 checklist 后，再集中写回 XML。
+
+## 验收阈值
 
 | 维度 | 阈值 |
 |------|------|
-| 位置（x/y） | ≤ 2dp |
-| 尺寸（w/h） | ≤ 2dp |
+| 位置（x/y） | < 1dp |
+| 尺寸（w/h） | < 1dp |
 
 ## MCP 工具速查
 
@@ -105,7 +122,7 @@ description: Use when user wants to visually inspect or correct an Android scree
 | `push_html` | tag, html | 推送并显示设计稿叠加层 |
 | `adjust_overlay` | dx?, dy?, alpha? | 调整偏移/透明度 |
 | `hide_overlay` | - | 校正完成后隐藏 |
-| `dom_by_id` | id | 获取单个 DOM 节点坐标 |
-| `dom_all` | - | 全量 DOM 数据（验收阶段） |
-| `get_node` | id | 获取 Android View 坐标 |
-| `modify_view` | id, props | 修改 View 布局属性 |
+| `dom_all` | - | 全量 DOM 数据 |
+| `get_all_nodes` | - | 全量 Android View 快照 |
+| `get_node` | id | 单个 View 坐标（辅助验证用） |
+| `modify_view` | id, props | 修改 View 布局属性（支持 wrap_content） |

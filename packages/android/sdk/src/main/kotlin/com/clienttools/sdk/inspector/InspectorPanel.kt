@@ -25,6 +25,7 @@ class InspectorPanel(
     // Tab
     private val tabWebview: Button = rootView.findViewById(R.id.tab_webview)
     private val tabImage: Button = rootView.findViewById(R.id.tab_image)
+    private val tabStatus: Button = rootView.findViewById(R.id.tab_status)
 
     // WebView section
     private val sectionWebviewTitle: TextView = rootView.findViewById(R.id.section_webview_title)
@@ -32,6 +33,11 @@ class InspectorPanel(
     private val currentFileLabel: TextView = rootView.findViewById(R.id.current_file_label)
     private val btnSelectFile: Button = rootView.findViewById(R.id.btn_select_file)
     private val fileListContainer: LinearLayout = rootView.findViewById(R.id.file_list_container)
+
+    // Status section
+    private val sectionStatusContent: View = rootView.findViewById(R.id.section_status_content)
+    private val statusServerLabel: TextView = rootView.findViewById(R.id.status_server_label)
+    private val statusActivityLabel: TextView = rootView.findViewById(R.id.status_activity_label)
 
     // Image file section
     private val sectionImageFileTitle: TextView = rootView.findViewById(R.id.section_image_file_title)
@@ -73,6 +79,7 @@ class InspectorPanel(
 
         tabWebview.setOnClickListener { viewModel.activeTab.value = ActiveTab.WEBVIEW }
         tabImage.setOnClickListener   { viewModel.activeTab.value = ActiveTab.IMAGE }
+        tabStatus.setOnClickListener  { viewModel.activeTab.value = ActiveTab.STATUS }
 
         sectionWebviewTitle.setOnClickListener { toggleSection(sectionWebviewTitle, sectionWebviewContent) }
         sectionImageFileTitle.setOnClickListener { toggleSection(sectionImageFileTitle, sectionImageFileContent) }
@@ -96,6 +103,7 @@ class InspectorPanel(
                 when (viewModel.activeTab.value) {
                     ActiveTab.WEBVIEW -> viewModel.webView.value = viewModel.webView.value.copy(opacity = alpha)
                     ActiveTab.IMAGE   -> viewModel.image.value = viewModel.image.value.copy(opacity = alpha)
+                    ActiveTab.STATUS  -> Unit
                 }
             }
             override fun onStartTrackingTouch(sb: SeekBar) {}
@@ -126,12 +134,14 @@ class InspectorPanel(
                     if (viewModel.image.value.currentImage != null)
                         viewModel.image.value = viewModel.image.value.copy(isVisible = true)
                 }
+                ActiveTab.STATUS -> Unit
             }
         }
         btnHide.setOnClickListener {
             when (viewModel.activeTab.value) {
                 ActiveTab.WEBVIEW -> viewModel.webView.value = viewModel.webView.value.copy(isVisible = false)
                 ActiveTab.IMAGE   -> viewModel.image.value = viewModel.image.value.copy(isVisible = false)
+                ActiveTab.STATUS  -> Unit
             }
         }
     }
@@ -144,6 +154,7 @@ class InspectorPanel(
             ActiveTab.IMAGE -> viewModel.image.value = viewModel.image.value.let {
                 it.copy(offsetX = it.offsetX + dx, offsetY = it.offsetY + dy)
             }
+            ActiveTab.STATUS -> Unit
         }
     }
 
@@ -152,15 +163,28 @@ class InspectorPanel(
             launch {
                 viewModel.activeTab.collect { tab ->
                     val wvActive = tab == ActiveTab.WEBVIEW
-                    tabWebview.setBackgroundColor(if (wvActive) 0xFF6200EE.toInt() else 0xFF1E1E3A.toInt())
-                    tabWebview.setTextColor(if (wvActive) 0xFFFFFFFF.toInt() else 0xFFBB86FC.toInt())
-                    tabImage.setBackgroundColor(if (!wvActive) 0xFF6200EE.toInt() else 0xFF1E1E3A.toInt())
-                    tabImage.setTextColor(if (!wvActive) 0xFFFFFFFF.toInt() else 0xFFBB86FC.toInt())
+                    val imgActive = tab == ActiveTab.IMAGE
+                    val statusActive = tab == ActiveTab.STATUS
+
+                    fun tabBg(active: Boolean) = if (active) 0xFF6200EE.toInt() else 0xFF1E1E3A.toInt()
+                    fun tabFg(active: Boolean) = if (active) 0xFFFFFFFF.toInt() else 0xFFBB86FC.toInt()
+                    tabWebview.setBackgroundColor(tabBg(wvActive))
+                    tabWebview.setTextColor(tabFg(wvActive))
+                    tabImage.setBackgroundColor(tabBg(imgActive))
+                    tabImage.setTextColor(tabFg(imgActive))
+                    tabStatus.setBackgroundColor(tabBg(statusActive))
+                    tabStatus.setTextColor(tabFg(statusActive))
 
                     sectionWebviewTitle.visibility = if (wvActive) View.VISIBLE else View.GONE
                     sectionWebviewContent.visibility = View.GONE
-                    sectionImageFileTitle.visibility = if (!wvActive) View.VISIBLE else View.GONE
+                    sectionImageFileTitle.visibility = if (imgActive) View.VISIBLE else View.GONE
                     sectionImageFileContent.visibility = View.GONE
+                    sectionStatusContent.visibility = if (statusActive) View.VISIBLE else View.GONE
+
+                    if (statusActive) {
+                        val activityName = (rootView.context as? android.app.Activity)?.localClassName ?: "—"
+                        statusActivityLabel.text = "Activity: $activityName"
+                    }
                 }
             }
             launch {

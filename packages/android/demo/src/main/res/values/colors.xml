@@ -11,4 +11,15 @@
     <color name="text_secondary">#9E9EA0</color>
     <color name="divider">#2A2A40</color>
     <color name="white">#FFFFFF</color>
+
+    <!-- Login page -->
+    <color name="login_bg">#0A0B0F</color>
+    <color name="login_cyan">#00D4AA</color>
+    <color name="login_cyan_dim">#1A3B35</color>
+    <color name="login_input_bg">#13151A</color>
+    <color name="login_tab_bg">#1A1C23</color>
+    <color name="login_text_hint">#6B7280</color>
+    <color name="login_text_sub">#4B5563</color>
+    <color name="login_divider">#2A2D36</color>
+    <color name="login_icon_bg">#1E2028</color>
 </resources>
