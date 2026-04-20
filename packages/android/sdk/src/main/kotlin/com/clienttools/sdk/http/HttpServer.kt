@@ -17,6 +17,9 @@ class HttpServer(
             val uri = session.uri
             val method = session.method
             when {
+                method == Method.GET && uri == "/api/nodes/all" -> {
+                    ApiHandler.handleGetAllNodes()
+                }
                 method == Method.GET && uri.startsWith("/api/nodes/") -> {
                     val id = uri.removePrefix("/api/nodes/")
                     ApiHandler.handleGetNode(id)

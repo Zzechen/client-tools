@@ -16,6 +16,20 @@ object ViewQueryService {
         return buildViewInfo(view, viewId)
     }
 
+    fun getAllViewInfos(): List<ViewInfo> {
+        val results = mutableListOf<ViewInfo>()
+        ViewTreeTraversal.traverseAll { view ->
+            if (view.id == View.NO_ID) return@traverseAll
+            val id = try {
+                view.resources.getResourceName(view.id).substringAfterLast("/")
+            } catch (e: Exception) {
+                return@traverseAll
+            }
+            results.add(buildViewInfo(view, id))
+        }
+        return results
+    }
+
     private fun buildViewInfo(view: View, viewId: String): ViewInfo {
         val displayMetrics = view.resources.displayMetrics
         val pxToDp = { px: Int -> px / displayMetrics.density }

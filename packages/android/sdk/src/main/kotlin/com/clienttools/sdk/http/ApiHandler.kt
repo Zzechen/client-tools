@@ -41,6 +41,24 @@ object ApiHandler {
         }
     }
 
+    fun handleGetAllNodes(): NanoHTTPD.Response {
+        return try {
+            val viewInfos = ViewQueryService.getAllViewInfos()
+            val json = Json.encodeToString(
+                kotlinx.serialization.builtins.ListSerializer(ViewInfo.serializer()),
+                viewInfos
+            )
+            NanoHTTPD.newFixedLengthResponse(NanoHTTPD.Response.Status.OK, "application/json", json)
+        } catch (e: Exception) {
+            Log.e("ApiHandler", "Error getting all nodes", e)
+            NanoHTTPD.newFixedLengthResponse(
+                NanoHTTPD.Response.Status.INTERNAL_ERROR,
+                "application/json",
+                """{"error":"${e.message}"}"""
+            )
+        }
+    }
+
     fun handleModify(body: String): NanoHTTPD.Response {
         return try {
             val json = Json.parseToJsonElement(body)
