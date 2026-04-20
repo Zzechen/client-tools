@@ -12,8 +12,8 @@ data class ViewProps(
     val paddingBottomDiffDp: Float? = null,
     val paddingLeftDiffDp: Float? = null,
     val paddingRightDiffDp: Float? = null,
-    val widthDp: Float? = null,
-    val heightDp: Float? = null
+    val widthDp: String? = null,
+    val heightDp: String? = null
 )
 
 @Serializable

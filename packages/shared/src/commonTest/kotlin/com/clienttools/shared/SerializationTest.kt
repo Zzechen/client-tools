@@ -113,6 +113,14 @@ class SerializationTest {
     }
 
     @Test
+    fun testViewPropsWrapContent() {
+        val jsonStr = """{"widthDp":"wrap_content","heightDp":"42.0"}"""
+        val props: ViewProps = json.decodeFromString(jsonStr)
+        assertEquals("wrap_content", props.widthDp)
+        assertEquals("42.0", props.heightDp)
+    }
+
+    @Test
     fun testPageChangedEventSerialize() {
         val event = PageChangedEvent(
             activityName = "com.example.LoginActivity",

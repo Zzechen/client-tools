@@ -22,9 +22,17 @@ object ViewModifier {
         }
     }
 
+    private fun resolveDimension(value: String?, density: Float): Int? {
+        if (value == null) return null
+        if (value == "wrap_content") return ViewGroup.LayoutParams.WRAP_CONTENT
+        val dp = value.toFloatOrNull() ?: return null
+        return (dp * density).toInt()
+    }
+
     private fun modify(view: View, props: ViewProps) {
         val displayMetrics = view.resources.displayMetrics
-        val dpToPx = { dp: Float -> (dp * displayMetrics.density).toInt() }
+        val density = displayMetrics.density
+        val dpToPx = { dp: Float -> (dp * density).toInt() }
 
         val layoutParams = view.layoutParams ?: ViewGroup.LayoutParams(
             ViewGroup.LayoutParams.WRAP_CONTENT,
@@ -39,22 +47,22 @@ object ViewModifier {
             layoutParams.setMargins(left, top, right, bottom)
         }
 
-        props.widthDp?.let {
-            layoutParams.width = dpToPx(it)
-        }
-        props.heightDp?.let {
-            layoutParams.height = dpToPx(it)
-        }
+        resolveDimension(props.widthDp, density)?.let { layoutParams.width = it }
+        resolveDimension(props.heightDp, density)?.let { layoutParams.height = it }
 
         view.layoutParams = layoutParams
 
         props.paddingTopDiffDp?.let {
-            view.setPadding(
-                view.paddingLeft,
-                view.paddingTop + dpToPx(it),
-                view.paddingRight,
-                view.paddingBottom
-            )
+            view.setPadding(view.paddingLeft, view.paddingTop + dpToPx(it), view.paddingRight, view.paddingBottom)
+        }
+        props.paddingBottomDiffDp?.let {
+            view.setPadding(view.paddingLeft, view.paddingTop, view.paddingRight, view.paddingBottom + dpToPx(it))
+        }
+        props.paddingLeftDiffDp?.let {
+            view.setPadding(view.paddingLeft + dpToPx(it), view.paddingTop, view.paddingRight, view.paddingBottom)
+        }
+        props.paddingRightDiffDp?.let {
+            view.setPadding(view.paddingLeft, view.paddingTop, view.paddingRight + dpToPx(it), view.paddingBottom)
         }
     }
 }
