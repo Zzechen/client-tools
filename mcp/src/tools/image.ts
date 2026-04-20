@@ -1,5 +1,7 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
+import { readFileSync } from "fs";
+import { extname } from "path";
 import { sdkPost } from "../sdk-client.js";
 
 function errResult(e: unknown) {
@@ -12,16 +14,26 @@ function errResult(e: unknown) {
 export function registerImageTools(server: McpServer): void {
   server.tool(
     "push_image",
-    "推送 base64 编码图片到设备叠加层并自动显示",
+    "推送图片到设备叠加层并自动显示。优先使用 file 参数（本地绝对路径），其次 image base64 字符串",
     {
       tag: z.string().describe("图片标识，如 login、home"),
-      image: z.string().describe("base64 编码的图片内容"),
-      ext: z.enum(["png", "jpg"]).optional().describe("图片格式，缺省 png"),
+      file: z.string().optional().describe("本地图片文件的绝对路径（png/jpg），优先于 image 参数"),
+      image: z.string().optional().describe("base64 编码的图片内容"),
+      ext: z.enum(["png", "jpg"]).optional().describe("图片格式，缺省 png；使用 file 时自动推断"),
       timestamp: z.string().optional().describe("时间戳，格式 MMdd-HHmm，缺省自动生成"),
     },
-    async ({ tag, image, ext, timestamp }) => {
+    async ({ tag, file, image, ext, timestamp }) => {
       try {
-        const result = await sdkPost("/inspector/push-image", { tag, image, ext, timestamp });
+        let imageData = image;
+        let imageExt = ext ?? "png";
+        if (file) {
+          imageData = readFileSync(file).toString("base64");
+          const e = extname(file).slice(1).toLowerCase();
+          if (e === "jpg" || e === "jpeg") imageExt = "jpg";
+          else imageExt = "png";
+        }
+        if (!imageData) throw new Error("需要提供 file 或 image 参数");
+        const result = await sdkPost("/inspector/push-image", { tag, image: imageData, ext: imageExt, timestamp });
         return { content: [{ type: "text" as const, text: JSON.stringify(result) }] };
       } catch (e) { return errResult(e); }
     }
