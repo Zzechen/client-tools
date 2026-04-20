@@ -77,9 +77,12 @@ async def extract_nodes(html_path: str, viewport: int) -> list[Node]:
 
     async with async_playwright() as p:
         browser = await p.chromium.launch()
-        page = await browser.new_page(viewport={"width": viewport, "height": 10000})
+        page = await browser.new_page(viewport={"width": viewport, "height": 812})
         await page.goto(f"file://{Path(html_path).resolve()}")
         await page.wait_for_load_state("networkidle")
+        # bundler 型设计稿：JS 解包后用 replaceWith 替换整个 document，
+        # 再动态执行 React/Babel 脚本，需等待框架完成渲染
+        await asyncio.sleep(5)
 
         elements = await page.query_selector_all("*")
 
