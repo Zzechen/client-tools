@@ -24,7 +24,30 @@ const ViewPropsSchema = z.object({
   heightDp: DpValue.optional(),
 }).describe("View 布局属性，margin/padding 为差值（dp），width/height 为绝对值（dp）或 \"wrap_content\"");
 
+async function fetchImageBase64(url: string): Promise<string> {
+  const res = await fetch(url);
+  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  const buf = await res.arrayBuffer();
+  return Buffer.from(buf).toString("base64");
+}
+
 export function registerViewTools(server: McpServer): void {
+  server.tool(
+    "capture_view",
+    "截取指定 Android View 的截图，返回 PNG 图片供视觉分析",
+    {
+      id: z.string().describe("Android View 的 resource id"),
+    },
+    async ({ id }) => {
+      try {
+        const base64 = await fetchImageBase64(`http://localhost:8080/api/capture/${encodeURIComponent(id)}`);
+        return {
+          content: [{ type: "image" as const, data: base64, mimeType: "image/png" }],
+        };
+      } catch (e) { return errResult(e); }
+    }
+  );
+
   server.tool(
     "get_node",
     "查询 Android 原生 View 节点的屏幕位置和尺寸",

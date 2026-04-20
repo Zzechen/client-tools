@@ -85,6 +85,33 @@ object ApiHandler {
         }
     }
 
+    fun handleCaptureView(id: String): NanoHTTPD.Response {
+        return try {
+            val bytes = ViewQueryService.captureView(id)
+            if (bytes != null) {
+                NanoHTTPD.newFixedLengthResponse(
+                    NanoHTTPD.Response.Status.OK,
+                    "image/png",
+                    bytes.inputStream(),
+                    bytes.size.toLong()
+                )
+            } else {
+                NanoHTTPD.newFixedLengthResponse(
+                    NanoHTTPD.Response.Status.NOT_FOUND,
+                    "application/json",
+                    """{"error":"View not found or has no size"}"""
+                )
+            }
+        } catch (e: Exception) {
+            Log.e("ApiHandler", "Error capturing view $id", e)
+            NanoHTTPD.newFixedLengthResponse(
+                NanoHTTPD.Response.Status.INTERNAL_ERROR,
+                "application/json",
+                """{"error":"${e.message}"}"""
+            )
+        }
+    }
+
     fun handleOverlayShow(body: String): NanoHTTPD.Response {
         return try {
             val json = Json.parseToJsonElement(body)

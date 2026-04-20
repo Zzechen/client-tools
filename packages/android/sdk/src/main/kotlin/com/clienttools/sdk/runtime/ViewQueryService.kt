@@ -1,11 +1,18 @@
 package com.clienttools.sdk.runtime
 
+import android.graphics.Bitmap
+import android.graphics.Canvas
+import android.os.Handler
+import android.os.Looper
 import android.view.View
 import android.widget.TextView
 import android.widget.ImageView
 import android.widget.Button
 import com.clienttools.shared.models.NodeType
 import com.clienttools.sdk.model.ViewInfo
+import java.io.ByteArrayOutputStream
+import java.util.concurrent.CountDownLatch
+import java.util.concurrent.TimeUnit
 
 object ViewQueryService {
     fun getViewInfo(viewId: String): ViewInfo? {
@@ -28,6 +35,30 @@ object ViewQueryService {
             results.add(buildViewInfo(view, id))
         }
         return results
+    }
+
+    fun captureView(viewId: String): ByteArray? {
+        val views = ViewTreeTraversal.findViewById(viewId)
+        if (views.isEmpty()) return null
+        val view = views.first()
+        if (view.width == 0 || view.height == 0) return null
+
+        var result: ByteArray? = null
+        val latch = CountDownLatch(1)
+        Handler(Looper.getMainLooper()).post {
+            try {
+                val bitmap = Bitmap.createBitmap(view.width, view.height, Bitmap.Config.ARGB_8888)
+                val canvas = Canvas(bitmap)
+                view.draw(canvas)
+                val out = ByteArrayOutputStream()
+                bitmap.compress(Bitmap.CompressFormat.PNG, 100, out)
+                result = out.toByteArray()
+            } finally {
+                latch.countDown()
+            }
+        }
+        latch.await(3, TimeUnit.SECONDS)
+        return result
     }
 
     private fun buildViewInfo(view: View, viewId: String): ViewInfo {

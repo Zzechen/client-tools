@@ -20,6 +20,10 @@ class HttpServer(
                 method == Method.GET && uri == "/api/nodes/all" -> {
                     ApiHandler.handleGetAllNodes()
                 }
+                method == Method.GET && uri.startsWith("/api/capture/") -> {
+                    val id = uri.removePrefix("/api/capture/")
+                    ApiHandler.handleCaptureView(id)
+                }
                 method == Method.GET && uri.startsWith("/api/nodes/") -> {
                     val id = uri.removePrefix("/api/nodes/")
                     ApiHandler.handleGetNode(id)
