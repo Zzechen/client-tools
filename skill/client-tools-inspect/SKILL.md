@@ -37,9 +37,10 @@ description: Use when user wants to visually inspect or correct an Android scree
 ### 阶段二：全量匹配
 
 1. 使用阶段一最终的 dom_all() 和 get_all_nodes() 数据
-2. DOM 坐标已含 WebView offset，直接与 View 坐标比对（单位：px vs dp，需 /density 换算）
-   - density 从任意 View 的 screenY(dp) 与实际像素推算，或从 dom.y(px) 与 view.screenY(dp) 差值估算
-   - 实际上 dom_all() 返回的坐标已经是 dp（SDK 内部按 WebView 实际位置换算），可直接与 View 坐标比对
+2. **坐标比对公式**：DOM 坐标与 View 坐标不能直接比较，必须通过锚点偏移换算：
+   - 锚点偏移：`offsetX = anchor_view.screenX - anchor_dom.x`，`offsetY = anchor_view.screenY - anchor_dom.y`（阶段一已计算）
+   - 每个节点目标坐标：`target_x = dom.x + offsetX`，`target_y = dom.y + offsetY`
+   - 差值：`dx = view.screenX - target_x`，`dy = view.screenY - target_y`
 3. 对每个 Android View，按以下优先级在 DOM 中寻找最佳匹配：
    - **文字内容**（View text == DOM textContent，强信号，优先）
    - **坐标距离**（|dx| + |dy| 最小）
@@ -78,6 +79,7 @@ login_btn_submit       button       获取验证码     0     1    -1     0
 
 **调整策略原则：**
 - 每次调整后必须用最新 get_all_nodes() 数据，不得基于旧数据叠加计算
+- 每轮调整后必须重新计算所有节点的目标坐标（`target = dom + offset`），再与新快照的 View 坐标做差，不得复用上一轮的 dx/dy 值
 - 若连续 2 轮某节点差异无改善（变化 < 0.5dp），标记为「未收敛」，跳过该节点
 
 **注意：校对阶段不修改 XML 代码，所有调整仅通过 modify_view 运行时生效。差异记录到 checklist，用户确认后再集中写回 XML。**

@@ -15,17 +15,6 @@
 - 记录每次调整对下方节点的影响，批量评估后再统一应用
 - 优先调整父容器，再调整子节点
 
-### 3. 建立需求目录结构
-**问题：** 设计稿、design.json、核对清单分散，难以管理。  
-**改进：** 为每个页面建立统一目录：
-
-```
-docs/pages/<page-name>/
-  ├── design.html       # 设计稿（内联 CSS）
-  ├── design.json       # 预处理产出
-  ├── checklist.md      # 核对清单（运行时差异记录）
-  └── layout.xml        # 对应的 Android 布局（或符号链接）
-```
 
 ### 5. 解除 HTML id 与 Android View id 的强绑定
 **问题：** 当前要求设计稿 HTML 元素 id 与 Android XML View id 一一对应，流程约束多，HTML 或 Android 任意一侧重命名都会导致匹配失效。  
