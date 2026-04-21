@@ -62,9 +62,9 @@ class ImageRenderer(rootView: View, private val viewModel: InspectorViewModel) {
         job = null
     }
 
-    private fun dpToPx(dp: Int): Float = TypedValue.applyDimension(
+    private fun dpToPx(dp: Float): Float = TypedValue.applyDimension(
         TypedValue.COMPLEX_UNIT_DIP,
-        dp.toFloat(),
+        dp,
         imageView.context.resources.displayMetrics
     )
 }

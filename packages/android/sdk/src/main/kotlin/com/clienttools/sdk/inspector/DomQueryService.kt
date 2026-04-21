@@ -55,8 +55,8 @@ class DomQueryService(
 
     suspend fun queryAll(
         webView: WebView,
-        webViewOffsetXDp: Int,
-        webViewOffsetYDp: Int
+        webViewOffsetXDp: Float,
+        webViewOffsetYDp: Float
     ): List<DomNodeInfo> {
         val density = webView.context.resources.displayMetrics.density
         val offsetXPx = (webViewOffsetXDp * density).toInt()
@@ -92,8 +92,8 @@ class DomQueryService(
     suspend fun queryById(
         webView: WebView,
         id: String,
-        webViewOffsetXDp: Int,
-        webViewOffsetYDp: Int
+        webViewOffsetXDp: Float,
+        webViewOffsetYDp: Float
     ): DomNodeInfo? {
         val density = webView.context.resources.displayMetrics.density
         val offsetXPx = (webViewOffsetXDp * density).toInt()

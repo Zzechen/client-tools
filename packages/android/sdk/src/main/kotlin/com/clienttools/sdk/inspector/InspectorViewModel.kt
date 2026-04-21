@@ -13,16 +13,16 @@ data class FileInfo(
 data class WebViewState(
     val currentFile: FileInfo? = null,
     val isVisible: Boolean = false,
-    val offsetX: Int = 0,
-    val offsetY: Int = 0,
+    val offsetX: Float = 0f,
+    val offsetY: Float = 0f,
     val opacity: Float = 0.5f
 )
 
 data class ImageState(
     val currentImage: ImageInfo? = null,
     val isVisible: Boolean = false,
-    val offsetX: Int = 0,
-    val offsetY: Int = 0,
+    val offsetX: Float = 0f,
+    val offsetY: Float = 0f,
     val opacity: Float = 0.5f
 )
 

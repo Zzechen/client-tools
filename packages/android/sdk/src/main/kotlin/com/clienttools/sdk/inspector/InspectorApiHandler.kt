@@ -161,8 +161,8 @@ class InspectorApiHandler(
     fun handleAdjust(body: String): NanoHTTPD.Response = try {
         val obj = json.parseToJsonElement(body).jsonObject
         val typeStr = obj["type"]?.jsonPrimitive?.content
-        val dx = obj["offsetX"]?.jsonPrimitive?.content?.toIntOrNull() ?: 0
-        val dy = obj["offsetY"]?.jsonPrimitive?.content?.toIntOrNull() ?: 0
+        val dx = obj["offsetX"]?.jsonPrimitive?.content?.toFloatOrNull() ?: 0f
+        val dy = obj["offsetY"]?.jsonPrimitive?.content?.toFloatOrNull() ?: 0f
         val opacity = obj["opacity"]?.jsonPrimitive?.content?.toFloatOrNull()
 
         val vm = getTopViewModel()
@@ -199,8 +199,8 @@ class InspectorApiHandler(
     suspend fun handleDomAll(webView: android.webkit.WebView?): NanoHTTPD.Response {
         if (webView == null) return domError(3, "webview not ready")
         val vm = getTopViewModel()
-        val offsetX = vm?.webView?.value?.offsetX ?: 0
-        val offsetY = vm?.webView?.value?.offsetY ?: 0
+        val offsetX = vm?.webView?.value?.offsetX ?: 0f
+        val offsetY = vm?.webView?.value?.offsetY ?: 0f
         return try {
             val nodes = domQueryService.queryAll(webView, offsetX, offsetY)
             val nodesJson = nodes.joinToString(",") { n ->
@@ -218,8 +218,8 @@ class InspectorApiHandler(
     suspend fun handleDomById(webView: android.webkit.WebView?, id: String): NanoHTTPD.Response {
         if (webView == null) return domError(3, "webview not ready")
         val vm = getTopViewModel()
-        val offsetX = vm?.webView?.value?.offsetX ?: 0
-        val offsetY = vm?.webView?.value?.offsetY ?: 0
+        val offsetX = vm?.webView?.value?.offsetX ?: 0f
+        val offsetY = vm?.webView?.value?.offsetY ?: 0f
         return try {
             val node = domQueryService.queryById(webView, id, offsetX, offsetY)
                 ?: return domError(1, "not found")

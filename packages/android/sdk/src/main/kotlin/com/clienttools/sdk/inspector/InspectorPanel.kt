@@ -63,7 +63,7 @@ class InspectorPanel(
     private val btnShow: Button = rootView.findViewById(R.id.btn_show)
     private val btnHide: Button = rootView.findViewById(R.id.btn_hide)
 
-    private var stepDp = 10
+    private var stepDp = 10f
     private var job: Job? = null
 
     init {
@@ -91,10 +91,10 @@ class InspectorPanel(
         btnStep10.setOnClickListener { selectStep(10) }
         btnStep50.setOnClickListener { selectStep(50) }
 
-        btnUp.setOnClickListener    { applyOffset(0, -stepDp) }
-        btnDown.setOnClickListener  { applyOffset(0, stepDp) }
-        btnLeft.setOnClickListener  { applyOffset(-stepDp, 0) }
-        btnRight.setOnClickListener { applyOffset(stepDp, 0) }
+        btnUp.setOnClickListener    { applyOffset(0f, -stepDp) }
+        btnDown.setOnClickListener  { applyOffset(0f, stepDp) }
+        btnLeft.setOnClickListener  { applyOffset(-stepDp, 0f) }
+        btnRight.setOnClickListener { applyOffset(stepDp, 0f) }
 
         opacitySeekBar.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
             override fun onProgressChanged(sb: SeekBar, progress: Int, fromUser: Boolean) {
@@ -146,7 +146,7 @@ class InspectorPanel(
         }
     }
 
-    private fun applyOffset(dx: Int, dy: Int) {
+    private fun applyOffset(dx: Float, dy: Float) {
         when (viewModel.activeTab.value) {
             ActiveTab.WEBVIEW -> viewModel.webView.value = viewModel.webView.value.let {
                 it.copy(offsetX = it.offsetX + dx, offsetY = it.offsetY + dy)
@@ -275,7 +275,7 @@ class InspectorPanel(
     }
 
     private fun selectStep(dp: Int) {
-        stepDp = dp
+        stepDp = dp.toFloat()
         val active = 0xFF6200EE.toInt()
         val inactive = 0xFF1E1E3A.toInt()
         btnStep1.setBackgroundColor(if (dp == 1) active else inactive)
