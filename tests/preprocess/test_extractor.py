@@ -57,3 +57,36 @@ async def test_extract_id_naming_convention():
         parts = node.id.rsplit("_", 1)
         assert len(parts) == 2
         assert parts[1].isdigit()
+
+
+ICON_FIXTURE = str(Path(__file__).parent / "fixtures/icon_svg.html")
+
+
+@pytest.mark.asyncio
+async def test_svg_icon_button_becomes_image_node():
+    """只含 SVG 的按钮应被识别为 IMAGE 类型节点。"""
+    from models import NodeType, ImageAttrs
+    nodes = await extract_nodes(ICON_FIXTURE, viewport=375)
+    image_nodes = [n for n in nodes if n.type == NodeType.IMAGE]
+    assert len(image_nodes) >= 2  # btn_close, btn_wechat
+
+
+@pytest.mark.asyncio
+async def test_svg_icon_node_has_drawable_attr():
+    """IMAGE 节点应有非空 drawable 字段。"""
+    from models import NodeType, ImageAttrs
+    nodes = await extract_nodes(ICON_FIXTURE, viewport=375)
+    image_nodes = [n for n in nodes if n.type == NodeType.IMAGE]
+    for n in image_nodes:
+        assert isinstance(n.attrs, ImageAttrs)
+        assert n.attrs.drawable is not None
+        assert n.attrs.drawable.startswith("ic_")
+
+
+@pytest.mark.asyncio
+async def test_large_svg_becomes_drawable_node():
+    """面积超过视口 50% 的 SVG 应为 DRAWABLE 类型。"""
+    from models import NodeType
+    nodes = await extract_nodes(ICON_FIXTURE, viewport=375)
+    drawable_nodes = [n for n in nodes if n.type == NodeType.DRAWABLE]
+    assert len(drawable_nodes) >= 1
