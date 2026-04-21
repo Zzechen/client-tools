@@ -40,9 +40,17 @@ Android 布局编码工作流。以 design.json 为基准，生成 Android XML �
 | type | Android View |
 |------|-------------|
 | text | TextView |
-| image | ImageView |
+| image | ImageView（见下方 drawable 说明） |
 | list | RecyclerView |
 | container | ViewGroup（FrameLayout / LinearLayout / ConstraintLayout） |
+| drawable | 不生成 View，在背景容器中按需引用 `@drawable/<attrs.drawable>` |
+
+**IMAGE 节点 drawable 处理：** 若节点 `attrs.drawable` 非空，生成 ImageView 时使用：
+```xml
+android:src="@drawable/<attrs.drawable>"
+```
+
+**DRAWABLE 节点：** 不自动生成 View，代表装饰背景 SVG（如网格、波浪线），在生成父容器背景时按需引用 `@drawable/<attrs.drawable>`。
 
 ### Step 3：提示用户运行 App
 

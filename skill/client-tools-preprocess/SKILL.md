@@ -70,6 +70,14 @@ skill/preprocess/.venv/bin/python skill/preprocess/preprocess.py \
 
 提示下一步：调用 `client-tools:implement` 开始生成 Android 代码。
 
+## 工作目录模式（由 orchestrator 调用时）
+
+当由 `client-tools:orchestrate` 调用时，preprocess 使用工作目录模式：
+- HTML 已复制到工作目录，路径由 orchestrator 提供
+- `--output` 指向 `<workdir>/design.json`
+- `--drawables-dir` 指向 `<workdir>/drawables/`，自动提取 SVG 并转换为 Vector Drawable
+- 完成后 orchestrator 负责更新 `state.json` 并推进到 implement 阶段
+
 ## 常见问题
 
 - **脚本找不到**：确认已在项目根目录执行，且 `skill/preprocess/.venv/` 已初始化（运行 `cd skill/preprocess && python -m venv .venv && .venv/bin/pip install -r requirements.txt`）
