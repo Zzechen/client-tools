@@ -1,7 +1,7 @@
 import pytest
 from pathlib import Path
 import sys
-sys.path.insert(0, str(Path(__file__).parent.parent.parent / "skill" / "preprocess"))
+sys.path.insert(0, str(Path(__file__).parent.parent.parent / "skill" / "client-tools-preprocess" / "scripts"))
 
 from extractor import extract_nodes
 

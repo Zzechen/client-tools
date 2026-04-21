@@ -26,7 +26,7 @@ description: Use when user wants to preprocess a design HTML file, generate desi
 在项目根目录执行：
 
 ```bash
-skill/preprocess/.venv/bin/python skill/preprocess/preprocess.py \
+.claude/skills/client-tools-preprocess/scripts/.venv/bin/python .claude/skills/client-tools-preprocess/scripts/preprocess.py \
   --input <HTML路径> \
   --viewport <viewport宽度> \
   --list-only
@@ -52,7 +52,7 @@ id: img_avatar    type: image   screenX: 80   screenY: 160  w: 40   h: 40
 执行完整预处理：
 
 ```bash
-skill/preprocess/.venv/bin/python skill/preprocess/preprocess.py \
+.claude/skills/client-tools-preprocess/scripts/.venv/bin/python .claude/skills/client-tools-preprocess/scripts/preprocess.py \
   --input <HTML路径> \
   --viewport <viewport宽度> \
   --anchor-id <锚点id> \
@@ -80,5 +80,5 @@ skill/preprocess/.venv/bin/python skill/preprocess/preprocess.py \
 
 ## 常见问题
 
-- **脚本找不到**：确认已在项目根目录执行，且 `skill/preprocess/.venv/` 已初始化（运行 `cd skill/preprocess && python -m venv .venv && .venv/bin/pip install -r requirements.txt`）
+- **脚本找不到**：确认已在项目根目录执行，且 `.venv` 已初始化（运行 `cd .claude/skills/client-tools-preprocess/scripts && python -m venv .venv && .venv/bin/pip install -r requirements.txt`）
 - **节点列表为空**：检查 HTML 文件路径是否正确，viewport 值是否合理

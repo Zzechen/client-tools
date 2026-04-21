@@ -1,6 +1,6 @@
 import sys
 from pathlib import Path
-sys.path.insert(0, str(Path(__file__).parent.parent.parent / "skill" / "preprocess"))
+sys.path.insert(0, str(Path(__file__).parent.parent.parent / "skill" / "client-tools-preprocess" / "scripts"))
 
 from svg_extractor import infer_drawable_name, svg_content_to_vector
 

@@ -4,8 +4,8 @@ import sys
 from pathlib import Path
 
 FIXTURE = str(Path(__file__).parent / "fixtures/simple.html")
-SCRIPT = str(Path(__file__).parent.parent.parent / "skill" / "preprocess" / "preprocess.py")
-PYTHON = str(Path(__file__).parent.parent.parent / "skill" / "preprocess" / ".venv" / "bin" / "python")
+SCRIPT = str(Path(__file__).parent.parent.parent / "skill" / "client-tools-preprocess" / "scripts" / "preprocess.py")
+PYTHON = str(Path(__file__).parent.parent.parent / "skill" / "client-tools-preprocess" / "scripts" / ".venv" / "bin" / "python")
 
 
 def test_list_only_outputs_json_array():

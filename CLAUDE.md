@@ -41,7 +41,7 @@ AI Coding 客户端页面开发增强套件，目标是让 AI 高质量完成「
 
 ```bash
 # Python（preprocess）
-skill/preprocess/.venv/bin/pytest tests/preprocess/ -q
+.claude/skills/client-tools-preprocess/scripts/.venv/bin/pytest tests/preprocess/ -q
 
 # Kotlin（KMP shared）
 cd packages && ./gradlew :shared:jvmTest

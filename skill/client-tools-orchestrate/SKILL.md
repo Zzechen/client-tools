@@ -77,7 +77,7 @@
 按照 `client-tools:preprocess` skill 的 Step 2-3 流程，向用户询问 viewport 和锚点，然后运行：
 
 ```bash
-skill/preprocess/.venv/bin/python skill/preprocess/preprocess.py \
+.claude/skills/client-tools-preprocess/scripts/.venv/bin/python .claude/skills/client-tools-preprocess/scripts/preprocess.py \
   --input <workdir>/design.html \
   --viewport <viewport> \
   --anchor-id <anchor_id> \
