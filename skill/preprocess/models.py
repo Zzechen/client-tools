@@ -9,6 +9,7 @@ class NodeType(str, Enum):
     IMAGE = "IMAGE"
     LIST = "LIST"
     CONTAINER = "CONTAINER"
+    DRAWABLE = "DRAWABLE"
 
 
 @dataclass
@@ -21,6 +22,7 @@ class TextAttrs:
 @dataclass
 class ImageAttrs:
     scaleType: str = "fitCenter"
+    drawable: Optional[str] = None
 
 
 @dataclass
@@ -83,7 +85,9 @@ def _node_to_dict(node: Node) -> dict:
     if node.rel:
         d["rel"] = {"dx": node.rel.dx, "dy": node.rel.dy}
     if node.attrs:
-        d["attrs"] = asdict(node.attrs)
+        attrs_dict = asdict(node.attrs)
+        attrs_dict = {k: v for k, v in attrs_dict.items() if v is not None}
+        d["attrs"] = attrs_dict
     return d
 
 
