@@ -14,7 +14,8 @@ class MainActivity : AppCompatActivity() {
 
     private val pages by lazy {
         listOf(
-            Page("Login Screen") { startActivity(Intent(this, LoginActivity::class.java)) }
+            Page("Login Screen") { startActivity(Intent(this, LoginActivity::class.java)) },
+            Page("Verify Code") { startActivity(Intent(this, VerifyCodeActivity::class.java)) }
         )
     }
 

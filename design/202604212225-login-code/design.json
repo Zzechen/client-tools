@@ -1,0 +1,1257 @@
+{
+  "viewport": 375,
+  "anchor": {
+    "id": "container_33",
+    "edge": "top"
+  },
+  "nodes": [
+    {
+      "id": "container_1",
+      "type": "CONTAINER",
+      "screenX": 0,
+      "screenY": 0,
+      "widthDp": 375,
+      "heightDp": 812,
+      "rel": {
+        "dx": -20,
+        "dy": -64
+      },
+      "attrs": {
+        "paddingTop": 0,
+        "paddingBottom": 0,
+        "paddingLeft": 0,
+        "paddingRight": 0
+      }
+    },
+    {
+      "id": "container_2",
+      "type": "CONTAINER",
+      "screenX": 105.5,
+      "screenY": 0,
+      "widthDp": 164,
+      "heightDp": 30,
+      "rel": {
+        "dx": 85.5,
+        "dy": -64
+      },
+      "attrs": {
+        "paddingTop": 0,
+        "paddingBottom": 0,
+        "paddingLeft": 0,
+        "paddingRight": 0
+      }
+    },
+    {
+      "id": "container_3",
+      "type": "CONTAINER",
+      "screenX": 0,
+      "screenY": 0,
+      "widthDp": 375,
+      "heightDp": 44,
+      "rel": {
+        "dx": -20,
+        "dy": -64
+      },
+      "attrs": {
+        "paddingTop": 0,
+        "paddingBottom": 6,
+        "paddingLeft": 28,
+        "paddingRight": 28
+      }
+    },
+    {
+      "id": "container_4",
+      "type": "CONTAINER",
+      "screenX": 28,
+      "screenY": 20,
+      "widthDp": 31.3,
+      "heightDp": 18,
+      "rel": {
+        "dx": 8,
+        "dy": -44
+      },
+      "attrs": {
+        "paddingTop": 0,
+        "paddingBottom": 0,
+        "paddingLeft": 0,
+        "paddingRight": 0
+      }
+    },
+    {
+      "id": "container_5",
+      "type": "CONTAINER",
+      "screenX": 280,
+      "screenY": 26,
+      "widthDp": 67,
+      "heightDp": 12,
+      "rel": {
+        "dx": 260,
+        "dy": -38
+      },
+      "attrs": {
+        "paddingTop": 0,
+        "paddingBottom": 0,
+        "paddingLeft": 0,
+        "paddingRight": 0
+      }
+    },
+    {
+      "id": "container_6",
+      "type": "CONTAINER",
+      "screenX": 280,
+      "screenY": 26.5,
+      "widthDp": 17,
+      "heightDp": 11,
+      "rel": {
+        "dx": 260,
+        "dy": -37.5
+      },
+      "attrs": {
+        "paddingTop": 0,
+        "paddingBottom": 0,
+        "paddingLeft": 0,
+        "paddingRight": 0
+      }
+    },
+    {
+      "id": "container_7",
+      "type": "CONTAINER",
+      "screenX": 279.5,
+      "screenY": 26,
+      "widthDp": 17.5,
+      "heightDp": 11.5,
+      "rel": {
+        "dx": 259.5,
+        "dy": -38
+      },
+      "attrs": {
+        "paddingTop": 0,
+        "paddingBottom": 0,
+        "paddingLeft": 0,
+        "paddingRight": 0
+      }
+    },
+    {
+      "id": "container_8",
+      "type": "CONTAINER",
+      "screenX": 279.5,
+      "screenY": 32.5,
+      "widthDp": 4,
+      "heightDp": 5,
+      "rel": {
+        "dx": 259.5,
+        "dy": -31.5
+      },
+      "attrs": {
+        "paddingTop": 0,
+        "paddingBottom": 0,
+        "paddingLeft": 0,
+        "paddingRight": 0
+      }
+    },
+    {
+      "id": "container_9",
+      "type": "CONTAINER",
+      "screenX": 284,
+      "screenY": 30.5,
+      "widthDp": 4,
+      "heightDp": 7,
+      "rel": {
+        "dx": 264,
+        "dy": -33.5
+      },
+      "attrs": {
+        "paddingTop": 0,
+        "paddingBottom": 0,
+        "paddingLeft": 0,
+        "paddingRight": 0
+      }
+    },
+    {
+      "id": "container_10",
+      "type": "CONTAINER",
+      "screenX": 288.5,
+      "screenY": 28.5,
+      "widthDp": 4,
+      "heightDp": 9,
+      "rel": {
+        "dx": 268.5,
+        "dy": -35.5
+      },
+      "attrs": {
+        "paddingTop": 0,
+        "paddingBottom": 0,
+        "paddingLeft": 0,
+        "paddingRight": 0
+      }
+    },
+    {
+      "id": "container_11",
+      "type": "CONTAINER",
+      "screenX": 293,
+      "screenY": 26,
+      "widthDp": 4,
+      "heightDp": 11.5,
+      "rel": {
+        "dx": 273,
+        "dy": -38
+      },
+      "attrs": {
+        "paddingTop": 0,
+        "paddingBottom": 0,
+        "paddingLeft": 0,
+        "paddingRight": 0
+      }
+    },
+    {
+      "id": "container_12",
+      "type": "CONTAINER",
+      "screenX": 302,
+      "screenY": 26.5,
+      "widthDp": 15,
+      "heightDp": 11,
+      "rel": {
+        "dx": 282,
+        "dy": -37.5
+      },
+      "attrs": {
+        "paddingTop": 0,
+        "paddingBottom": 0,
+        "paddingLeft": 0,
+        "paddingRight": 0
+      }
+    },
+    {
+      "id": "container_13",
+      "type": "CONTAINER",
+      "screenX": 301.2,
+      "screenY": 25.5,
+      "widthDp": 16.6,
+      "heightDp": 12.3,
+      "rel": {
+        "dx": 281.2,
+        "dy": -38.5
+      },
+      "attrs": {
+        "paddingTop": 0,
+        "paddingBottom": 0,
+        "paddingLeft": 0,
+        "paddingRight": 0
+      }
+    },
+    {
+      "id": "container_14",
+      "type": "CONTAINER",
+      "screenX": 301.2,
+      "screenY": 25.5,
+      "widthDp": 16.6,
+      "heightDp": 8.2,
+      "rel": {
+        "dx": 281.2,
+        "dy": -38.5
+      },
+      "attrs": {
+        "paddingTop": 0,
+        "paddingBottom": 0,
+        "paddingLeft": 0,
+        "paddingRight": 0
+      }
+    },
+    {
+      "id": "container_15",
+      "type": "CONTAINER",
+      "screenX": 303.4,
+      "screenY": 29.2,
+      "widthDp": 12.2,
+      "heightDp": 6.6,
+      "rel": {
+        "dx": 283.4,
+        "dy": -34.8
+      },
+      "attrs": {
+        "paddingTop": 0,
+        "paddingBottom": 0,
+        "paddingLeft": 0,
+        "paddingRight": 0
+      }
+    },
+    {
+      "id": "container_16",
+      "type": "CONTAINER",
+      "screenX": 307.7,
+      "screenY": 34.2,
+      "widthDp": 3.6,
+      "heightDp": 3.6,
+      "rel": {
+        "dx": 287.7,
+        "dy": -29.8
+      },
+      "attrs": {
+        "paddingTop": 0,
+        "paddingBottom": 0,
+        "paddingLeft": 0,
+        "paddingRight": 0
+      }
+    },
+    {
+      "id": "container_17",
+      "type": "CONTAINER",
+      "screenX": 322,
+      "screenY": 26,
+      "widthDp": 25,
+      "heightDp": 12,
+      "rel": {
+        "dx": 302,
+        "dy": -38
+      },
+      "attrs": {
+        "paddingTop": 0,
+        "paddingBottom": 0,
+        "paddingLeft": 0,
+        "paddingRight": 0
+      }
+    },
+    {
+      "id": "container_18",
+      "type": "CONTAINER",
+      "screenX": 322,
+      "screenY": 26,
+      "widthDp": 22,
+      "heightDp": 12,
+      "rel": {
+        "dx": 302,
+        "dy": -38
+      },
+      "attrs": {
+        "paddingTop": 0,
+        "paddingBottom": 0,
+        "paddingLeft": 0,
+        "paddingRight": 0
+      }
+    },
+    {
+      "id": "container_19",
+      "type": "CONTAINER",
+      "screenX": 323.5,
+      "screenY": 27.5,
+      "widthDp": 19,
+      "heightDp": 9,
+      "rel": {
+        "dx": 303.5,
+        "dy": -36.5
+      },
+      "attrs": {
+        "paddingTop": 0,
+        "paddingBottom": 0,
+        "paddingLeft": 0,
+        "paddingRight": 0
+      }
+    },
+    {
+      "id": "container_20",
+      "type": "CONTAINER",
+      "screenX": 344,
+      "screenY": 29,
+      "widthDp": 2.5,
+      "heightDp": 6,
+      "rel": {
+        "dx": 324,
+        "dy": -35
+      },
+      "attrs": {
+        "paddingTop": 0,
+        "paddingBottom": 0,
+        "paddingLeft": 0,
+        "paddingRight": 0
+      }
+    },
+    {
+      "id": "container_21",
+      "type": "CONTAINER",
+      "screenX": 0,
+      "screenY": 0,
+      "widthDp": 375,
+      "heightDp": 812,
+      "rel": {
+        "dx": -20,
+        "dy": -64
+      },
+      "attrs": {
+        "paddingTop": 0,
+        "paddingBottom": 0,
+        "paddingLeft": 0,
+        "paddingRight": 0
+      }
+    },
+    {
+      "id": "container_22",
+      "type": "CONTAINER",
+      "screenX": 0,
+      "screenY": 0,
+      "widthDp": 375,
+      "heightDp": 812,
+      "rel": {
+        "dx": -20,
+        "dy": -64
+      },
+      "attrs": {
+        "paddingTop": 0,
+        "paddingBottom": 0,
+        "paddingLeft": 0,
+        "paddingRight": 0
+      }
+    },
+    {
+      "id": "container_23",
+      "type": "CONTAINER",
+      "screenX": 0,
+      "screenY": 0,
+      "widthDp": 375,
+      "heightDp": 812,
+      "rel": {
+        "dx": -20,
+        "dy": -64
+      },
+      "attrs": {
+        "paddingTop": 0,
+        "paddingBottom": 0,
+        "paddingLeft": 0,
+        "paddingRight": 0
+      }
+    },
+    {
+      "id": "container_24",
+      "type": "CONTAINER",
+      "screenX": -72.5,
+      "screenY": -140,
+      "widthDp": 520,
+      "heightDp": 520,
+      "rel": {
+        "dx": -92.5,
+        "dy": -204
+      },
+      "attrs": {
+        "paddingTop": 0,
+        "paddingBottom": 0,
+        "paddingLeft": 0,
+        "paddingRight": 0
+      }
+    },
+    {
+      "id": "container_25",
+      "type": "DRAWABLE",
+      "screenX": 0,
+      "screenY": 0,
+      "widthDp": 375,
+      "heightDp": 812,
+      "rel": {
+        "dx": -20,
+        "dy": -64
+      },
+      "attrs": {
+        "scaleType": "fitCenter",
+        "drawable": "ic_container_25"
+      }
+    },
+    {
+      "id": "container_26",
+      "type": "CONTAINER",
+      "screenX": -2,
+      "screenY": -2,
+      "widthDp": 28,
+      "heightDp": 28,
+      "rel": {
+        "dx": -22,
+        "dy": -66
+      },
+      "attrs": {
+        "paddingTop": 0,
+        "paddingBottom": 0,
+        "paddingLeft": 0,
+        "paddingRight": 0
+      }
+    },
+    {
+      "id": "container_27",
+      "type": "CONTAINER",
+      "screenX": 0,
+      "screenY": 0,
+      "widthDp": 375,
+      "heightDp": 812,
+      "rel": {
+        "dx": -20,
+        "dy": -64
+      },
+      "attrs": {
+        "paddingTop": 0,
+        "paddingBottom": 0,
+        "paddingLeft": 0,
+        "paddingRight": 0
+      }
+    },
+    {
+      "id": "container_28",
+      "type": "CONTAINER",
+      "screenX": 0,
+      "screenY": 0,
+      "widthDp": 375,
+      "heightDp": 812,
+      "rel": {
+        "dx": -20,
+        "dy": -64
+      },
+      "attrs": {
+        "paddingTop": 0,
+        "paddingBottom": 0,
+        "paddingLeft": 0,
+        "paddingRight": 0
+      }
+    },
+    {
+      "id": "container_29",
+      "type": "CONTAINER",
+      "screenX": 14,
+      "screenY": 14,
+      "widthDp": 12,
+      "heightDp": 12,
+      "rel": {
+        "dx": -6,
+        "dy": -50
+      },
+      "attrs": {
+        "paddingTop": 0,
+        "paddingBottom": 0,
+        "paddingLeft": 0,
+        "paddingRight": 0
+      }
+    },
+    {
+      "id": "container_30",
+      "type": "CONTAINER",
+      "screenX": 349,
+      "screenY": 14,
+      "widthDp": 12,
+      "heightDp": 12,
+      "rel": {
+        "dx": 329,
+        "dy": -50
+      },
+      "attrs": {
+        "paddingTop": 0,
+        "paddingBottom": 0,
+        "paddingLeft": 0,
+        "paddingRight": 0
+      }
+    },
+    {
+      "id": "container_31",
+      "type": "CONTAINER",
+      "screenX": 0,
+      "screenY": 0,
+      "widthDp": 375,
+      "heightDp": 54,
+      "rel": {
+        "dx": -20,
+        "dy": -64
+      },
+      "attrs": {
+        "paddingTop": 0,
+        "paddingBottom": 0,
+        "paddingLeft": 0,
+        "paddingRight": 0
+      }
+    },
+    {
+      "id": "container_32",
+      "type": "CONTAINER",
+      "screenX": 0,
+      "screenY": 54,
+      "widthDp": 375,
+      "heightDp": 52,
+      "rel": {
+        "dx": -20,
+        "dy": -10
+      },
+      "attrs": {
+        "paddingTop": 10,
+        "paddingBottom": 10,
+        "paddingLeft": 20,
+        "paddingRight": 20
+      }
+    },
+    {
+      "id": "container_33",
+      "type": "IMAGE",
+      "screenX": 20,
+      "screenY": 64,
+      "widthDp": 32,
+      "heightDp": 32,
+      "rel": {
+        "dx": 0,
+        "dy": 0
+      },
+      "attrs": {
+        "scaleType": "fitCenter",
+        "drawable": "ic_back"
+      }
+    },
+    {
+      "id": "container_34",
+      "type": "CONTAINER",
+      "screenX": 26,
+      "screenY": 70,
+      "widthDp": 20,
+      "heightDp": 20,
+      "rel": {
+        "dx": 6,
+        "dy": 6
+      },
+      "attrs": {
+        "paddingTop": 0,
+        "paddingBottom": 0,
+        "paddingLeft": 0,
+        "paddingRight": 0
+      }
+    },
+    {
+      "id": "container_35",
+      "type": "CONTAINER",
+      "screenX": 31.2,
+      "screenY": 73.2,
+      "widthDp": 7.6,
+      "heightDp": 13.6,
+      "rel": {
+        "dx": 11.2,
+        "dy": 9.2
+      },
+      "attrs": {
+        "paddingTop": 0,
+        "paddingBottom": 0,
+        "paddingLeft": 0,
+        "paddingRight": 0
+      }
+    },
+    {
+      "id": "container_36",
+      "type": "CONTAINER",
+      "screenX": 135.8,
+      "screenY": 73.5,
+      "widthDp": 103.5,
+      "heightDp": 13,
+      "rel": {
+        "dx": 115.8,
+        "dy": 9.5
+      },
+      "attrs": {
+        "paddingTop": 0,
+        "paddingBottom": 0,
+        "paddingLeft": 0,
+        "paddingRight": 0
+      }
+    },
+    {
+      "id": "container_37",
+      "type": "CONTAINER",
+      "screenX": 0,
+      "screenY": 106,
+      "widthDp": 375,
+      "heightDp": 104,
+      "rel": {
+        "dx": -20,
+        "dy": 42
+      },
+      "attrs": {
+        "paddingTop": 36,
+        "paddingBottom": 0,
+        "paddingLeft": 24,
+        "paddingRight": 24
+      }
+    },
+    {
+      "id": "text_1",
+      "type": "TEXT",
+      "screenX": 24,
+      "screenY": 142,
+      "widthDp": 327,
+      "heightDp": 40,
+      "rel": {
+        "dx": 4,
+        "dy": 78
+      },
+      "attrs": {
+        "fontSize": 28,
+        "color": "rgb(245, 247, 250)",
+        "fontWeight": "700"
+      }
+    },
+    {
+      "id": "text_2",
+      "type": "TEXT",
+      "screenX": 24,
+      "screenY": 190,
+      "widthDp": 327,
+      "heightDp": 20,
+      "rel": {
+        "dx": 4,
+        "dy": 126
+      },
+      "attrs": {
+        "fontSize": 14,
+        "color": "rgba(245, 247, 250, 0.6)",
+        "fontWeight": "400"
+      }
+    },
+    {
+      "id": "text_3",
+      "type": "TEXT",
+      "screenX": 84.8,
+      "screenY": 192,
+      "widthDp": 146.7,
+      "heightDp": 16,
+      "rel": {
+        "dx": 64.8,
+        "dy": 128
+      },
+      "attrs": {
+        "fontSize": 14,
+        "color": "rgb(245, 247, 250)",
+        "fontWeight": "400"
+      }
+    },
+    {
+      "id": "container_38",
+      "type": "CONTAINER",
+      "screenX": 0,
+      "screenY": 210,
+      "widthDp": 375,
+      "heightDp": 238,
+      "rel": {
+        "dx": -20,
+        "dy": 146
+      },
+      "attrs": {
+        "paddingTop": 36,
+        "paddingBottom": 0,
+        "paddingLeft": 24,
+        "paddingRight": 24
+      }
+    },
+    {
+      "id": "container_39",
+      "type": "CONTAINER",
+      "screenX": 24,
+      "screenY": 246,
+      "widthDp": 327,
+      "heightDp": 52,
+      "rel": {
+        "dx": 4,
+        "dy": 182
+      },
+      "attrs": {
+        "paddingTop": 0,
+        "paddingBottom": 0,
+        "paddingLeft": 0,
+        "paddingRight": 0
+      }
+    },
+    {
+      "id": "container_40",
+      "type": "CONTAINER",
+      "screenX": 24,
+      "screenY": 246,
+      "widthDp": 47.8,
+      "heightDp": 52,
+      "rel": {
+        "dx": 4,
+        "dy": 182
+      },
+      "attrs": {
+        "paddingTop": 0,
+        "paddingBottom": 0,
+        "paddingLeft": 0,
+        "paddingRight": 0
+      }
+    },
+    {
+      "id": "container_41",
+      "type": "CONTAINER",
+      "screenX": 79.8,
+      "screenY": 246,
+      "widthDp": 47.8,
+      "heightDp": 52,
+      "rel": {
+        "dx": 59.8,
+        "dy": 182
+      },
+      "attrs": {
+        "paddingTop": 0,
+        "paddingBottom": 0,
+        "paddingLeft": 0,
+        "paddingRight": 0
+      }
+    },
+    {
+      "id": "container_42",
+      "type": "CONTAINER",
+      "screenX": 135.7,
+      "screenY": 246,
+      "widthDp": 47.8,
+      "heightDp": 52,
+      "rel": {
+        "dx": 115.7,
+        "dy": 182
+      },
+      "attrs": {
+        "paddingTop": 0,
+        "paddingBottom": 0,
+        "paddingLeft": 0,
+        "paddingRight": 0
+      }
+    },
+    {
+      "id": "container_43",
+      "type": "CONTAINER",
+      "screenX": 191.5,
+      "screenY": 246,
+      "widthDp": 47.8,
+      "heightDp": 52,
+      "rel": {
+        "dx": 171.5,
+        "dy": 182
+      },
+      "attrs": {
+        "paddingTop": 0,
+        "paddingBottom": 0,
+        "paddingLeft": 0,
+        "paddingRight": 0
+      }
+    },
+    {
+      "id": "container_44",
+      "type": "CONTAINER",
+      "screenX": 247.3,
+      "screenY": 246,
+      "widthDp": 47.8,
+      "heightDp": 52,
+      "rel": {
+        "dx": 227.3,
+        "dy": 182
+      },
+      "attrs": {
+        "paddingTop": 0,
+        "paddingBottom": 0,
+        "paddingLeft": 0,
+        "paddingRight": 0
+      }
+    },
+    {
+      "id": "container_45",
+      "type": "CONTAINER",
+      "screenX": 270.5,
+      "screenY": 261,
+      "widthDp": 1.5,
+      "heightDp": 22,
+      "rel": {
+        "dx": 250.5,
+        "dy": 197
+      },
+      "attrs": {
+        "paddingTop": 0,
+        "paddingBottom": 0,
+        "paddingLeft": 0,
+        "paddingRight": 0
+      }
+    },
+    {
+      "id": "container_46",
+      "type": "CONTAINER",
+      "screenX": 303.2,
+      "screenY": 246,
+      "widthDp": 47.8,
+      "heightDp": 52,
+      "rel": {
+        "dx": 283.2,
+        "dy": 182
+      },
+      "attrs": {
+        "paddingTop": 0,
+        "paddingBottom": 0,
+        "paddingLeft": 0,
+        "paddingRight": 0
+      }
+    },
+    {
+      "id": "container_47",
+      "type": "CONTAINER",
+      "screenX": 24,
+      "screenY": 316,
+      "widthDp": 327,
+      "heightDp": 17,
+      "rel": {
+        "dx": 4,
+        "dy": 252
+      },
+      "attrs": {
+        "paddingTop": 0,
+        "paddingBottom": 0,
+        "paddingLeft": 0,
+        "paddingRight": 0
+      }
+    },
+    {
+      "id": "text_4",
+      "type": "TEXT",
+      "screenX": 24,
+      "screenY": 316,
+      "widthDp": 79.2,
+      "heightDp": 17,
+      "rel": {
+        "dx": 4,
+        "dy": 252
+      },
+      "attrs": {
+        "fontSize": 12,
+        "color": "rgba(245, 247, 250, 0.6)",
+        "fontWeight": "400"
+      }
+    },
+    {
+      "id": "container_48",
+      "type": "CONTAINER",
+      "screenX": 290.0,
+      "screenY": 316,
+      "widthDp": 61.0,
+      "heightDp": 17,
+      "rel": {
+        "dx": 270.0,
+        "dy": 252
+      },
+      "attrs": {
+        "paddingTop": 0,
+        "paddingBottom": 0,
+        "paddingLeft": 0,
+        "paddingRight": 0
+      }
+    },
+    {
+      "id": "container_49",
+      "type": "CONTAINER",
+      "screenX": 24,
+      "screenY": 365,
+      "widthDp": 327,
+      "heightDp": 52,
+      "rel": {
+        "dx": 4,
+        "dy": 301
+      },
+      "attrs": {
+        "paddingTop": 0,
+        "paddingBottom": 0,
+        "paddingLeft": 0,
+        "paddingRight": 0
+      }
+    },
+    {
+      "id": "container_50",
+      "type": "CONTAINER",
+      "screenX": 24,
+      "screenY": 365,
+      "widthDp": 327,
+      "heightDp": 52,
+      "rel": {
+        "dx": 4,
+        "dy": 301
+      },
+      "attrs": {
+        "paddingTop": 1,
+        "paddingBottom": 1,
+        "paddingLeft": 6,
+        "paddingRight": 6
+      }
+    },
+    {
+      "id": "container_51",
+      "type": "CONTAINER",
+      "screenX": 24,
+      "screenY": 431,
+      "widthDp": 327,
+      "heightDp": 17,
+      "rel": {
+        "dx": 4,
+        "dy": 367
+      },
+      "attrs": {
+        "paddingTop": 0,
+        "paddingBottom": 0,
+        "paddingLeft": 4,
+        "paddingRight": 4
+      }
+    },
+    {
+      "id": "container_52",
+      "type": "IMAGE",
+      "screenX": 28,
+      "screenY": 432,
+      "widthDp": 16,
+      "heightDp": 16,
+      "rel": {
+        "dx": 8,
+        "dy": 368
+      },
+      "attrs": {
+        "scaleType": "fitCenter",
+        "drawable": "ic_container_52"
+      }
+    },
+    {
+      "id": "container_53",
+      "type": "CONTAINER",
+      "screenX": 31,
+      "screenY": 435,
+      "widthDp": 10,
+      "heightDp": 10,
+      "rel": {
+        "dx": 11,
+        "dy": 371
+      },
+      "attrs": {
+        "paddingTop": 0,
+        "paddingBottom": 0,
+        "paddingLeft": 0,
+        "paddingRight": 0
+      }
+    },
+    {
+      "id": "container_54",
+      "type": "CONTAINER",
+      "screenX": 32.1,
+      "screenY": 437.1,
+      "widthDp": 7.8,
+      "heightDp": 5.8,
+      "rel": {
+        "dx": 12.1,
+        "dy": 373.1
+      },
+      "attrs": {
+        "paddingTop": 0,
+        "paddingBottom": 0,
+        "paddingLeft": 0,
+        "paddingRight": 0
+      }
+    },
+    {
+      "id": "container_55",
+      "type": "CONTAINER",
+      "screenX": 52,
+      "screenY": 431,
+      "widthDp": 176.2,
+      "heightDp": 16.5,
+      "rel": {
+        "dx": 32,
+        "dy": 367
+      },
+      "attrs": {
+        "paddingTop": 0,
+        "paddingBottom": 0,
+        "paddingLeft": 0,
+        "paddingRight": 0
+      }
+    },
+    {
+      "id": "text_5",
+      "type": "TEXT",
+      "screenX": 121.9,
+      "screenY": 432,
+      "widthDp": 47.6,
+      "heightDp": 13,
+      "rel": {
+        "dx": 101.9,
+        "dy": 368
+      },
+      "attrs": {
+        "fontSize": 11,
+        "color": "oklch(0.82 0.15 195)",
+        "fontWeight": "500"
+      }
+    },
+    {
+      "id": "text_6",
+      "type": "TEXT",
+      "screenX": 183.8,
+      "screenY": 432,
+      "widthDp": 44.4,
+      "heightDp": 13,
+      "rel": {
+        "dx": 163.8,
+        "dy": 368
+      },
+      "attrs": {
+        "fontSize": 11,
+        "color": "oklch(0.82 0.15 195)",
+        "fontWeight": "500"
+      }
+    },
+    {
+      "id": "container_56",
+      "type": "CONTAINER",
+      "screenX": 0,
+      "screenY": 778,
+      "widthDp": 375,
+      "heightDp": 34,
+      "rel": {
+        "dx": -20,
+        "dy": 714
+      },
+      "attrs": {
+        "paddingTop": 0,
+        "paddingBottom": 8,
+        "paddingLeft": 0,
+        "paddingRight": 0
+      }
+    },
+    {
+      "id": "container_57",
+      "type": "CONTAINER",
+      "screenX": 120.5,
+      "screenY": 799,
+      "widthDp": 134,
+      "heightDp": 5,
+      "rel": {
+        "dx": 100.5,
+        "dy": 735
+      },
+      "attrs": {
+        "paddingTop": 0,
+        "paddingBottom": 0,
+        "paddingLeft": 0,
+        "paddingRight": 0
+      }
+    },
+    {
+      "id": "container_58",
+      "type": "CONTAINER",
+      "screenX": -48.3,
+      "screenY": 740,
+      "widthDp": 471.7,
+      "heightDp": 48,
+      "rel": {
+        "dx": -68.3,
+        "dy": 676
+      },
+      "attrs": {
+        "paddingTop": 8,
+        "paddingBottom": 8,
+        "paddingLeft": 8,
+        "paddingRight": 8
+      }
+    },
+    {
+      "id": "container_59",
+      "type": "CONTAINER",
+      "screenX": -39.3,
+      "screenY": 749,
+      "widthDp": 64.1,
+      "heightDp": 30,
+      "rel": {
+        "dx": -59.3,
+        "dy": 685
+      },
+      "attrs": {
+        "paddingTop": 8,
+        "paddingBottom": 8,
+        "paddingLeft": 14,
+        "paddingRight": 14
+      }
+    },
+    {
+      "id": "container_60",
+      "type": "CONTAINER",
+      "screenX": 32.8,
+      "screenY": 749,
+      "widthDp": 64.1,
+      "heightDp": 30,
+      "rel": {
+        "dx": 12.8,
+        "dy": 685
+      },
+      "attrs": {
+        "paddingTop": 8,
+        "paddingBottom": 8,
+        "paddingLeft": 14,
+        "paddingRight": 14
+      }
+    },
+    {
+      "id": "container_61",
+      "type": "CONTAINER",
+      "screenX": 104.9,
+      "screenY": 749,
+      "widthDp": 56.9,
+      "heightDp": 30,
+      "rel": {
+        "dx": 84.9,
+        "dy": 685
+      },
+      "attrs": {
+        "paddingTop": 8,
+        "paddingBottom": 8,
+        "paddingLeft": 14,
+        "paddingRight": 14
+      }
+    },
+    {
+      "id": "container_62",
+      "type": "CONTAINER",
+      "screenX": 169.8,
+      "screenY": 749,
+      "widthDp": 85.8,
+      "heightDp": 30,
+      "rel": {
+        "dx": 149.8,
+        "dy": 685
+      },
+      "attrs": {
+        "paddingTop": 8,
+        "paddingBottom": 8,
+        "paddingLeft": 14,
+        "paddingRight": 14
+      }
+    },
+    {
+      "id": "container_63",
+      "type": "CONTAINER",
+      "screenX": 263.6,
+      "screenY": 749,
+      "widthDp": 64.1,
+      "heightDp": 30,
+      "rel": {
+        "dx": 243.6,
+        "dy": 685
+      },
+      "attrs": {
+        "paddingTop": 8,
+        "paddingBottom": 8,
+        "paddingLeft": 14,
+        "paddingRight": 14
+      }
+    },
+    {
+      "id": "container_64",
+      "type": "CONTAINER",
+      "screenX": 335.8,
+      "screenY": 749,
+      "widthDp": 78.6,
+      "heightDp": 30,
+      "rel": {
+        "dx": 315.8,
+        "dy": 685
+      },
+      "attrs": {
+        "paddingTop": 8,
+        "paddingBottom": 8,
+        "paddingLeft": 14,
+        "paddingRight": 14
+      }
+    }
+  ]
+}

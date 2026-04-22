@@ -51,3 +51,32 @@
 - 构建链需增加 protoc 编译步骤（Gradle task + CI）
 
 **约束：** KMP 仅保留构建胶水层，不再包含手写数据类。
+
+
+
+### 8. 对齐文字视觉效果，解决平台文字基线差异
+**问题：** Android TextView 行高与 HTML 文字行高存在系统级差异（约 2~4dp），导致 inspect 阶段即使 paddingTop 数值相同，文字节点垂直位置仍有偏移，需要通过反复调整 padding/margin 来补偿。  
+**改进方向：**
+- implement 阶段生成 TextView 时，基于设计稿字号自动计算 `lineHeight` 属性（Android 28+），使行高与 HTML 保持一致
+- inspect skill 中识别到文字节点偏差由行高差异导致时，优先建议设置 `lineHeight` 而非调整 margin
+
+---
+
+```
+// 时间戳太长，可以 2026-04-21
+design/202604212225-login-code  
+```
+```
+// 认为指定有些不灵活，应该agent自动识别
+ 进入 implement 阶段。先收集目标路径：
+
+  目标 Android module 根路径是什么？（如 packages/android/demo）       
+  
+✻ Cooked for 46s · 3 shells still running                              
+                                                                     
+❯ /Users/zzc/Desktop/works/client-tools/packages/android/demo          
+                                                              
+⏺ 布局文件名用什么？（不含 .xml，如 activity_verify_code）             
+                                                   
+❯ activity_verify_code                     
+```

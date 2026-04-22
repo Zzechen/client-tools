@@ -1,0 +1,652 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>PULSE · 验证码</title>
+<link rel="stylesheet" href="styles.css"/>
+<style>
+/* ─────────────────────────────────────────────
+   PULSE · Login — Static stylesheet
+   Design tokens + base + components
+   ───────────────────────────────────────────── */
+
+:root {
+  /* Color tokens — dark theme */
+  --bg:           #0A0B0F;
+  --bg-deep:      #06070A;
+  --surface:      rgba(255, 255, 255, 0.04);
+  --surface-hi:   rgba(255, 255, 255, 0.08);
+  --border:       rgba(255, 255, 255, 0.08);
+  --border-hi:    rgba(255, 255, 255, 0.16);
+  --text:         #F5F7FA;
+  --text-dim:     rgba(245, 247, 250, 0.6);
+  --text-muted:   rgba(245, 247, 250, 0.38);
+  --accent:       oklch(0.82 0.15 195);
+  --accent-text:  #001015;
+  --accent-dim:   oklch(0.82 0.15 195 / 0.14);
+  --danger:       oklch(0.72 0.18 25);
+  --grid:         rgba(255, 255, 255, 0.025);
+  --glow:         oklch(0.82 0.15 195 / 0.3);
+
+  /* Type */
+  --font-sans: -apple-system, BlinkMacSystemFont, "SF Pro Display", "PingFang SC", system-ui, sans-serif;
+  --font-mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+
+  /* Radius */
+  --r-sm: 8px;
+  --r-md: 12px;
+  --r-lg: 14px;
+  --r-xl: 26px;
+}
+
+/* ── Base ─────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; }
+
+html, body {
+  margin: 0; padding: 0;
+  background: #1a1b20;
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  color: var(--text);
+}
+
+body {
+  display: flex; align-items: center; justify-content: center;
+  min-height: 100vh;
+}
+
+button { font-family: inherit; }
+
+/* ── Device frame (iPhone 375×812) ────────── */
+.device {
+  width: 375px; height: 812px;
+  border-radius: 44px; overflow: hidden;
+  position: relative;
+  background: #000;
+  box-shadow:
+    0 40px 80px rgba(0, 0, 0, 0.35),
+    0 0 0 10px #1a1b1f,
+    0 0 0 11px #2a2b30;
+}
+
+.device__notch {
+  position: absolute; top: 0; left: 50%;
+  transform: translateX(-50%);
+  width: 164px; height: 30px;
+  background: #000;
+  border-radius: 0 0 20px 20px;
+  z-index: 50;
+}
+
+.device__statusbar {
+  position: absolute; top: 0; left: 0; right: 0;
+  z-index: 40; height: 44px;
+  display: flex; align-items: flex-end; justify-content: space-between;
+  padding: 0 28px 6px;
+  pointer-events: none;
+  color: var(--text);
+}
+
+.device__time {
+  font-size: 15px; font-weight: 600;
+}
+
+.device__sb-icons {
+  display: flex; gap: 5px; align-items: center;
+}
+.device__sb-icons svg { fill: currentColor; stroke: currentColor; }
+
+.device__content {
+  width: 100%; height: 100%;
+  overflow-y: auto;
+}
+.device__content::-webkit-scrollbar { display: none; }
+
+.device__home {
+  position: absolute; bottom: 0; left: 0; right: 0;
+  z-index: 60; height: 34px;
+  display: flex; justify-content: center; align-items: flex-end;
+  padding-bottom: 8px;
+  pointer-events: none;
+}
+.device__home-bar {
+  width: 134px; height: 5px; border-radius: 100px;
+  background: rgba(255, 255, 255, 0.7);
+}
+
+/* ── Screen (content root) ────────────────── */
+.screen {
+  width: 100%; min-height: 100%;
+  background: var(--bg);
+  position: relative; overflow: hidden;
+  color: var(--text);
+}
+
+/* ── Backdrop (grid + glow + wave) ────────── */
+.backdrop {
+  position: absolute; inset: 0;
+  overflow: hidden; pointer-events: none;
+}
+
+.backdrop__glow {
+  position: absolute; top: -140px; left: 50%;
+  transform: translateX(-50%);
+  width: 520px; height: 520px; border-radius: 50%;
+  background: radial-gradient(circle at center, var(--glow), transparent 60%);
+  filter: blur(40px);
+}
+
+.backdrop__grid {
+  position: absolute; inset: 0;
+  width: 100%; height: 100%;
+}
+
+.backdrop__wave {
+  position: absolute; top: 168px; left: 0;
+  width: 100%; height: 60px;
+  opacity: 0.5;
+}
+
+.backdrop__corner {
+  position: absolute; width: 12px; height: 12px;
+  border-top: 1px solid var(--border-hi);
+  border-left: 1px solid var(--border-hi);
+}
+.backdrop__corner--tl { top: 14px; left: 14px; }
+.backdrop__corner--tr { top: 14px; right: 14px; transform: scaleX(-1); }
+
+/* ── Top bar ──────────────────────────────── */
+.sb-spacer { height: 54px; }
+
+.topbar {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 10px 20px;
+  position: relative; z-index: 2;
+}
+
+.icon-btn {
+  width: 32px; height: 32px; border-radius: 10px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: center;
+  color: var(--text-dim);
+  cursor: pointer;
+  padding: 0;
+}
+.icon-btn:hover { border-color: var(--border-hi); }
+
+.text-btn {
+  font-size: 13px; color: var(--text-dim);
+  background: transparent; border: none; cursor: pointer;
+  padding: 6px 10px;
+}
+
+.step-indicator {
+  font-family: var(--font-mono); font-size: 11px;
+  color: var(--text-muted); letter-spacing: 2px;
+}
+
+/* ── Logo + heading ──────────────────────── */
+.hero {
+  padding: 32px 24px 0;
+  position: relative; z-index: 2;
+}
+
+.logo {
+  display: flex; align-items: center; gap: 10px;
+}
+
+.logo__mark {
+  width: 44px; height: 44px; border-radius: 12px;
+  background: var(--accent);
+  display: flex; align-items: center; justify-content: center;
+  box-shadow: 0 0 24px var(--glow);
+  position: relative;
+}
+
+.logo__name {
+  font-family: var(--font-mono);
+  font-size: 20px; font-weight: 700;
+  color: var(--text);
+  letter-spacing: 4px;
+}
+
+.heading { margin-top: 36px; }
+.heading__title {
+  font-size: 28px; font-weight: 700; color: var(--text);
+  letter-spacing: -0.5px; margin: 0 0 8px;
+}
+.heading__sub {
+  font-size: 14px; color: var(--text-dim);
+  letter-spacing: 0.2px;
+  font-family: var(--font-mono);
+  margin: 0;
+}
+.heading__sub--plain { font-family: var(--font-sans); }
+.heading__sub .mono {
+  font-family: var(--font-mono); color: var(--text);
+}
+
+/* ── Form body ────────────────────────────── */
+.form {
+  padding: 28px 24px 0;
+  position: relative; z-index: 2;
+}
+
+/* Segmented tabs */
+.tabs {
+  position: relative;
+  display: flex; padding: 4px; gap: 0;
+  background: var(--surface); border-radius: var(--r-md);
+  border: 1px solid var(--border);
+  height: 40px;
+}
+
+.tabs__indicator {
+  position: absolute; top: 4px; bottom: 4px;
+  left: 4px;
+  width: calc((100% - 8px) / 3);
+  background: var(--accent);
+  border-radius: var(--r-sm);
+  box-shadow: 0 0 16px var(--glow);
+  transition: left .25s cubic-bezier(.4, 0, .2, 1);
+}
+.tabs__indicator--code     { left: calc(0 * ((100% - 8px) / 3) + 4px); }
+.tabs__indicator--password { left: calc(1 * ((100% - 8px) / 3) + 4px); }
+.tabs__indicator--email    { left: calc(2 * ((100% - 8px) / 3) + 4px); }
+
+.tabs__btn {
+  flex: 1; border: none; background: transparent;
+  color: var(--text-dim);
+  font-size: 13px; font-weight: 600;
+  cursor: pointer;
+  position: relative; z-index: 1;
+  letter-spacing: 0.2px;
+  transition: color .25s;
+  padding: 0;
+}
+.tabs__btn--active { color: var(--accent-text); }
+
+/* Fields */
+.fields {
+  margin-top: 16px;
+  display: flex; flex-direction: column; gap: 10px;
+}
+
+.field {
+  display: flex; align-items: center;
+  height: 52px; padding: 0 14px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  transition: border-color .2s, box-shadow .2s;
+}
+.field--focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-dim);
+}
+.field--error {
+  border-color: var(--danger);
+}
+
+.field__icon {
+  margin-right: 10px;
+  color: var(--text-dim);
+  display: flex;
+}
+
+.field__prefix {
+  color: var(--text); font-size: 15px; font-weight: 500;
+  padding-right: 10px; margin-right: 10px;
+  border-right: 1px solid var(--border);
+  display: flex; align-items: center; gap: 4px;
+  height: 20px;
+  font-family: var(--font-mono);
+  cursor: pointer;
+}
+
+.field__input {
+  flex: 1; border: none; background: transparent; outline: none;
+  color: var(--text); font-size: 15px; font-weight: 500;
+  font-family: inherit; min-width: 0;
+  padding: 0;
+}
+.field__input::placeholder { color: var(--text-muted); }
+.field__input[type="tel"] { letter-spacing: 0.5px; }
+
+.field__suffix-btn {
+  background: transparent; border: none; cursor: pointer;
+  color: var(--text-dim);
+  padding: 4px;
+  display: flex; align-items: center; justify-content: center;
+}
+
+/* Row under fields (forgot / register) */
+.meta-row {
+  display: flex; justify-content: space-between;
+  margin-top: 2px;
+  font-size: 12px;
+}
+.meta-row__left  { color: var(--text-dim); cursor: pointer; }
+.meta-row__right { color: var(--accent); cursor: pointer; }
+
+/* Code input (6 digit boxes) */
+.code {
+  display: flex; gap: 8px; justify-content: space-between;
+}
+.code__box {
+  flex: 1; height: 52px;
+  border-radius: 10px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--font-mono);
+  font-size: 22px; font-weight: 600;
+  color: var(--text);
+  transition: all .15s;
+}
+.code__box--filled { border-color: var(--border-hi); }
+.code__box--current {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-dim);
+}
+.code__caret {
+  width: 1.5px; height: 22px; background: var(--accent);
+  animation: pulseBlink 1s infinite;
+}
+
+.resend-row {
+  margin-top: 18px;
+  display: flex; justify-content: space-between;
+  font-size: 12px; color: var(--text-dim);
+}
+.resend-row__label { font-family: var(--font-mono); }
+.resend-row__btn {
+  background: transparent; border: none;
+  color: var(--accent);
+  font-size: 12px; font-weight: 500;
+  cursor: pointer;
+  padding: 0;
+}
+.resend-row__btn--disabled {
+  color: var(--text-muted);
+  cursor: default;
+}
+
+/* Primary CTA */
+.submit-wrap { margin-top: 22px; }
+.submit-wrap--code-step { margin-top: 32px; }
+
+.btn-primary {
+  height: 52px; width: 100%;
+  border-radius: var(--r-lg);
+  background: var(--accent);
+  color: var(--accent-text);
+  border: none; cursor: pointer;
+  font-size: 16px; font-weight: 600; letter-spacing: 0.3px;
+  font-family: inherit;
+  box-shadow:
+    0 0 32px var(--glow),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  transition: all .2s;
+  display: flex; align-items: center; justify-content: center;
+  gap: 8px;
+}
+.btn-primary:hover { filter: brightness(1.05); }
+.btn-primary--disabled {
+  background: var(--surface-hi);
+  color: var(--text-muted);
+  box-shadow: none;
+  cursor: not-allowed;
+}
+.btn-primary__arrow { opacity: 0.6; }
+
+/* Agreement */
+.agreement {
+  display: flex; align-items: flex-start; gap: 8px;
+  padding: 0 4px;
+  margin-top: 14px;
+}
+.agreement__box {
+  width: 16px; height: 16px; border-radius: 5px;
+  margin-top: 1px;
+  background: transparent;
+  border: 1.5px solid var(--border-hi);
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; padding: 0; flex-shrink: 0;
+  transition: all .2s;
+}
+.agreement__box--checked {
+  background: var(--accent);
+  border-color: var(--accent);
+}
+.agreement__text {
+  font-size: 11px; color: var(--text-dim);
+  line-height: 1.5; letter-spacing: 0.1px;
+}
+.agreement__link {
+  color: var(--accent); font-weight: 500;
+}
+
+/* Bottom block: divider + alt logins */
+.bottom-block {
+  position: absolute;
+  bottom: 56px; left: 0; right: 0;
+  padding: 0 24px;
+  z-index: 2;
+}
+
+.divider-row {
+  display: flex; align-items: center; gap: 12px;
+  margin-bottom: 18px;
+}
+.divider-row__line {
+  flex: 1; height: 1px; background: var(--border);
+}
+.divider-row__label {
+  color: var(--text-muted); font-size: 11px;
+  letter-spacing: 2px;
+  font-family: var(--font-mono);
+}
+
+.alt-logins {
+  display: flex; justify-content: center; gap: 18px;
+}
+.alt-btn {
+  width: 54px; height: 54px; border-radius: 50%;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer;
+  transition: border-color .2s;
+  padding: 0;
+  color: var(--text);
+}
+.alt-btn:hover { border-color: var(--border-hi); }
+
+/* Success screen */
+.success {
+  position: absolute; inset: 0;
+  background: var(--bg);
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  padding: 40px; gap: 24px;
+  z-index: 200;
+}
+.success__badge {
+  width: 80px; height: 80px; border-radius: 50%;
+  background: var(--accent-dim);
+  border: 2px solid var(--accent);
+  display: flex; align-items: center; justify-content: center;
+  box-shadow: 0 0 40px var(--glow);
+}
+.success__title {
+  text-align: center;
+}
+.success__title h2 {
+  color: var(--text); font-size: 22px; font-weight: 600;
+  margin: 0 0 8px;
+}
+.success__title p {
+  color: var(--text-dim); font-size: 13px; letter-spacing: 0.2px;
+  margin: 0;
+  font-family: var(--font-mono);
+}
+.success__status {
+  font-family: var(--font-mono); font-size: 11px;
+  color: var(--text-muted); letter-spacing: 2px;
+  margin-top: 8px;
+}
+
+/* ── Animations ───────────────────────────── */
+@keyframes pulseBlink {
+  0%, 49%  { opacity: 1; }
+  50%, 100% { opacity: 0; }
+}
+
+/* ── Page nav (index only) ────────────────── */
+.page-nav {
+  position: fixed; bottom: 24px; left: 50%;
+  transform: translateX(-50%);
+  display: flex; gap: 8px;
+  padding: 8px;
+  background: rgba(20, 22, 28, 0.9);
+  border: 1px solid var(--border-hi);
+  border-radius: 40px;
+  backdrop-filter: blur(12px);
+  z-index: 1000;
+}
+.page-nav a {
+  color: var(--text-dim);
+  font-size: 12px;
+  font-family: var(--font-mono);
+  text-decoration: none;
+  padding: 8px 14px;
+  border-radius: 28px;
+  transition: all .2s;
+}
+.page-nav a:hover { color: var(--text); background: var(--surface); }
+.page-nav a.active {
+  color: var(--accent-text);
+  background: var(--accent);
+}
+</style>
+</head>
+<body>
+
+<div class="device">
+  <div class="device__notch"></div>
+  <div class="device__statusbar">
+    <div class="device__time">9:41</div>
+    <div class="device__sb-icons">
+      <svg width="17" height="11" viewBox="0 0 17 11"><g>
+        <rect x="0" y="6.5" width="3" height="4" rx=".6"/>
+        <rect x="4.5" y="4.5" width="3" height="6" rx=".6"/>
+        <rect x="9" y="2.5" width="3" height="8" rx=".6"/>
+        <rect x="13.5" y="0" width="3" height="10.5" rx=".6"/>
+      </g></svg>
+      <svg width="15" height="11" viewBox="0 0 15 11"><g>
+        <path d="M7.5 3c2 0 3.9.8 5.3 2.2l1-1A9 9 0 0 0 7.5 1 9 9 0 0 0 1.2 4.2l1 1A7.5 7.5 0 0 1 7.5 3z"/>
+        <path d="M7.5 6c1.2 0 2.3.5 3.1 1.3l1-1a6 6 0 0 0-8.2 0l1 1A4.4 4.4 0 0 1 7.5 6z"/>
+        <circle cx="7.5" cy="9.5" r="1.3"/>
+      </g></svg>
+      <svg width="25" height="12" viewBox="0 0 25 12">
+        <rect x=".5" y=".5" width="21" height="11" rx="2.5" fill="none" stroke="currentColor" stroke-width="1"/>
+        <rect x="2" y="2" width="18" height="8" rx="1.2"/>
+        <rect x="22.5" y="3.5" width="1.5" height="5" rx=".5"/>
+      </svg>
+    </div>
+  </div>
+
+  <div class="device__content">
+    <div class="screen">
+      <div class="backdrop">
+        <div class="backdrop__glow"></div>
+        <svg class="backdrop__grid">
+          <defs>
+            <pattern id="grid-2" width="24" height="24" patternUnits="userSpaceOnUse">
+              <path d="M24 0H0V24" fill="none" stroke="rgba(255,255,255,0.025)" stroke-width="1"/>
+            </pattern>
+            <linearGradient id="gridFade-2" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="white" stop-opacity="1"/>
+              <stop offset="60%" stop-color="white" stop-opacity="0.3"/>
+              <stop offset="100%" stop-color="white" stop-opacity="0"/>
+            </linearGradient>
+            <mask id="gridMask-2"><rect width="100%" height="100%" fill="url(#gridFade-2)"/></mask>
+          </defs>
+          <rect width="100%" height="100%" fill="url(#grid-2)" mask="url(#gridMask-2)"/>
+        </svg>
+        <div class="backdrop__corner backdrop__corner--tl"></div>
+        <div class="backdrop__corner backdrop__corner--tr"></div>
+      </div>
+
+      <div class="sb-spacer"></div>
+
+      <div class="topbar">
+        <button class="icon-btn" aria-label="back">
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+            <path d="M12 4l-6 6 6 6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </button>
+        <div class="step-indicator">STEP 02 / 02</div>
+        <div style="width:32px"></div>
+      </div>
+
+      <div class="hero" style="padding-top:36px">
+        <h1 class="heading__title">输入验证码</h1>
+        <p class="heading__sub heading__sub--plain">
+          已发送至 <span class="mono">+86 138 **** 8000</span>
+        </p>
+      </div>
+
+      <div class="form" style="padding-top:36px">
+        <div class="code">
+          <div class="code__box code__box--filled">2</div>
+          <div class="code__box code__box--filled">4</div>
+          <div class="code__box code__box--filled">8</div>
+          <div class="code__box code__box--filled">1</div>
+          <div class="code__box code__box--current"><div class="code__caret"></div></div>
+          <div class="code__box"></div>
+        </div>
+
+        <div class="resend-row">
+          <span class="resend-row__label">未收到验证码?</span>
+          <button class="resend-row__btn resend-row__btn--disabled">42s 后重发</button>
+        </div>
+
+        <div class="submit-wrap submit-wrap--code-step">
+          <button class="btn-primary btn-primary--disabled">确认登录</button>
+        </div>
+
+        <div class="agreement">
+          <button class="agreement__box agreement__box--checked">
+            <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
+              <path d="M2 5l2 2 4-4" stroke="#001015" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </button>
+          <div class="agreement__text">
+            已阅读并同意
+            <span class="agreement__link"> 服务条款 </span>
+            与
+            <span class="agreement__link"> 隐私政策 </span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="device__home"><div class="device__home-bar"></div></div>
+</div>
+
+<nav class="page-nav">
+  <a href="index.html">Index</a>
+  <a href="login-phone.html">Phone</a>
+  <a href="login-code.html" class="active">Code</a>
+  <a href="login-password.html">Password</a>
+  <a href="login-email.html">Email</a>
+  <a href="login-success.html">Success</a>
+</nav>
+
+</body>
+</html>

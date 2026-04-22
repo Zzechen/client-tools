@@ -1,0 +1,15 @@
+{
+  "bizname": "login-code",
+  "phase": "done",
+  "viewport": 375,
+  "anchor": { "id": "container_33", "edge": "top" },
+  "target": {
+    "module": "/Users/zzc/Desktop/works/client-tools/packages/android/demo",
+    "layout": "activity_verify_code"
+  },
+  "history": [
+    { "phase": "preprocess", "completedAt": "2026-04-21T14:25:00Z" },
+    { "phase": "implement", "completedAt": "2026-04-21T14:50:00Z" },
+    { "phase": "inspect", "completedAt": "2026-04-22T01:40:00Z" }
+  ]
+}

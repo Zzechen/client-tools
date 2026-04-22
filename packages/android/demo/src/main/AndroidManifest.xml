@@ -23,7 +23,11 @@
         <activity
             android:name="com.clienttools.demo.LoginActivity"
             android:exported="false" />
-        
+
+        <activity
+            android:name="com.clienttools.demo.VerifyCodeActivity"
+            android:exported="false" />
+
     </application>
     
 </manifest>
