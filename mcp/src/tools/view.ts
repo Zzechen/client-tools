@@ -22,7 +22,10 @@ const ViewPropsSchema = z.object({
   paddingRightDiffDp: z.number().optional(),
   widthDp: DpValue.optional(),
   heightDp: DpValue.optional(),
-}).describe("View 布局属性，margin/padding 为差值（dp），width/height 为绝对值（dp）或 \"wrap_content\"");
+  letterSpacingEm: z.number().optional(),
+  lineSpacingExtraDp: z.number().optional(),
+  includeFontPadding: z.boolean().optional(),
+}).describe("View 布局属性，margin/padding 为差值（dp），width/height 为绝对值（dp）或 \"wrap_content\"；letterSpacingEm 为字间距（em 单位），lineSpacingExtraDp 为额外行间距（dp），includeFontPadding 控制字体内置 padding");
 
 async function fetchImageBase64(url: string): Promise<string> {
   const res = await fetch(url);
@@ -76,7 +79,7 @@ export function registerViewTools(server: McpServer): void {
 
   server.tool(
     "modify_view",
-    "修改 Android View 的布局属性（margin/padding/size），单位 dp",
+    "修改 Android View 的布局属性（margin/padding/size），单位 dp；TextView 额外支持 letterSpacingEm、lineSpacingExtraDp、includeFontPadding",
     {
       id: z.string().describe("Android View 的 resource id"),
       props: ViewPropsSchema,
