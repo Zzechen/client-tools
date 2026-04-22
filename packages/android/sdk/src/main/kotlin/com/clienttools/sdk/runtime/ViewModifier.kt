@@ -3,6 +3,7 @@ package com.clienttools.sdk.runtime
 import android.os.Looper
 import android.view.View
 import android.view.ViewGroup
+import android.widget.TextView
 import com.clienttools.sdk.ClientToolsSDK
 import com.clienttools.shared.models.ViewProps
 
@@ -96,6 +97,14 @@ object ViewModifier {
         }
         props.paddingRightDiffDp?.let {
             view.setPadding(view.paddingLeft, view.paddingTop, view.paddingRight + dpToPx(it), view.paddingBottom)
+        }
+
+        if (view is TextView) {
+            props.letterSpacingEm?.let { view.letterSpacing = it }
+            props.lineSpacingExtraDp?.let { extra ->
+                view.setLineSpacing(extra * density, view.lineSpacingMultiplier)
+            }
+            props.includeFontPadding?.let { view.includeFontPadding = it }
         }
     }
 }
