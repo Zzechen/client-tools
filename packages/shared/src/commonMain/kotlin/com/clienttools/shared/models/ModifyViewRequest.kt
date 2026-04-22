@@ -13,7 +13,10 @@ data class ViewProps(
     val paddingLeftDiffDp: Float? = null,
     val paddingRightDiffDp: Float? = null,
     val widthDp: String? = null,
-    val heightDp: String? = null
+    val heightDp: String? = null,
+    val letterSpacingEm: Float? = null,
+    val lineSpacingExtraDp: Float? = null,
+    val includeFontPadding: Boolean? = null
 )
 
 @Serializable

@@ -131,4 +131,21 @@ class SerializationTest {
         assertEquals("page_changed", decoded.event)
         assertEquals("com.example.LoginActivity", decoded.activityName)
     }
+
+    @Test
+    fun testViewPropsTextAttrs() {
+        val request = ModifyViewRequest(
+            id = "text_1",
+            props = ViewProps(
+                letterSpacingEm = 0.05f,
+                lineSpacingExtraDp = 4f,
+                includeFontPadding = false
+            )
+        )
+        val encoded = json.encodeToString(request)
+        val decoded: ModifyViewRequest = json.decodeFromString(encoded)
+        assertEquals(0.05f, decoded.props.letterSpacingEm)
+        assertEquals(4f, decoded.props.lineSpacingExtraDp)
+        assertEquals(false, decoded.props.includeFontPadding)
+    }
 }
