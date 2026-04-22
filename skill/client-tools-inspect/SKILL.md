@@ -82,6 +82,12 @@ login_btn_submit       button       获取验证码     0     1    -1     0
 - 每轮调整后必须重新计算所有节点的目标坐标（`target = dom + offset`），再与新快照的 View 坐标做差，不得复用上一轮的 dx/dy 值
 - 若连续 2 轮某节点差异无改善（变化 < 0.5dp），标记为「未收敛」，跳过该节点
 
+**文字节点行高/字间距调整：**
+- 若文字节点 dy 超阈值但父容器 dy 在阈值内（位置对、文字在容器内偏移），优先考虑行高问题
+- 调整顺序：先 `includeFontPadding=false` 去掉字体内置 padding，再用 `lineSpacingExtraDp` 微调行间距
+- `letterSpacingEm` 对应 CSS `letter-spacing`，单位为 em（如 CSS `0.1px` at 14sp ≈ 0.007em）
+- 文字属性调整后需同步回 XML：`android:includeFontPadding`、`android:lineSpacingExtra`、`android:letterSpacing`
+
 **注意：校对阶段不修改 XML 代码，所有调整仅通过 modify_view 运行时生效。差异记录到 checklist，用户确认后再集中写回 XML。**
 
 ### 阶段四：全屏验收
@@ -133,4 +139,4 @@ login_btn_submit       button       获取验证码     0     1    -1     0
 | `dom_all` | - | 全量 DOM 数据（坐标已含 offset） |
 | `get_all_nodes` | - | 全量 Android View 快照 |
 | `get_node` | id | 单个 View 坐标（辅助验证用） |
-| `modify_view` | id, props | 修改 View 布局属性（支持 wrap_content） |
+| `modify_view` | id, props | 修改 View 布局属性（支持 wrap_content）；TextView 额外支持 `letterSpacingEm`（em）、`lineSpacingExtraDp`（dp 差值）、`includeFontPadding`（bool） |
