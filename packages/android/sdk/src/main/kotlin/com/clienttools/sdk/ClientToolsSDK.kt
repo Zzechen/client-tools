@@ -39,10 +39,10 @@ object ClientToolsSDK {
             fileStore = InspectorFileStore(context)
             imageFileStore = ImageFileStore(context)
             eventManager = EventManager()
-            httpServer = HttpServer(context, eventManager!!)
-            httpServer!!.startServer()
-            pageChangeListener = PageChangeListener(eventManager!!)
+            pageChangeListener = PageChangeListener()
             pageChangeListener!!.register(context)
+            httpServer = HttpServer(context, eventManager!!, pageChangeListener!!)
+            httpServer!!.startServer()
             registerInspectorLifecycle(context)
             isInitialized = true
             Log.d(TAG, "ClientToolsSDK initialized")

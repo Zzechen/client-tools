@@ -4,6 +4,12 @@ plugins {
     id("org.jetbrains.kotlin.plugin.serialization")
 }
 
+kotlin {
+    compilerOptions {
+        jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17)
+    }
+}
+
 android {
     namespace = "com.clienttools.sdk"
     compileSdk = 35

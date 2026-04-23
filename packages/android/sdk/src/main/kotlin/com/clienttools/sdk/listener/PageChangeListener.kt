@@ -5,11 +5,16 @@ import android.app.Application
 import android.content.Context
 import android.os.Bundle
 import com.clienttools.sdk.ClientToolsSDK
-import com.clienttools.sdk.http.EventManager
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 import java.util.concurrent.CopyOnWriteArrayList
 
-class PageChangeListener(private val eventManager: EventManager) : Application.ActivityLifecycleCallbacks {
+class PageChangeListener : Application.ActivityLifecycleCallbacks {
     private val callbacks = CopyOnWriteArrayList<(String, Long) -> Unit>()
+
+    private var currentPageName: String = ""
+    private var lastChangeTime: String = ""
 
     fun register(context: Context) {
         val app = context.applicationContext as? Application
@@ -24,11 +29,14 @@ class PageChangeListener(private val eventManager: EventManager) : Application.A
         callbacks.add(callback)
     }
 
+    fun getCurrentPage(): Pair<String, String> = Pair(currentPageName, lastChangeTime)
+
     override fun onActivityResumed(activity: Activity) {
         ClientToolsSDK.setCurrentActivity(activity)
         val pageName = activity::class.qualifiedName ?: activity::class.simpleName ?: "Unknown"
         val timestamp = System.currentTimeMillis()
-        eventManager.publishPageChange(pageName, timestamp)
+        lastChangeTime = SimpleDateFormat("MMdd-HHmm", Locale.US).format(Date(timestamp))
+        currentPageName = pageName
         callbacks.forEach { it(pageName, timestamp) }
     }
 

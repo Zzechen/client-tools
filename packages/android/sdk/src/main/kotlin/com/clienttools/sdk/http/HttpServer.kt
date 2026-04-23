@@ -4,19 +4,31 @@ import android.content.Context
 import android.util.Log
 import com.clienttools.sdk.ClientToolsSDK
 import com.clienttools.sdk.inspector.InspectorApiHandler
+import com.clienttools.sdk.listener.PageChangeListener
 import fi.iki.elonen.NanoHTTPD
 
 class HttpServer(
     private val context: Context,
-    private val eventManager: EventManager
+    private val eventManager: EventManager,
+    private val pageChangeListener: PageChangeListener
 ) : NanoHTTPD(8080) {
 
     override fun serve(session: IHTTPSession?): Response {
         return try {
+            ApiHandler.setPageChangeListener(pageChangeListener)
             if (session == null) return newFixedLengthResponse(Response.Status.BAD_REQUEST, MIME_PLAINTEXT, "Bad request")
             val uri = session.uri
             val method = session.method
             when {
+                method == Method.GET && uri == "/api/page/current" -> {
+                    ApiHandler.handleGetCurrentPage()
+                }
+                method == Method.POST && uri == "/api/click" -> {
+                    ApiHandler.handleClick(readBody(session))
+                }
+                method == Method.POST && uri == "/api/scroll" -> {
+                    ApiHandler.handleScroll(readBody(session))
+                }
                 method == Method.GET && uri == "/api/nodes/all" -> {
                     ApiHandler.handleGetAllNodes()
                 }

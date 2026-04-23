@@ -40,7 +40,3 @@ export async function sdkPost(path: string, body: unknown): Promise<unknown> {
   );
   return res.json();
 }
-
-export function sdkEventUrl(): string {
-  return `${BASE_URL}/api/events`;
-}

@@ -1,6 +1,5 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { sdkGet } from "../sdk-client.js";
-import { eventMonitor } from "../event-monitor.js";
 
 function errResult(e: unknown) {
   return {
@@ -31,17 +30,6 @@ export function registerInspectorTools(server: McpServer): void {
         const result = await sdkGet("/inspector/images");
         return { content: [{ type: "text" as const, text: JSON.stringify(result) }] };
       } catch (e) { return errResult(e); }
-    }
-  );
-
-  server.tool(
-    "get_last_event",
-    "返回最新页面切换事件快照（由后台 SSE 连接缓存）。无事件时返回 { event: null }",
-    {},
-    async () => {
-      const lastEvent = eventMonitor.getLastEvent();
-      const result = lastEvent ?? { event: null };
-      return { content: [{ type: "text" as const, text: JSON.stringify(result) }] };
     }
   );
 }

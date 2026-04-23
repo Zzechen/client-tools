@@ -57,27 +57,75 @@
 
 ---
 
-## KMP 可行性
+## KMP 可行性（更新：2026-04-23）
 
-鸿蒙不在 Kotlin 官方 KMP 支持的目标平台列表中（无鸿蒙 target），Kotlin/Native → NAPI 桥接无成熟方案。
+### 官方 KMP 情况
 
-**结论：KMP 无法用于鸿蒙移植。** 推荐策略为协议复用：
+鸿蒙不在 Kotlin 官方 KMP 支持的目标平台列表中（无原生鸿蒙 target），Kotlin/Native → NAPI 桥接无成熟官方方案。
 
+### 第三方方案：腾讯 Kuikly 框架
+
+腾讯 TDS 团队的 [Kuikly](https://github.com/Tencent-TDS/KuiklyUI) 框架已实现 KMP 对 HarmonyOS 的支持，其架构为：
+
+```
+Kotlin 代码 (commonMain/ohosArm64Main)
+    ↓
+Kotlin/Native 编译
+    ↓
+libshared.so (HarmonyOS 原生二进制)
+    ↓
+通过 Bridge 层与 ArkUI 通信
+```
+
+关键目录：
+```
+core/
+├── commonMain          # 共享 Kotlin 代码
+├── androidMain         # Android 实现
+├── appleMain           # iOS/macOS 实现
+├── ohosArm64Main       # HarmonyOS 实现 ← 关键！
+└── jsMain             # Web 实现
+
+core-render-ohos/       # HarmonyOS 渲染层（ArkUI）
+```
+
+### 结论
+
+**方案可行，需额外工作：**
+- shared 模块的纯数据结构（Node、TextAttrs 等）可通过 KMP 编译到 HarmonyOS .so
+- 需新增 `ohosArm64Main` 编译目标
+- HarmonyOS 端需写 Bridge 层调用 .so 中的数据结构
+
+**对于 client-tools 项目：**
+- shared 模块（纯数据类）✅ 可以 KMP → HarmonyOS
+- Android SDK HTTP Server ❌ 不能，JVM 依赖
+- iOS SDK ❌ 不能，Swift runtime
+
+**推荐路径：**
 ```
 shared/（纯 Kotlin 数据结构）→ Android SDK
                               → iOS SDK（KMP/Native）
-                              → 鸿蒙 SDK（ArkTS 独立实现，接口协议保持一致）
+                              → HarmonyOS SDK（ArkTS + Bridge，协议复用）
 ```
+
+> 注：若未来全面接入 Kuikly 架构，可进一步实现 Android/iOS/HarmonyOS 三端共享逻辑复用。
 
 ---
 
-## 综合结论
+## 综合结论（更新：2026-04-23）
 
-迁移整体可行，但存在两个根本性差异需提前决策：
+迁移整体可行，KMP 方案参考 Kuikly 框架已验证可行。
 
-1. **HTTP 服务器**：需自实现，工作量可控（1-2周）
-2. **View 树遍历/修改**：鸿蒙架构限制，需将接入模式改为侵入式（宿主 app 需配合注册状态），这会影响 SDK 的接入体验和文档设计
+### 最终推荐策略
 
-建议在全面开发前，先用鸿蒙模拟器做两个 PoC 验证：
+| 模块 | Android | iOS | HarmonyOS |
+|------|---------|-----|-----------|
+| shared/ 数据结构 | KMP | KMP | KMP（通过 ohosArm64Main） |
+| HTTP Server | Nanohttpd | - | 自实现（@ohos.net.socket） |
+| View 查询/修改 | 非侵入式 | - | 侵入式（@State 状态驱动） |
+| Inspector 叠加 | WebView | - | ArkUI 组件叠加 |
+
+### 待做 PoC
+
 - PoC 1：`@ohos.net.socket` 实现 HTTP Server，验证能否稳定监听并处理请求
 - PoC 2：宿主 app 暴露 @State，SDK 通过接口修改，验证端到端流程
