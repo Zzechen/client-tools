@@ -71,7 +71,45 @@ func generateViewId(_ view: UIView) -> String {
 }
 ```
 
-**结论**：基本可替代，但样式属性获取能力缺失。
+### 2.5 样式属性查询（补充澄清）
+
+之前分析认为 iOS 样式属性无法查询，这是**不准确的**。实际上 FLEX 和 Lookin 等工具都完整实现了这些能力。
+
+**可查的样式属性（公开 API）：**
+
+| 属性 | UIKit 控件 | 说明 |
+|------|-----------|------|
+| font | UILabel, UITextField | `label.font` |
+| textColor | UILabel, UITextField | `label.textColor` |
+| text | UILabel, UITextField | `label.text` |
+| backgroundColor | 所有 UIView | `view.backgroundColor` |
+| alpha | 所有 UIView | `view.alpha` |
+| image | UIImageView | `imageView.image` |
+
+**实现方式：**
+
+```swift
+// 直接公开 API 访问
+let font = label.font as? UIFont
+let color = label.textColor
+let text = label.text
+
+// 转换为统一格式
+let fontSize = font?.pointSize ?? 0
+let fontWeight = font?.fontDescriptor.fontAttributes[.traits] as? UIFontDescriptor.TraitDictionary
+let colorHex = color.map { String(format: "#%02X%02X%02X", Int($0.cgColor.components?[0] ?? 0 * 255), ... }
+```
+
+**限制场景：**
+
+| 场景 | 可查性 |
+|------|--------|
+| 简单文字样式（UILabel） | ✅ 完全支持 |
+| 复杂 attributed string | ⚠️ 需解析 NSAttributedString |
+| SwiftUI 原生视图 | ⚠️ 需 ViewInspector 或宿主配合 |
+| 控件内部子视图样式 | ⚠️ 需递归遍历 |
+
+**结论**：iOS 样式属性查询**可以支持**，和 Android 能力基本对等。
 
 ---
 
@@ -121,7 +159,7 @@ SDK 想改 margin：
 | HTTP Server | ✅ | ✅ | 无 |
 | WebView 叠加 | ✅ | ✅ | 无 |
 | View 查询（位置/尺寸）| ✅ | ✅ | 无 |
-| View 查询（样式属性）| ✅ | ❌ | **缺失** |
+| View 查询（样式属性）| ✅ | ✅ | 基本无差距 |
 | View 修改（frame）| ✅ | ✅ | 无 |
 | View 修改（margin）| ✅ | ⚠️ 约束修改 | **受限** |
 | View 修改（padding）| ✅ | ⚠️ 仅部分控件 | **受限** |
@@ -135,7 +173,7 @@ SDK 想改 margin：
 | View ID 生成 | Runtime Hash（类名+地址+层级路径），无侵入 |
 | margin 修改 | 通过 `constraint.constant` 修改，需遍历约束 |
 | padding 修改 | 仅支持 UITextField、UIButton 等有 inset API 的控件 |
-| 样式属性查询 | 不支持 |
+| 样式属性查询 | ✅ 可查 |
 
 ---
 
@@ -143,7 +181,6 @@ SDK 想改 margin：
 
 - [ ] iOS 约束遍历方案是否可行（是否有私有 API 或遍历方式）
 - [ ] 是否接受 margin/padding 修改能力受限
-- [ ] 样式属性查询缺失是否影响核心流程
 
 ---
 
@@ -215,6 +252,6 @@ FLEX 使用私有 API，但作为开发调试 SDK 可以接受（不打包进生
 |------|------|
 | margin 修改 | 通过遍历 `superview.constraints` 找到对应约束，改 `constant` |
 | padding 修改 | 同上，或仅支持有 `contentEdgeInsets` 的控件 |
-| 样式属性查询 | 不支持 |
+| 样式属性查询 | ✅ 可查 |
 | 参考实现 | FLEX 源码（Runtime + 私有 API） |
 | SDK 定位 | 只提供能力，AI 决策 |
