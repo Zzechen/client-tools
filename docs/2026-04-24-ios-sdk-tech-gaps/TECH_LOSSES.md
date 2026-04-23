@@ -46,10 +46,30 @@ iOS 和 Android 是两个完全不同的 UI 框架。iOS SDK 实现时会在某�
 | 能力 | Android | iOS |
 |------|---------|-----|
 | 查询方式 | 遍历 DecorView | Runtime Hash |
-| ID 生成 | `android:id`（原生） | 类名+地址+层级路径（自动生成） |
-| 侵入性 | 无 | 无 |
-| 稳定性 | 永久唯一 | 页面存活内稳定 |
+| ID 生成 | `android:id`（原生） | 优先 identifier，降级 Runtime Hash |
+| 侵入性 | 无 | 无（自动降级） |
+| 稳定性 | 永久唯一 | identifier 永久唯一；hash 页面存活内稳定 |
 | 样式属性获取 | ✅ 支持 | ❌ 不支持（UIKit 无运行时样式查询） |
+
+**iOS View ID 生成策略（最终方案）：**
+
+1. **自动处理**：SDK 自动读取 `view.accessibilityIdentifier`
+2. **强制要求**：宿主集成时必须给需要操控的 View 设置 `accessibilityIdentifier`
+3. **降级兜底**：如果 `accessibilityIdentifier` 为空，SDK 自动使用 **Runtime Hash** 兜底
+
+```swift
+// 宿主集成要求（示例）
+label.accessibilityIdentifier = "login_title"
+button.accessibilityIdentifier = "login_btn"
+
+// SDK 内部逻辑
+func generateViewId(_ view: UIView) -> String {
+    if let id = view.accessibilityIdentifier, !id.isEmpty {
+        return id  // 优先用宿主设置的语义化 ID
+    }
+    return generateRuntimeHash(view)  // 降级兜底
+}
+```
 
 **结论**：基本可替代，但样式属性获取能力缺失。
 
