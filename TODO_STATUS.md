@@ -34,7 +34,7 @@
 
 | 优先级 | 任务 | 说明 |
 |--------|------|------|
-| P0 | iOS SDK实现 | `packages/ios/sdk/` |
+| P0 | iOS SDK实现（UIKit）| UIKit 完整方案已设计，详见 `docs/2026-04-24-ios-sdk-ui-kit/SPEC.md` |
 | P0 | MCP Server | `mcp/` |
 | P0 | Skill集成工作流（orchestrate） | 新增 `client-tools-orchestrate` skill |
 | P1 | TODO #4：核对阈值<1dp | 需更新inspect skill文档 |
