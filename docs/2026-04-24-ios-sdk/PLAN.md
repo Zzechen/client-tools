@@ -715,35 +715,40 @@ Overlay 相关 handler 已内联在 HttpServer 中（见 Phase 3 HttpServer 完�
 ```swift
 class OverlayManager {
 
+    static let overlayTag = 998  // 全局唯一的 tag，用于遍历时排除
     let fileStore = HtmlFileStore()
+    private var overlayView: UIView?
 
     func show(url: String, opacity: Float) {
-        // 加载指定 URL 并显示
         hide()
-        guard let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene else { return }
 
-        overlayWindow = UIWindow(windowScene: windowScene)
-        overlayWindow?.windowLevel = .alert - 1
+        guard let window = getKeyWindow() else { return }
 
         let configuration = WKWebViewConfiguration()
         webView = WKWebView(frame: UIScreen.main.bounds, configuration: configuration)
         webView?.alpha = CGFloat(opacity)
         webView?.load(URLRequest(url: URL(string: url)!))
 
-        let vc = UIViewController()
-        vc.view.addSubview(webView!)
-        overlayWindow?.rootViewController = vc
-        overlayWindow?.makeKeyAndVisible()
+        overlayView = webView
+        overlayView?.tag = Self.overlayTag
+        window.addSubview(overlayView!)
     }
 
     func hide() {
-        overlayWindow?.isHidden = true
-        overlayWindow = nil
+        overlayView?.removeFromSuperview()
+        overlayView = nil
         webView = nil
     }
 
     func setOpacity(_ opacity: Float) {
         webView?.alpha = CGFloat(opacity)
+    }
+
+    private func getKeyWindow() -> UIWindow? {
+        return UIApplication.shared.connectedScenes
+            .compactMap { $0 as? UIWindowScene }
+            .flatMap { $0.windows }
+            .first { $0.isKeyWindow }
     }
 }
 ```
@@ -795,6 +800,9 @@ class ViewTraverser {
         var nodes: [ViewNode] = []
 
         for (index, subview) in view.subviews.enumerated() {
+            // 跳过叠加层（通过 tag 过滤）
+            if subview.tag == OverlayManager.overlayTag { continue }
+
             let childPath = path.isEmpty ? "\(index)" : "\(path).\(index)"
             let viewId = ViewHashGenerator.generateId(for: subview, path: childPath)
 
