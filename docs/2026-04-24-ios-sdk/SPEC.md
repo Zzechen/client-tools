@@ -29,7 +29,7 @@
 │  └─────────────────────────────────────────────────┘  │
 └─────────────────────────────────────────────────────────┘
          │
-         │ adb forward tcp:8080 tcp:8080
+         │ iproxy 8080 8080 (USB tunnel)
          ▼
 ┌─────────────────────────────────────────────────────────┐
 │                    PC (MCP Server)                      │
@@ -80,3 +80,27 @@
 2. **SwiftUI**：不支持纯 SwiftUI，仅支持 UIKit
 3. **私有约束**：`translatesAutoresizingMaskIntoConstraints` 为 false 时约束生效
 4. **跨视图层级**：如果 View 被其他视图遮挡，可能影响操作
+
+## 五、SDK 初始化
+
+**方式**：宿主在 AppDelegate/SceneDelegate 中手动调用
+
+```swift
+// AppDelegate.swift
+import ClientToolsSDK
+
+func application(_ application: UIApplication,
+                 didFinishLaunchingWithOptions ...) -> Bool {
+    let port = (Bundle.main.object(forInfoDictionaryKey: "ClientToolsSDKPort") as? Int) ?? 8080
+    ClientToolsSDK.shared.start(port: port)
+    return true
+}
+```
+
+**Info.plist 配置**：
+```xml
+<key>ClientToolsSDKPort</key>
+<integer>8080</integer>
+```
+
+**说明**：GCDWebServer 只在 DEBUG 模式下启动，打包后自动不生效。

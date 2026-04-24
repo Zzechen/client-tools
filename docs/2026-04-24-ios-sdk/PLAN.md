@@ -16,6 +16,43 @@
 | View 遍历 | UIKit Runtime (subviews) |
 | 约束修改 | NSLayoutConstraint |
 | 包管理 | CocoaPods |
+| USB 隧道 | iproxy（usbmuxd） |
+
+---
+
+## 通信架构
+
+```
+┌──────────────────┐         USB (iproxy)          ┌──────────────────┐
+│    Mac (MCP)     │  ←── localhost:8080 ──→      │  iOS 设备 (SDK)   │
+│                  │                               │  GCDWebServer     │
+│  MCP Server      │                               │  port: 8080       │
+└──────────────────┘                               └──────────────────┘
+```
+
+**连接步骤：**
+
+```bash
+# 1. iOS 设备上运行 SDK HTTP Server（SDK 自动启动）
+# 2. Mac 上运行 iproxy 建立 USB 隧道
+iproxy 8080 8080
+
+# 3. MCP Server 连接 localhost:8080（自动透传到 iOS 设备）
+```
+
+**与 Android 的差异：**
+
+| 平台 | 隧道方式 | 命令 |
+|------|---------|------|
+| Android 模拟器 | adb forward | `adb forward tcp:8080 tcp:8080` |
+| Android 真机 | 网络直连 或 adb reverse | `adb reverse tcp:8080 tcp:8080` |
+| iOS | USB 隧道 | `iproxy 8080 8080` |
+
+**iproxy 说明：**
+- 包含在 usbmuxd 中（Xcode Command Line Tools 自带）
+- `iproxy <localPort> <devicePort>` 建立本地端口到 iOS设备的 TCP 隧道
+- 设备需通过 USB 连接 Mac，无需与 Mac 同网络
+- 模拟器和真机通用
 
 ---
 
@@ -78,7 +115,7 @@ packages/ios/
 **文件**：`packages/ios/sdk/ClientToolsSDK.podspec`
 
 ```ruby
-Pod::Spec.new do |s]
+Pod::Spec.new do |s|
   s.name             = 'ClientToolsSDK'
   s.version          = '1.0.0'
   s.summary          = 'AI Coding Client Tools SDK for iOS'
@@ -125,6 +162,13 @@ end
     <string>1.0</string>
     <key>CFBundleVersion</key>
     <string>1</string>
+    <key>NSAppTransportSecurity</key>
+    <dict>
+        <key>NSAllowsArbitraryLoads</key>
+        <true/>
+    </dict>
+    <key>NSLocalNetworkUsageDescription</key>
+    <string>ClientToolsSDK requires local network access to communicate with the MCP server.</string>
 </dict>
 </plist>
 ```
@@ -145,20 +189,25 @@ public class ClientToolsSDK {
     private var httpServer: HttpServer?
     private var pageTracker: PageTracker?
     private var overlayManager: OverlayManager?
+    private var isRunning = false
 
     private init() {}
 
-    public func init() {
+    /// 启动 SDK（DEBUG 模式下生效，生产环境自动跳过）
+    public func start(port: Int = 8080) {
         #if DEBUG
-        startHttpServer()
+        guard !isRunning else { return }
+        isRunning = true
+
+        startHttpServer(port: port)
         startPageTracking()
         startOverlayManager()
-        print("[ClientToolsSDK] initialized on port 8080")
+        print("[ClientToolsSDK] started on port \(port)")
         #endif
     }
 
-    private func startHttpServer() {
-        httpServer = HttpServer(port: 8080)
+    private func startHttpServer(port: Int) {
+        httpServer = HttpServer(port: port)
         httpServer?.start()
     }
 
@@ -178,6 +227,20 @@ public class ClientToolsSDK {
     public func overlayManager() -> OverlayManager? {
         return overlayManager
     }
+}
+```
+
+**宿主调用示例**：
+
+```swift
+// AppDelegate.swift
+import ClientToolsSDK
+
+func application(_ application: UIApplication,
+                 didFinishLaunchingWithOptions ...) -> Bool {
+    let port = (Bundle.main.object(forInfoDictionaryKey: "ClientToolsSDKPort") as? Int) ?? 8080
+    ClientToolsSDK.shared.start(port: port)
+    return true
 }
 ```
 
@@ -604,14 +667,17 @@ class ViewTraverser {
     }
 
     static func traverseFromWindow() -> [ViewNode] {
-        guard let window = UIApplication.shared.connectedScenes
-            .compactMap({ $0 as? UIWindowScene })
-            .flatMap({ $0.windows })
-            .first(where: { $0.isKeyWindow }) else {
-            return []
+        var result: [ViewNode] = []
+        DispatchQueue.main.sync {
+            guard let window = UIApplication.shared.connectedScenes
+                .compactMap({ $0 as? UIWindowScene })
+                .flatMap({ $0.windows })
+                .first(where: { $0.isKeyWindow }) else {
+                return
+            }
+            result = traverse(window)
         }
-
-        return traverse(window)
+        return result
     }
 }
 ```
@@ -723,14 +789,17 @@ class ViewQueryService {
     }
 
     func findView(byId id: String) -> UIView? {
-        guard let window = UIApplication.shared.connectedScenes
-            .compactMap({ $0 as? UIWindowScene })
-            .flatMap({ $0.windows })
-            .first(where: { $0.isKeyWindow }) else {
-            return nil
+        var result: UIView?
+        DispatchQueue.main.sync {
+            guard let window = UIApplication.shared.connectedScenes
+                .compactMap({ $0 as? UIWindowScene })
+                .flatMap({ $0.windows })
+                .first(where: { $0.isKeyWindow }) else {
+                return
+            }
+            result = findView(in: window, byId: id)
         }
-
-        return findView(in: window, byId: id)
+        return result
     }
 
     private func findView(in view: UIView, byId id: String) -> UIView? {
@@ -796,13 +865,27 @@ import UIKit
 class ConstraintModifier {
 
     static func modifyMargin(_ view: UIView, attribute: NSLayoutConstraint.Attribute, constant: CGFloat) {
-        guard let superview = view.superview else { return }
+        // 1. 遍历父视图的外部约束（加在 superview 上的）
+        if let superview = view.superview {
+            if let constraint = superview.constraints.first(where: {
+                ($0.firstItem as? UIView) === view && $0.firstAttribute == attribute
+            }) {
+                constraint.constant = constant
+                return
+            }
+        }
 
-        // 找到约束：superview.attr == view.attr * multiplier + constant
-        if let constraint = superview.constraints.first(where: {
-            ($0.firstItem as? UIView) === view && $0.firstAttribute == attribute
-        }) {
+        // 2. 遍历目标视图自身的内部约束（加在 view 上的，如 height/width）
+        if let constraint = view.constraints.first(where: { $0.firstAttribute == attribute }) {
             constraint.constant = constant
+            return
+        }
+
+        // 3. 通过私有属性查找（KVC 访问 _constraints）
+        if let allConstraints = view.value(forKey: "_constraints") as? [NSLayoutConstraint] {
+            if let constraint = allConstraints.first(where: { $0.firstAttribute == attribute }) {
+                constraint.constant = constant
+            }
         }
     }
 
