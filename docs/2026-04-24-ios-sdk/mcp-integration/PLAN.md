@@ -114,6 +114,7 @@ iproxy 需要 iOS 设备通过 USB 连接 Mac。MCP 启动时应检测设备连�
 ## 五、待实现
 
 - [x] iproxy 未安装处理策略（方案 B：报错退出）
+- [x] UIWindow 查找稳定性策略（方案 A：取 keyWindow）
 - [ ] MCP sdk-client.ts 支持读取 client-tools.json
 - [ ] MCP index.ts 支持 iOS 平台自动 iproxy（含错误检测）
 - [ ] MCP index.ts 支持端口分离（同时 Android + iOS）
@@ -129,3 +130,4 @@ iproxy 需要 iOS 设备通过 USB 连接 Mac。MCP 启动时应检测设备连�
 | 2026-04-24 | SDK 初始化方式 | A：宿主手动调用 `start(port:)` |
 | 2026-04-25 | iproxy 未安装处理 | B：报错退出 |
 | 2026-04-25 | 坐标单位 | iOS 输出 pt，改字段名为中性名称 |
+| 2026-04-25 | UIWindow 查找稳定性 | A：取 keyWindow（iOS 有沙箱，不存在跨 App 访问问题） |
