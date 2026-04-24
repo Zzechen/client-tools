@@ -88,12 +88,44 @@ brew install libimobiledevice
 
 需要 USB 连接 iOS 设备。
 
+### 4.1 iproxy 未安装处理
+
+**决策**：报错退出（方案 B）
+
+MCP 启动时检测 `iproxy` 命令：
+- 存在 → 正常执行
+- 不存在 → 打印错误信息 + 安装命令，进程 exit 1
+
+```typescript
+// 伪代码
+const iproxyPath = execSync("which iproxy", { stdio: "pipe" }).toString().trim();
+if (!iproxyPath) {
+  console.error("[ClientTools] iproxy not found. Install: brew install libimobiledevice");
+  process.exit(1);
+}
+```
+
+### 4.2 USB 连接检测
+
+iproxy 需要 iOS 设备通过 USB 连接 Mac。MCP 启动时应检测设备连接状态，若无设备连接则报错退出。
+
 ---
 
 ## 五、待实现
 
+- [x] iproxy 未安装处理策略（方案 B：报错退出）
 - [ ] MCP sdk-client.ts 支持读取 client-tools.json
-- [ ] MCP index.ts 支持 iOS 平台自动 iproxy
+- [ ] MCP index.ts 支持 iOS 平台自动 iproxy（含错误检测）
 - [ ] MCP index.ts 支持端口分离（同时 Android + iOS）
 - [ ] 更新 client-tools.json 文档
 - [ ] 更新 PLAN.md 中的通信架构章节
+
+---
+
+## 六、决策记录
+
+| 日期 | 问题 | 决策 |
+|------|------|------|
+| 2026-04-24 | SDK 初始化方式 | A：宿主手动调用 `start(port:)` |
+| 2026-04-25 | iproxy 未安装处理 | B：报错退出 |
+| 2026-04-25 | 坐标单位 | iOS 输出 pt，改字段名为中性名称 |
