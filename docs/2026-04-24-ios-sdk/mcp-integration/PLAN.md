@@ -130,4 +130,16 @@ iproxy 需要 iOS 设备通过 USB 连接 Mac。MCP 启动时应检测设备连�
 | 2026-04-24 | SDK 初始化方式 | A：宿主手动调用 `start(port:)` |
 | 2026-04-25 | iproxy 未安装处理 | B：报错退出 |
 | 2026-04-25 | 坐标单位 | iOS 输出 pt，改字段名为中性名称 |
+| 2026-04-25 | UIWindow 查找稳定性 | A：取 keyWindow |
+| 2026-04-25 | Overlay 叠加方式 | B：window.addSubview + tag=998 过滤 |
+
+---
+
+## 七、待开发前置条件
+
+- [ ] 安装 Xcode
+- [ ] 安装 libimobiledevice（`brew install libimobiledevice`）
+- [ ] 连接 iOS 设备
+
+**说明**：等 Xcode 安装完成后，再进行实际编码和编译验证。
 | 2026-04-25 | UIWindow 查找稳定性 | A：取 keyWindow（iOS 有沙箱，不存在跨 App 访问问题） |
