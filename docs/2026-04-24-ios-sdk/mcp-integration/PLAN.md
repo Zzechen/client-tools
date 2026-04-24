@@ -138,7 +138,7 @@ iproxy 需要 iOS 设备通过 USB 连接 Mac。MCP 启动时应检测设备连�
 ## 七、待开发前置条件
 
 - [ ] 安装 Xcode
-- [ ] 安装 libimobiledevice（`brew install libimobiledevice`）
+- [x] 安装 libimobiledevice（`brew install libimobiledevice`）✅
 - [ ] 连接 iOS 设备
 
 **说明**：等 Xcode 安装完成后，再进行实际编码和编译验证。
