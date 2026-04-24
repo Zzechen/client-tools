@@ -460,6 +460,42 @@ public struct ModifyProps: Codable {
         // assign all...
     }
 }
+
+public struct OverlayShowRequest: Codable {
+    public let url: String
+    public let opacity: Float
+
+    public init(url: String, opacity: Float) {
+        self.url = url
+        self.opacity = opacity
+    }
+}
+
+public struct OverlayOpacityRequest: Codable {
+    public let opacity: Float
+
+    public init(opacity: Float) {
+        self.opacity = opacity
+    }
+}
+
+public struct PushHtmlRequest: Codable {
+    public let tag: String
+    public let html: String
+
+    public init(tag: String, html: String) {
+        self.tag = tag
+        self.html = html
+    }
+}
+
+public struct PushHtmlResult: Codable {
+    public let url: String
+
+    public init(url: String) {
+        self.url = url
+    }
+}
 ```
 
 ---
@@ -523,6 +559,26 @@ class HttpServer {
         // POST /api/modify
         server.addHandler(forMethod: "POST", path: "/api/modify", request: GCDWebServerRequest.self) { request in
             return self.handleModify(request)
+        }
+
+        // POST /api/overlay/show
+        server.addHandler(forMethod: "POST", path: "/api/overlay/show", request: GCDWebServerRequest.self) { request in
+            return self.handleOverlayShow(request)
+        }
+
+        // POST /api/overlay/hide
+        server.addHandler(forMethod: "POST", path: "/api/overlay/hide", request: GCDWebServerRequest.self) { _ in
+            return self.handleOverlayHide()
+        }
+
+        // POST /api/overlay/opacity
+        server.addHandler(forMethod: "POST", path: "/api/overlay/opacity", request: GCDWebServerRequest.self) { request in
+            return self.handleOverlayOpacity(request)
+        }
+
+        // POST /webview/push-html
+        server.addHandler(forMethod: "POST", path: "/webview/push-html", request: GCDWebServerRequest.self) { request in
+            return self.handlePushHtml(request)
         }
     }
 }
@@ -595,6 +651,99 @@ extension HttpServer {
 
         let result = ScrollResult(id: scrollRequest.id, dx: scrollRequest.dx, dy: scrollRequest.dy)
         return jsonResponse(ApiResponse.success(result))
+    }
+
+    func handleOverlayShow(_ request: GCDWebServerRequest) -> GCDWebServerResponse {
+        guard let data = request.data,
+              let showRequest = try? JSONDecoder().decode(OverlayShowRequest.self, from: data) else {
+            return errorResponse("Invalid request")
+        }
+
+        ClientToolsSDK.shared.overlayManager()?.show(url: showRequest.url, opacity: showRequest.opacity)
+        return jsonResponse(ApiResponse.success(["success": true] as [String: Any]))
+    }
+
+    func handleOverlayHide() -> GCDWebServerResponse {
+        ClientToolsSDK.shared.overlayManager()?.hide()
+        return jsonResponse(ApiResponse.success(["success": true] as [String: Any]))
+    }
+
+    func handleOverlayOpacity(_ request: GCDWebServerRequest) -> GCDWebServerResponse {
+        guard let data = request.data,
+              let opacityRequest = try? JSONDecoder().decode(OverlayOpacityRequest.self, from: data) else {
+            return errorResponse("Invalid request")
+        }
+
+        ClientToolsSDK.shared.overlayManager()?.setOpacity(opacityRequest.opacity)
+        return jsonResponse(ApiResponse.success(["success": true] as [String: Any]))
+    }
+
+    func handlePushHtml(_ request: GCDWebServerRequest) -> GCDWebServerResponse {
+        guard let data = request.data,
+              let pushRequest = try? JSONDecoder().decode(PushHtmlRequest.self, from: data) else {
+            return errorResponse("Invalid request")
+        }
+
+        let timestamp = ISO8601DateFormatter().string(from: Date()).replacingOccurrences(of: ":", with: "-")
+        let url = ClientToolsSDK.shared.overlayManager()?.fileStore.save(tag: pushRequest.tag, timestamp: timestamp, html: pushRequest.html)
+
+        if let url = url {
+            return jsonResponse(ApiResponse.success(PushHtmlResult(url: url.absoluteString)))
+        } else {
+            return errorResponse("Failed to save HTML")
+        }
+    }
+}
+```
+
+---
+
+## Phase 3.5：Overlay 叠加层
+
+### Task 3.5.1：OverlayHandler
+
+**文件**：`packages/ios/sdk/Sources/HttpServer/Pages/OverlayHandler.swift`
+
+Overlay 相关 handler 已内联在 HttpServer 中（见 Phase 3 HttpServer 完整代码）。
+
+### Task 3.5.2：OverlayManager 改造
+
+现有 OverlayManager 需要新增 `fileStore` 属性：
+
+**文件**：`packages/ios/sdk/Sources/Overlay/OverlayManager.swift`
+
+```swift
+class OverlayManager {
+
+    let fileStore = HtmlFileStore()
+
+    func show(url: String, opacity: Float) {
+        // 加载指定 URL 并显示
+        hide()
+        guard let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene else { return }
+
+        overlayWindow = UIWindow(windowScene: windowScene)
+        overlayWindow?.windowLevel = .alert - 1
+
+        let configuration = WKWebViewConfiguration()
+        webView = WKWebView(frame: UIScreen.main.bounds, configuration: configuration)
+        webView?.alpha = CGFloat(opacity)
+        webView?.load(URLRequest(url: URL(string: url)!))
+
+        let vc = UIViewController()
+        vc.view.addSubview(webView!)
+        overlayWindow?.rootViewController = vc
+        overlayWindow?.makeKeyAndVisible()
+    }
+
+    func hide() {
+        overlayWindow?.isHidden = true
+        overlayWindow = nil
+        webView = nil
+    }
+
+    func setOpacity(_ opacity: Float) {
+        webView?.alpha = CGFloat(opacity)
     }
 }
 ```
