@@ -40,6 +40,10 @@ class ViewModifyService {
 
         // frame 修改
         FrameModifier.modifyFrame(view, widthDp: props.widthDp, heightDp: props.heightDp)
+        
+        // 触发布局更新
+        view.setNeedsLayout()
+        view.layoutIfNeeded()
 
         return true
     }
