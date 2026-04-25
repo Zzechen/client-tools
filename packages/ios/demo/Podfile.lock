@@ -1,16 +1,25 @@
 PODS:
+  - ClientToolsSDK (1.0.0):
+    - ClientToolsSDK/Core (= 1.0.0)
+  - ClientToolsSDK/Core (1.0.0)
   - SnapKit (5.7.1)
 
 DEPENDENCIES:
+  - ClientToolsSDK (from `../sdk`)
   - SnapKit (~> 5.6)
 
 SPEC REPOS:
   trunk:
     - SnapKit
 
+EXTERNAL SOURCES:
+  ClientToolsSDK:
+    :path: "../sdk"
+
 SPEC CHECKSUMS:
+  ClientToolsSDK: a1124a84c5f6f90cdf0005a21cf06f1c8cd8ad0e
   SnapKit: d612e99e678a2d3b95bf60b0705ed0a35c03484a
 
-PODFILE CHECKSUM: a8e3fce197ccac68ee5c5d055954c92ab1e13d04
+PODFILE CHECKSUM: bfcb5e6638f8b45fc3c29a6120825a2c75681480
 
 COCOAPODS: 1.16.2
