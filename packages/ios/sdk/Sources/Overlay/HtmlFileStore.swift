@@ -24,4 +24,10 @@ public class HtmlFileStore {
             return nil
         }
     }
+
+    public func findFile(tag: String, timestamp: String) -> URL? {
+        let filename = "\(tag)_\(timestamp).html"
+        let fileURL = baseDir.appendingPathComponent(filename)
+        return fileManager.fileExists(atPath: fileURL.path) ? fileURL : nil
+    }
 }
