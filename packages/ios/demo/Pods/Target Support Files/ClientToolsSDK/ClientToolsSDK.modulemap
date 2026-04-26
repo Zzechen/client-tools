@@ -1,0 +1,6 @@
+framework module ClientToolsSDK {
+  umbrella header "ClientToolsSDK-umbrella.h"
+
+  export *
+  module * { export * }
+}
