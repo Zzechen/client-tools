@@ -71,57 +71,24 @@ public struct ModifyProps: Codable {
     public let paddingRightDiffDp: Float?
     public let widthDp: String?
     public let heightDp: String?
-
-    public init(marginTopDiffDp: Float? = nil, marginBottomDiffDp: Float? = nil,
-                 marginLeftDiffDp: Float? = nil, marginRightDiffDp: Float? = nil,
-                 paddingTopDiffDp: Float? = nil, paddingBottomDiffDp: Float? = nil,
-                 paddingLeftDiffDp: Float? = nil, paddingRightDiffDp: Float? = nil,
-                 widthDp: String? = nil, heightDp: String? = nil) {
-        self.marginTopDiffDp = marginTopDiffDp
-        self.marginBottomDiffDp = marginBottomDiffDp
-        self.marginLeftDiffDp = marginLeftDiffDp
-        self.marginRightDiffDp = marginRightDiffDp
-        self.paddingTopDiffDp = paddingTopDiffDp
-        self.paddingBottomDiffDp = paddingBottomDiffDp
-        self.paddingLeftDiffDp = paddingLeftDiffDp
-        self.paddingRightDiffDp = paddingRightDiffDp
-        self.widthDp = widthDp
-        self.heightDp = heightDp
-    }
+    public let letterSpacingEm: Float?
+    public let lineSpacingExtraDp: Float?
+    public let includeFontPadding: Bool?
 }
 
-public struct OverlayShowRequest: Codable {
-    public let url: String
-    public let opacity: Float
-
-    public init(url: String, opacity: Float) {
-        self.url = url
-        self.opacity = opacity
-    }
-}
-
-public struct OverlayOpacityRequest: Codable {
-    public let opacity: Float
-
-    public init(opacity: Float) {
-        self.opacity = opacity
-    }
-}
-
-public struct PushHtmlRequest: Codable {
+public struct WebviewPushHtmlRequest: Codable {
     public let tag: String
     public let html: String
-
-    public init(tag: String, html: String) {
-        self.tag = tag
-        self.html = html
-    }
+    public let timestamp: String
 }
 
-public struct PushHtmlResult: Codable {
-    public let url: String
+public struct WebviewShowRequest: Codable {
+    public let tag: String
+    public let timestamp: String
+}
 
-    public init(url: String) {
-        self.url = url
-    }
+public struct WebviewAdjustRequest: Codable {
+    public let offsetX: Float?
+    public let offsetY: Float?
+    public let opacity: Float?
 }
