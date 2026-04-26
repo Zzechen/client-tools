@@ -7,7 +7,7 @@ import com.clienttools.sdk.model.ClickResult
 import com.clienttools.sdk.model.ScrollRequest
 import com.clienttools.sdk.model.ScrollResult
 import com.clienttools.sdk.model.PageInfo
-import com.clienttools.shared.models.ViewProps
+import com.clienttools.sdk.models.ViewProps
 import com.clienttools.sdk.runtime.ViewQueryService
 import com.clienttools.sdk.runtime.ViewModifier
 import com.clienttools.sdk.runtime.OverlayManager

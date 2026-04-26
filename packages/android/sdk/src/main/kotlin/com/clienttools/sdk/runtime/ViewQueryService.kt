@@ -8,7 +8,7 @@ import android.view.View
 import android.widget.TextView
 import android.widget.ImageView
 import android.widget.Button
-import com.clienttools.shared.models.NodeType
+import com.clienttools.sdk.models.NodeType
 import com.clienttools.sdk.model.ViewInfo
 import java.io.ByteArrayOutputStream
 import java.util.concurrent.CountDownLatch

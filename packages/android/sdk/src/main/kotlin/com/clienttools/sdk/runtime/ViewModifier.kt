@@ -5,7 +5,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
 import com.clienttools.sdk.ClientToolsSDK
-import com.clienttools.shared.models.ViewProps
+import com.clienttools.sdk.models.ViewProps
 
 object ViewModifier {
     fun apply(viewId: String, props: ViewProps): Boolean {

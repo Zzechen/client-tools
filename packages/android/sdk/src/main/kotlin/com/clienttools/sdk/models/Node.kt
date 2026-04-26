@@ -1,17 +1,15 @@
-package com.clienttools.sdk.model
+package com.clienttools.sdk.models
 
-import com.clienttools.sdk.models.NodeAttrs
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class ViewInfo(
+data class Node(
     val id: String,
-    val type: String,
+    val type: NodeType,
     val screenX: Float,
     val screenY: Float,
     val widthDp: Float,
     val heightDp: Float,
     val attrs: NodeAttrs? = null,
-    val visibility: Int,
-    val isEnabled: Boolean
+    val customAttrs: Map<String, String> = emptyMap()
 )

@@ -1,6 +1,6 @@
 package com.clienttools.sdk.model
 
-import com.clienttools.shared.models.ViewProps
+import com.clienttools.sdk.models.ViewProps
 import kotlinx.serialization.Serializable
 
 @Serializable
