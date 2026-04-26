@@ -1,0 +1,6 @@
+[
+    {
+        "merged": "com.clienttools.sdk-release-25:/drawable-v23/abc_control_background_material.xml",
+        "source": "com.clienttools.sdk-appcompat-1.7.0-16:/drawable-v23/abc_control_background_material.xml"
+    }
+]

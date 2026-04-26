@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<incidents format="6" by="lint 8.7.3" type="incidents">
+
+    <incident
+        id="SetJavaScriptEnabled"
+        severity="warning"
+        message="Using `setJavaScriptEnabled` can introduce XSS vulnerabilities into your application, review carefully">
+        <location
+            file="${:android:sdk*debug*MAIN*sourceProvider*0*javaDir*2}/com/clienttools/sdk/runtime/OverlayManager.kt"
+            line="58"
+            column="21"
+            startOffset="1841"
+            endLine="58"
+            endColumn="45"
+            endOffset="1865"/>
+    </incident>
+
+    <incident
+        id="StaticFieldLeak"
+        severity="warning"
+        message="Do not place Android context classes in static fields (static reference to `ClientToolsSDK` which has field `currentActivity` pointing to `Activity`); this is a memory leak">
+        <location
+            file="${:android:sdk*debug*MAIN*sourceProvider*0*javaDir*2}/com/clienttools/sdk/ClientToolsSDK.kt"
+            line="13"
+            column="1"
+            startOffset="417"
+            endLine="54"
+            endColumn="2"
+            endOffset="2038"/>
+    </incident>
+
+    <incident
+        id="StaticFieldLeak"
+        severity="warning"
+        message="Do not place Android context classes in static fields (static reference to `HttpServer` which has field `context` pointing to `Context`); this is a memory leak">
+        <location
+            file="${:android:sdk*debug*MAIN*sourceProvider*0*javaDir*2}/com/clienttools/sdk/ClientToolsSDK.kt"
+            line="14"
+            column="5"
+            startOffset="445"
+            endLine="14"
+            endColumn="47"
+            endOffset="487"/>
+    </incident>
+
+    <incident
+        id="StaticFieldLeak"
+        severity="warning"
+        message="Do not place Android context classes in static fields; this is a memory leak">
+        <location
+            file="${:android:sdk*debug*MAIN*sourceProvider*0*javaDir*2}/com/clienttools/sdk/ClientToolsSDK.kt"
+            line="17"
+            column="5"
+            startOffset="606"
+            endLine="17"
+            endColumn="62"
+            endOffset="663"/>
+    </incident>
+
+    <incident
+        id="StaticFieldLeak"
+        severity="warning"
+        message="Do not place Android context classes in static fields (static reference to `OverlayManager` which has field `webView` pointing to `WebView`); this is a memory leak">
+        <location
+            file="${:android:sdk*debug*MAIN*sourceProvider*0*javaDir*2}/com/clienttools/sdk/runtime/OverlayManager.kt"
+            line="12"
+            column="1"
+            startOffset="289"
+            endLine="89"
+            endColumn="2"
+            endOffset="2927"/>
+    </incident>
+
+    <incident
+        id="StaticFieldLeak"
+        severity="warning"
+        message="Do not place Android context classes in static fields; this is a memory leak">
+        <location
+            file="${:android:sdk*debug*MAIN*sourceProvider*0*javaDir*2}/com/clienttools/sdk/runtime/OverlayManager.kt"
+            line="13"
+            column="5"
+            startOffset="317"
+            endLine="13"
+            endColumn="41"
+            endOffset="353"/>
+    </incident>
+
+</incidents>

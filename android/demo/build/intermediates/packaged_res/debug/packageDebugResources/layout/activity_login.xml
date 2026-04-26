@@ -1,0 +1,486 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/login_scroll"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/login_bg"
+    android:fillViewport="true">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/login_root"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:minHeight="760dp">
+
+        <!-- ===== 导航栏（状态栏高度由系统占用，这里从顶部留 54dp 给导航栏） ===== -->
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/login_nav_bar"
+            android:layout_width="0dp"
+            android:layout_height="54dp"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent">
+
+            <TextView
+                android:id="@+id/login_btn_close"
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:text="✕"
+                android:textColor="@color/text_primary"
+                android:textSize="13sp"
+                android:gravity="center"
+                android:background="@drawable/login_bg_close_btn"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintBottom_toBottomOf="parent"
+                android:layout_marginStart="20dp" />
+
+            <TextView
+                android:id="@+id/login_btn_skip"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="跳过 ›"
+                android:textColor="@color/login_text_hint"
+                android:textSize="14sp"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintBottom_toBottomOf="parent"
+                android:layout_marginEnd="38dp" />
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+        <!-- ===== Logo 区（含心电图装饰线背景） ===== -->
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/login_logo_section"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:paddingBottom="16dp"
+            app:layout_constraintTop_toBottomOf="@+id/login_nav_bar"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent">
+
+            <!-- Logo 图标（青色圆角方形） -->
+            <FrameLayout
+                android:id="@+id/login_logo_icon_bg"
+                android:layout_width="44dp"
+                android:layout_height="44dp"
+                android:background="@drawable/login_bg_logo_icon"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                android:layout_marginStart="24dp"
+                android:layout_marginTop="50dp">
+
+                <!-- 心电图波形用折线近似：~ 符号 -->
+                <TextView
+                    android:id="@+id/login_logo_waveform"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:text="∿"
+                    android:textColor="#0A0B0F"
+                    android:textSize="26sp"
+                    android:textStyle="bold" />
+
+            </FrameLayout>
+
+            <TextView
+                android:id="@+id/login_logo_name"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="PULSE"
+                android:textColor="@color/text_primary"
+                android:textSize="20sp"
+                android:textStyle="bold"
+                android:letterSpacing="0.12"
+                app:layout_constraintStart_toEndOf="@+id/login_logo_icon_bg"
+                app:layout_constraintTop_toTopOf="@+id/login_logo_icon_bg"
+                app:layout_constraintBottom_toBottomOf="@+id/login_logo_icon_bg"
+                android:layout_marginStart="10dp" />
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+        <!-- ===== 标题区 ===== -->
+        <LinearLayout
+            android:id="@+id/login_title_section"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:paddingStart="24dp"
+            android:paddingEnd="24dp"
+            android:paddingTop="20dp"
+            android:paddingBottom="17dp"
+            app:layout_constraintTop_toBottomOf="@+id/login_logo_section"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent">
+
+            <TextView
+                android:id="@+id/login_text_title"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="欢迎回来"
+                android:textColor="@color/text_primary"
+                android:textSize="28sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/login_text_subtitle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="// 登录以同步你的训练数据"
+                android:textColor="@color/login_text_hint"
+                android:textSize="13sp"
+                android:layout_marginTop="4dp" />
+
+        </LinearLayout>
+
+        <!-- ===== Tab 切换 ===== -->
+        <FrameLayout
+            android:id="@+id/login_tabs"
+            android:layout_width="0dp"
+            android:layout_height="40dp"
+            android:layout_marginStart="24dp"
+            android:layout_marginEnd="24dp"
+            android:layout_marginTop="2dp"
+            android:background="@drawable/login_bg_tab_container"
+            android:padding="5dp"
+            app:layout_constraintTop_toBottomOf="@+id/login_title_section"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent">
+
+            <LinearLayout
+                android:id="@+id/login_tab_row"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:id="@+id/login_tab_code"
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    android:text="验证码"
+                    android:textColor="@color/login_bg"
+                    android:textSize="13sp"
+                    android:gravity="center"
+                    android:background="@drawable/login_bg_tab_selected" />
+
+                <TextView
+                    android:id="@+id/login_tab_password"
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    android:text="密码"
+                    android:textColor="@color/login_text_hint"
+                    android:textSize="13sp"
+                    android:gravity="center" />
+
+                <TextView
+                    android:id="@+id/login_tab_email"
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    android:text="邮箱"
+                    android:textColor="@color/login_text_hint"
+                    android:textSize="13sp"
+                    android:gravity="center" />
+
+            </LinearLayout>
+
+        </FrameLayout>
+
+        <!-- ===== 手机号输入框 ===== -->
+        <LinearLayout
+            android:id="@+id/login_field_phone"
+            android:layout_width="0dp"
+            android:layout_height="52dp"
+            android:layout_marginStart="24dp"
+            android:layout_marginEnd="24dp"
+            android:layout_marginTop="27dp"
+            android:orientation="horizontal"
+            android:background="@drawable/login_bg_input"
+            android:gravity="center_vertical"
+            android:paddingStart="14dp"
+            android:paddingEnd="14dp"
+            app:layout_constraintTop_toBottomOf="@+id/login_tabs"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent">
+
+            <!-- 国旗占位（简单方块） -->
+            <View
+                android:id="@+id/login_phone_flag"
+                android:layout_width="20dp"
+                android:layout_height="14dp"
+                android:background="#CC3333" />
+
+            <TextView
+                android:id="@+id/login_phone_code"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="+86"
+                android:textColor="@color/text_primary"
+                android:textSize="15sp"
+                android:layout_marginStart="6dp" />
+
+            <TextView
+                android:id="@+id/login_phone_chevron"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text=" ∨"
+                android:textColor="@color/login_text_hint"
+                android:textSize="10sp" />
+
+            <View
+                android:id="@+id/login_phone_divider"
+                android:layout_width="1dp"
+                android:layout_height="20dp"
+                android:background="@color/login_divider"
+                android:layout_marginStart="10dp"
+                android:layout_marginEnd="12dp" />
+
+            <TextView
+                android:id="@+id/login_phone_number"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="138 0013 8000"
+                android:textColor="@color/text_primary"
+                android:textSize="16sp" />
+
+        </LinearLayout>
+
+        <!-- ===== 获取验证码按钮（实心青色） ===== -->
+        <FrameLayout
+            android:id="@+id/login_btn_submit"
+            android:layout_width="0dp"
+            android:layout_height="52dp"
+            android:layout_marginStart="24dp"
+            android:layout_marginEnd="24dp"
+            android:layout_marginTop="10dp"
+            android:background="@drawable/login_bg_btn_cyan"
+            app:layout_constraintTop_toBottomOf="@+id/login_field_phone"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent">
+
+            <TextView
+                android:id="@+id/login_btn_verify_text"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:text="获取验证码  →"
+                android:textColor="@color/login_bg"
+                android:textSize="16sp"
+                android:textStyle="bold" />
+
+        </FrameLayout>
+
+        <!-- ===== 协议勾选（已勾选状态） ===== -->
+        <LinearLayout
+            android:id="@+id/login_agreement_row"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="28dp"
+            android:layout_marginEnd="24dp"
+            android:layout_marginTop="14dp"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            app:layout_constraintTop_toBottomOf="@+id/login_btn_submit"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent">
+
+            <!-- 已勾选 checkbox（青色实心 + 白色勾） -->
+            <FrameLayout
+                android:id="@+id/login_agreement_checkbox"
+                android:layout_width="16dp"
+                android:layout_height="16dp"
+                android:background="@drawable/login_bg_checkbox_checked">
+
+                <TextView
+                    android:id="@+id/login_agreement_check_icon"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:text="✓"
+                    android:textColor="@color/login_bg"
+                    android:textSize="10sp"
+                    android:textStyle="bold" />
+
+            </FrameLayout>
+
+            <TextView
+                android:id="@+id/login_agreement_prefix"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="已阅读并同意 "
+                android:textColor="@color/login_text_hint"
+                android:textSize="12sp"
+                android:layout_marginStart="8dp" />
+
+            <TextView
+                android:id="@+id/login_agreement_terms"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="服务条款"
+                android:textColor="@color/login_cyan"
+                android:textSize="12sp" />
+
+            <TextView
+                android:id="@+id/login_agreement_and"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text=" 与 "
+                android:textColor="@color/login_text_hint"
+                android:textSize="12sp" />
+
+            <TextView
+                android:id="@+id/login_agreement_privacy"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="隐私政策"
+                android:textColor="@color/login_cyan"
+                android:textSize="12sp" />
+
+        </LinearLayout>
+
+        <!-- ===== OR 分割线 ===== -->
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/login_divider_section"
+            android:layout_width="0dp"
+            android:layout_height="16dp"
+            android:layout_marginTop="155dp"
+            app:layout_constraintTop_toBottomOf="@+id/login_agreement_row"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent">
+
+            <View
+                android:id="@+id/login_divider_left"
+                android:layout_width="0dp"
+                android:layout_height="1dp"
+                android:background="@color/login_divider"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toStartOf="@+id/login_divider_label"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintBottom_toBottomOf="parent"
+                android:layout_marginStart="24dp"
+                android:layout_marginEnd="12dp" />
+
+            <TextView
+                android:id="@+id/login_divider_label"
+                android:layout_width="95dp"
+                android:layout_height="wrap_content"
+                android:text="OR · 其他方式"
+                android:textColor="@color/login_text_hint"
+                android:textSize="12sp"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintBottom_toBottomOf="parent" />
+
+            <View
+                android:id="@+id/login_divider_right"
+                android:layout_width="0dp"
+                android:layout_height="1dp"
+                android:background="@color/login_divider"
+                app:layout_constraintStart_toEndOf="@+id/login_divider_label"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintBottom_toBottomOf="parent"
+                android:layout_marginStart="12dp"
+                android:layout_marginEnd="24dp" />
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+        <!-- ===== 三方登录图标 ===== -->
+        <LinearLayout
+            android:id="@+id/login_social_row"
+            android:layout_width="0dp"
+            android:layout_height="54dp"
+            android:layout_marginStart="24dp"
+            android:layout_marginEnd="24dp"
+            android:layout_marginTop="15dp"
+            android:orientation="horizontal"
+            android:gravity="center"
+            app:layout_constraintTop_toBottomOf="@+id/login_divider_section"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent">
+
+            <FrameLayout
+                android:id="@+id/login_btn_wechat"
+                android:layout_width="54dp"
+                android:layout_height="54dp"
+                android:layout_marginEnd="18dp"
+                android:background="@drawable/login_bg_icon_btn">
+                <TextView
+                    android:id="@+id/login_social_wechat_icon"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:text="微"
+                    android:textColor="@color/login_cyan"
+                    android:textSize="18sp"
+                    android:textStyle="bold" />
+            </FrameLayout>
+
+            <FrameLayout
+                android:id="@+id/login_btn_apple"
+                android:layout_width="54dp"
+                android:layout_height="54dp"
+                android:layout_marginEnd="18dp"
+                android:background="@drawable/login_bg_icon_btn">
+                <TextView
+                    android:id="@+id/login_social_apple_icon"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:text=""
+                    android:textColor="@color/text_primary"
+                    android:textSize="22sp" />
+            </FrameLayout>
+
+            <FrameLayout
+                android:id="@+id/login_btn_quicklogin"
+                android:layout_width="54dp"
+                android:layout_height="54dp"
+                android:layout_marginEnd="18dp"
+                android:background="@drawable/login_bg_icon_btn">
+                <TextView
+                    android:id="@+id/login_social_phone_icon"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:text="▦"
+                    android:textColor="@color/text_primary"
+                    android:textSize="18sp" />
+            </FrameLayout>
+
+            <FrameLayout
+                android:id="@+id/login_btn_account"
+                android:layout_width="54dp"
+                android:layout_height="54dp"
+                android:background="@drawable/login_bg_icon_btn">
+                <TextView
+                    android:id="@+id/login_social_guest_icon"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:text="♟"
+                    android:textColor="@color/text_primary"
+                    android:textSize="20sp" />
+            </FrameLayout>
+
+        </LinearLayout>
+
+        <!-- ===== 底部 Home 指示条 ===== -->
+        <View
+            android:id="@+id/login_home_indicator"
+            android:layout_width="134dp"
+            android:layout_height="5dp"
+            android:layout_marginBottom="8dp"
+            android:background="@color/login_text_sub"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+</ScrollView>

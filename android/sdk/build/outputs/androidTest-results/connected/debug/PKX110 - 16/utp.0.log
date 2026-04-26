@@ -1,0 +1,34 @@
+信息: Constructing runner from config.
+信息: Configuring Android Instrumentation driver: android_instrumentation_runtime {
+  instrumentation_info {
+    app_package: "com.clienttools.sdk.test"
+    test_package: "com.clienttools.sdk.test"
+    test_runner_class: "android.test.InstrumentationTestRunner"
+  }
+  instrumentation_args {
+    args_map {
+      key: "additionalTestOutputDir"
+      value: "/sdcard/Android/media/com.clienttools.sdk.test/additional_test_output"
+    }
+  }
+}
+am_instrument_timeout: 31536000
+
+信息: Configuring AndroidTestApkInstallerPlugin: apks_to_install {
+  apk_paths: "/Users/zzc/Desktop/works/client-tools/packages/android/sdk/build/outputs/apk/androidTest/debug/sdk-debug-androidTest.apk"
+  install_options {
+  }
+  uninstall_after_test: true
+}
+
+信息: No installables found in test fixture. Nothing to install.
+信息: Installing [/Users/zzc/Desktop/works/client-tools/packages/android/sdk/build/outputs/apk/androidTest/debug/sdk-debug-androidTest.apk] on device a353b595.
+严重: Test execution failed with fatal error!
+信息: Copying files from device to host: /sdcard/Android/media/com.clienttools.sdk.test/additional_test_output to /Users/zzc/Desktop/works/client-tools/packages/android/sdk/build/outputs/connected_android_test_additional_output/debugAndroidTest/connected/PKX110 - 16
+信息: /sdcard/Android/media/com.clienttools.sdk.test/additional_test_output is not a directory
+严重: recordTestResultEvent failed with an error: io.grpc.StatusRuntimeException: CANCELLED: RST_STREAM closed stream. HTTP/2 error code: CANCEL
+严重: Exception while executing runnable io.grpc.internal.ClientCallImpl$ClientStreamListenerImpl$1StreamClosed@f8697cb
+信息: Stop logcat streaming.
+信息: Uninstalling com.clienttools.sdk.test for device a353b595.
+警告: Device a353b595 failed to uninstall test APK com.clienttools.sdk.test.
+[Failure [DELETE_FAILED_INTERNAL_ERROR]]

@@ -1,0 +1,26 @@
+1<?xml version="1.0" encoding="utf-8"?>
+2<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+3    package="com.clienttools.sdk" >
+4
+5    <uses-sdk android:minSdkVersion="26" />
+6
+7    <uses-permission android:name="android.permission.INTERNET" />
+7-->/Users/zzc/Desktop/works/client-tools/android/sdk/src/main/AndroidManifest.xml:4:5-67
+7-->/Users/zzc/Desktop/works/client-tools/android/sdk/src/main/AndroidManifest.xml:4:22-64
+8    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
+8-->/Users/zzc/Desktop/works/client-tools/android/sdk/src/main/AndroidManifest.xml:5:5-78
+8-->/Users/zzc/Desktop/works/client-tools/android/sdk/src/main/AndroidManifest.xml:5:22-75
+9
+10    <application>
+10-->/Users/zzc/Desktop/works/client-tools/android/sdk/src/main/AndroidManifest.xml:7:5-12:19
+11        <provider
+11-->/Users/zzc/Desktop/works/client-tools/android/sdk/src/main/AndroidManifest.xml:8:9-11:40
+12            android:name="com.clienttools.sdk.SdkInitProvider"
+12-->/Users/zzc/Desktop/works/client-tools/android/sdk/src/main/AndroidManifest.xml:9:13-63
+13            android:authorities="com.clienttools.sdk.init"
+13-->/Users/zzc/Desktop/works/client-tools/android/sdk/src/main/AndroidManifest.xml:10:13-59
+14            android:exported="false" />
+14-->/Users/zzc/Desktop/works/client-tools/android/sdk/src/main/AndroidManifest.xml:11:13-37
+15    </application>
+16
+17</manifest>
