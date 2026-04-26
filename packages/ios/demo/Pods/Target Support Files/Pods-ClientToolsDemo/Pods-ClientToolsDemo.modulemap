@@ -1,6 +1,0 @@
-framework module Pods_ClientToolsDemo {
-  umbrella header "Pods-ClientToolsDemo-umbrella.h"
-
-  export *
-  module * { export * }
-}
