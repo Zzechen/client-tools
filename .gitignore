@@ -9,11 +9,11 @@ __pycache__/
 .venv/
 
 # Gradle
-packages/.gradle/
-packages/build/
-packages/local.properties
-packages/**/build/
-packages/**/.gradle/
+.gradle/
+build/
+local.properties
+**/build/
+**/.gradle/
 
 # Android
 *.aar
@@ -35,7 +35,10 @@ DerivedData/
 .idea/
 *.iml
 .DS_Store
-packages/.kotlin
+.kotlin/
+# iOS Pods
+ios/demo/Pods/
+ios/demo/Podfile.lock
 mcp/dist/
 
 # Node / TypeScript

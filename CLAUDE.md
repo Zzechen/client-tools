@@ -10,16 +10,20 @@ AI Coding 客户端页面开发增强套件，目标是让 AI 高质量完成「
 
 ## 目录结构
 
-- `packages/` — Gradle 多平台工程根目录（settings.gradle.kts 在此）
-  - `shared/` — KMP 共享模块（data class + 序列化逻辑，commonMain，Android/iOS 唯一源）
-  - `android/sdk/` — Android SDK，打包为 `.aar`（依赖 shared）
+- `android/` — Android 工程（Gradle settings.gradle.kts 在项目根）
+  - `android/sdk/` — Android SDK，打包为 `.aar`
   - `android/demo/` — Android 接入示例
-  - `ios/sdk/` — iOS SDK，打包为 `.xcframework`（依赖 shared KMP framework）
+- `ios/` — iOS 工程（CocoaPods）
+  - `ios/sdk/` — iOS SDK（CocoaPod）
   - `ios/demo/` — iOS 接入示例
+- `harmony/` — HarmonyOS（骨架，待实现）
+  - `harmony/sdk/`
+  - `harmony/demo/`
 - `mcp/` — MCP Server，封装 SDK HTTP 接口供 AI 调用
 - `skill/` — AI 工作流 Skill + 设计稿预处理脚本（Python/Playwright）
 - `tests/` — 所有测试，按功能子目录划分（如 `tests/preprocess/`）
 - `docs/` — 文档
+- `settings.gradle.kts` — Gradle 多模块根配置（项目根）
 - `tech-plan.md` — 整体技术规划
 
 ## 开发约定
@@ -32,11 +36,11 @@ AI Coding 客户端页面开发增强套件，目标是让 AI 高质量完成「
 ## 技术约定
 
 - **Android 布局**：统一使用 XML（不使用 Jetpack Compose）
-- **KMP 共享模块**：仅包含纯 Kotlin 数据结构和序列化逻辑，不依赖任何平台 API
+- **数据模型**：各端独立维护，Android 模型在 `android/sdk/src/main/kotlin/com/clienttools/sdk/models/`，无 KMP 共享层
 - **Android 最低版本**：API 26（Android 8.0）
 - **iOS 最低版本**：iOS 14
-- **Gradle 工程**：根目录在 `packages/`，使用 Java 17（`gradle.properties` 中指定）
-- **Gradle Java 路径**：`packages/gradle.properties` 不包含 `org.gradle.java.home`，Java 路径由各开发者在 IDE（Android Studio / DevEco Studio）的 Gradle JDK 设置中本地配置，不提交到仓库
+- **Gradle 工程**：根目录在项目根（`settings.gradle.kts` 在根目录），使用 Java 17
+- **Gradle Java 路径**：`gradle.properties` 不包含 `org.gradle.java.home`，Java 路径由各开发者在 IDE（Android Studio）的 Gradle JDK 设置中本地配置，不提交到仓库
 
 ## 运行测试
 
@@ -44,8 +48,8 @@ AI Coding 客户端页面开发增强套件，目标是让 AI 高质量完成「
 # Python（preprocess）
 .claude/skills/client-tools-preprocess/scripts/.venv/bin/pytest tests/preprocess/ -q
 
-# Kotlin（KMP shared）
-cd packages && ./gradlew :shared:jvmTest
+# Android SDK
+./gradlew :android:sdk:assembleDebug
 ```
 
 ## Superpowers 文档路径
