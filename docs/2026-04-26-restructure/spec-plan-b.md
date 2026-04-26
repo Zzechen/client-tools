@@ -124,6 +124,7 @@ message ScrollResult { string id = 1; float dx = 2; float dy = 3; }
 syntax = "proto3";
 package clienttools;
 
+// DeviceInfo 定义在此，api.proto 通过 import 引用，避免重复定义
 message DeviceInfo { float screen_width_dp = 1; float screen_height_dp = 2; float density = 3; }
 message PageInfo { string page_name = 1; string timestamp = 2; }
 message PageChangedEvent { string page_name = 1; int64 timestamp = 2; }
@@ -135,24 +136,35 @@ syntax = "proto3";
 package clienttools;
 import "node.proto";
 import "page.proto";
+import "modify.proto";
 
-message DeviceInfo { float screen_width_dp = 1; float screen_height_dp = 2; float density = 3; }
+// 公共响应元数据，所有 Response 通过组合复用
+message ResponseMeta {
+  int32 code = 1;
+  string message = 2;
+  int32 sdk_version = 3;
+  DeviceInfo device = 4;
+}
+
 message Empty {}
 
-// 每个接口有独立的 Response message，避免使用 google.protobuf.Any
-message PageResponse   { int32 code = 1; string message = 2; int32 sdk_version = 3; DeviceInfo device = 4; PageInfo data = 5; }
-message NodeResponse   { int32 code = 1; string message = 2; int32 sdk_version = 3; DeviceInfo device = 4; Node data = 5; }
-message NodeListResponse { int32 code = 1; string message = 2; int32 sdk_version = 3; DeviceInfo device = 4; NodeList data = 5; }
-message ModifyResponse { int32 code = 1; string message = 2; int32 sdk_version = 3; DeviceInfo device = 4; }
-message ClickResponse  { int32 code = 1; string message = 2; int32 sdk_version = 3; DeviceInfo device = 4; ClickResult data = 5; }
-message ScrollResponse { int32 code = 1; string message = 2; int32 sdk_version = 3; DeviceInfo device = 4; ScrollResult data = 5; }
-message SimpleResponse { int32 code = 1; string message = 2; int32 sdk_version = 3; DeviceInfo device = 4; }
+// 各接口 Response：meta 嵌套公共字段，data 承载业务数据
+message PageResponse     { ResponseMeta meta = 1; PageInfo data = 2; }
+message NodeResponse     { ResponseMeta meta = 1; Node data = 2; }
+message NodeListResponse { ResponseMeta meta = 1; NodeList data = 2; }
+message ModifyResponse   { ResponseMeta meta = 1; }
+message ClickResponse    { ResponseMeta meta = 1; ClickResult data = 2; }
+message ScrollResponse   { ResponseMeta meta = 1; ScrollResult data = 2; }
+message SimpleResponse   { ResponseMeta meta = 1; }
 
-message PushHtmlRequest { string tag = 1; string timestamp = 2; bytes html = 3; }
-message PushHtmlResult  { string tag = 1; string timestamp = 2; string file_path = 3; }
-message PushHtmlResponse { int32 code = 1; string message = 2; int32 sdk_version = 3; DeviceInfo device = 4; PushHtmlResult data = 5; }
+message PushHtmlRequest  { string tag = 1; string timestamp = 2; bytes html = 3; }
+message PushHtmlResult   { string tag = 1; string timestamp = 2; string file_path = 3; }
+message PushHtmlResponse { ResponseMeta meta = 1; PushHtmlResult data = 2; }
+
 message WebviewShowRequest   { string tag = 1; string timestamp = 2; }
 message WebviewAdjustRequest { float offset_x = 1; float offset_y = 2; float opacity = 3; }
+
+message CaptureResponse  { ResponseMeta meta = 1; bytes image_png = 2; }
 ```
 
 ---
