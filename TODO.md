@@ -60,6 +60,24 @@
 - implement 阶段生成 TextView 时，基于设计稿字号自动计算 `lineHeight` 属性（Android 28+），使行高与 HTML 保持一致
 - inspect skill 中识别到文字节点偏差由行高差异导致时，优先建议设置 `lineHeight` 而非调整 margin
 
+### 9. 迁移至 Protocol Buffers + 调整目录结构
+**背景：** 当前跨端数据结构靠人工同步，容易漂移；目录结构耦合 KMP，不利于多端扩展。  
+**改进：**
+1. **数据结构迁移至 Protocol Buffers**：将 Node、ViewProps、ModifyViewRequest 等所有跨端模型改为 `.proto` 定义，各端从同一份 schema 生成代码，彻底消除字段漂移
+2. **目录结构重组**：移除 KMP shared 模块，改为各端独立实现，目录结构调整为：
+   ```
+   packages/
+   ├── android/
+   │   ├── demo/
+   │   └── sdk/
+   ├── ios/
+   │   ├── demo/
+   │   └── sdk/
+   └── harmony/
+       ├── demo/
+       └── sdk/
+   ```
+
 ---
 
 ```
