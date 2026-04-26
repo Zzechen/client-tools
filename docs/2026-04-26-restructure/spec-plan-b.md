@@ -179,6 +179,7 @@ message WebviewAdjustRequest { float offset_x = 1; float offset_y = 2; float opa
 | POST /webview/show | `WebviewShowRequest` | `SimpleResponse` |
 | POST /webview/hide | 无 Body | `SimpleResponse` |
 | POST /webview/adjust | `WebviewAdjustRequest` | `SimpleResponse` |
+| GET /api/capture/:id | 无 Body | `image/png`（成功）/ `CaptureErrorResponse`（失败）|
 
 GET 接口无请求 Body，响应改为 protobuf binary。`push-html` 的 html 内容在 proto 里定义为 `bytes`，传 UTF-8 编码。
 
@@ -288,5 +289,23 @@ buf breaking --against '.git#branch=main'
 ## 6. 不在范围内
 
 - Python preprocess 脚本（后续整体删除，不迁移）
-- SSE 事件流（`/api/events`，保持现有实现）
-- `/api/capture/:id` 图片接口（返回 binary image，不适合 ApiResponse 包装，保持现有实现）
+- SSE 事件流（`/api/events`）：**随本次迁移一并删除**，Android SDK 和 MCP 中相关代码清理掉
+
+## 7. 特殊接口：/api/capture/:id
+
+该接口响应体为原始图片 binary（`image/png`），不适合用 protobuf ApiResponse 包装（会破坏图片数据）。处理方式：
+
+- 响应保持 `Content-Type: image/png`，直接返回图片 bytes，不套任何 message 包装
+- 错误情况（View 不存在）改为返回 `CaptureErrorResponse` protobuf message，`Content-Type: application/x-protobuf`
+
+在 `api.proto` 中新增：
+
+```protobuf
+message CaptureErrorResponse {
+  int32 code = 1;
+  string message = 2;
+  int32 sdk_version = 3;
+}
+```
+
+MCP 侧 `capture_view` 工具按 `Content-Type` 判断响应类型：是 `image/png` 则取图片，是 `application/x-protobuf` 则解析错误信息。
