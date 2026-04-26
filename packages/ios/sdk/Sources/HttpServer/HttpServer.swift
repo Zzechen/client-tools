@@ -1,5 +1,6 @@
 import Foundation
 import Network
+import UIKit
 
 class HttpServer {
 
@@ -8,7 +9,7 @@ class HttpServer {
     private let queue = DispatchQueue(label: "HttpServer", qos: .userInitiated)
     private let viewQueryService = ViewQueryService()
     private let viewModifyService = ViewModifyService()
-    
+
     init(port: Int = 8080) {
         self.port = port
         self.listener = try? NWListener(using: .tcp, on: NWEndpoint.Port(integerLiteral: UInt16(port)))
@@ -35,20 +36,20 @@ class HttpServer {
 
     private func handleConnection(_ connection: NWConnection) {
         connection.start(queue: queue)
-        
-        connection.receive(minimumIncompleteLength: 1, maximumLength: 65536) { [weak self] data, _, isComplete, error in
+
+        connection.receive(minimumIncompleteLength: 1, maximumLength: 65536) { [weak self] data, _, _, _ in
             guard let self = self, let data = data, !data.isEmpty else {
                 connection.cancel()
                 return
             }
-            
+
             if let request = String(data: data, encoding: .utf8) {
                 let response = self.processRequest(request)
                 let responseData = response.data(using: .utf8)!
                 let httpResponse = "HTTP/1.1 200 OK\r\nContent-Type: application/json\r\nContent-Length: \(responseData.count)\r\n\r\n"
                 var fullResponse = httpResponse.data(using: .utf8)!
                 fullResponse.append(responseData)
-                
+
                 connection.send(content: fullResponse, completion: .contentProcessed { _ in
                     connection.cancel()
                 })
@@ -61,27 +62,39 @@ class HttpServer {
     private func processRequest(_ request: String) -> String {
         let lines = request.components(separatedBy: "\r\n")
         guard let firstLine = lines.first else { return errorJson("Empty request") }
-        
+
         let parts = firstLine.components(separatedBy: " ")
         guard parts.count >= 2 else { return errorJson("Invalid request") }
-        
+
         let method = parts[0]
         let path = parts[1]
-        
-        // Extract body if present
+
         var body = ""
         if let bodyStart = request.range(of: "\r\n\r\n") {
             body = String(request[bodyStart.upperBound...])
         }
-        
-        // Route handling
+
         switch (method, path) {
         case ("GET", "/api/page/current"):
             return handlePageCurrent()
         case ("GET", "/api/nodes/all"):
             return handleNodesAll()
+        case ("POST", "/api/click"):
+            return handleClick(body)
+        case ("POST", "/api/scroll"):
+            return handleScroll(body)
+        case ("POST", "/api/modify"):
+            return handleModify(body)
+        case ("POST", "/webview/push-html"):
+            return handleWebviewPushHtml(body)
+        case ("POST", "/webview/show"):
+            return handleWebviewShow(body)
+        case ("POST", "/webview/hide"):
+            return handleWebviewHide()
+        case ("POST", "/webview/adjust"):
+            return handleWebviewAdjust(body)
         default:
-            if path.hasPrefix("/api/nodes/") {
+            if method == "GET" && path.hasPrefix("/api/nodes/") {
                 let nodeId = String(path.dropFirst("/api/nodes/".count))
                 return handleNodeById(nodeId)
             }
@@ -91,8 +104,7 @@ class HttpServer {
 
     private func handlePageCurrent() -> String {
         let pageInfo = ClientToolsSDK.shared.getCurrentPage()
-        let response = ApiResponse.success(PageInfo(pageName: pageInfo.pageName, timestamp: pageInfo.timestamp))
-        return jsonString(response)
+        return jsonString(ApiResponse.success(PageInfo(pageName: pageInfo.pageName, timestamp: pageInfo.timestamp)))
     }
 
     private func handleNodesAll() -> String {
@@ -109,51 +121,45 @@ class HttpServer {
 
     private func handleClick(_ body: String) -> String {
         guard let data = body.data(using: .utf8),
-              let clickRequest = try? JSONDecoder().decode(ClickRequest.self, from: data) else {
+              let req = try? JSONDecoder().decode(ClickRequest.self, from: data) else {
             return errorJson("Invalid request")
         }
-
-        let view = viewQueryService.findView(byId: clickRequest.id)
-        guard let targetView = view else {
+        guard let view = viewQueryService.findView(byId: req.id) else {
             return errorJson("View not found", code: 404)
         }
-
-        if let control = targetView as? UIControl {
-            control.sendActions(for: UIControl.Event.touchUpInside)
+        DispatchQueue.main.async {
+            if let control = view as? UIControl {
+                control.sendActions(for: .touchUpInside)
+            }
         }
-        let result = ClickResult(id: clickRequest.id)
-        return jsonString(ApiResponse.success(result))
+        return jsonString(ApiResponse.success(ClickResult(id: req.id)))
     }
 
     private func handleScroll(_ body: String) -> String {
         guard let data = body.data(using: .utf8),
-              let scrollRequest = try? JSONDecoder().decode(ScrollRequest.self, from: data) else {
+              let req = try? JSONDecoder().decode(ScrollRequest.self, from: data) else {
             return errorJson("Invalid request")
         }
-
-        let view = viewQueryService.findView(byId: scrollRequest.id)
-        guard let scrollView = view as? UIScrollView else {
+        guard let view = viewQueryService.findView(byId: req.id),
+              let scrollView = view as? UIScrollView else {
             return errorJson("View is not a scroll view", code: 400)
         }
-
-        let dx = CGFloat(scrollRequest.dx)
-        let dy = CGFloat(scrollRequest.dy)
-        scrollView.setContentOffset(
-            CGPoint(x: scrollView.contentOffset.x + dx, y: scrollView.contentOffset.y + dy),
-            animated: false
-        )
-
-        let result = ScrollResult(id: scrollRequest.id, dx: scrollRequest.dx, dy: scrollRequest.dy)
-        return jsonString(ApiResponse.success(result))
+        DispatchQueue.main.async {
+            scrollView.setContentOffset(
+                CGPoint(x: scrollView.contentOffset.x + CGFloat(req.dx),
+                        y: scrollView.contentOffset.y + CGFloat(req.dy)),
+                animated: false
+            )
+        }
+        return jsonString(ApiResponse.success(ScrollResult(id: req.id, dx: req.dx, dy: req.dy)))
     }
 
     private func handleModify(_ body: String) -> String {
         guard let data = body.data(using: .utf8),
-              let modifyRequest = try? JSONDecoder().decode(ModifyRequest.self, from: data) else {
+              let req = try? JSONDecoder().decode(ModifyRequest.self, from: data) else {
             return errorJson("Invalid request")
         }
-
-        let success = viewModifyService.modify(id: modifyRequest.id, props: modifyRequest.props)
+        let success = viewModifyService.modify(id: req.id, props: req.props)
         if success {
             return "{\"code\":0,\"message\":\"success\",\"sdkVersion\":1,\"data\":{\"success\":true}}"
         } else {
@@ -161,16 +167,57 @@ class HttpServer {
         }
     }
 
+    private func handleWebviewPushHtml(_ body: String) -> String {
+        guard let data = body.data(using: .utf8),
+              let req = try? JSONDecoder().decode(WebviewPushHtmlRequest.self, from: data),
+              let overlayManager = ClientToolsSDK.shared.overlayManager() else {
+            return errorJson("Invalid request")
+        }
+        guard let fileURL = overlayManager.fileStore.save(tag: req.tag, timestamp: req.timestamp, html: req.html) else {
+            return errorJson("Failed to save HTML file")
+        }
+        overlayManager.showFile(at: fileURL, opacity: 0.5)
+        let result = ["tag": req.tag, "timestamp": req.timestamp, "filePath": fileURL.path]
+        return jsonString(ApiResponse.success(result))
+    }
+
+    private func handleWebviewShow(_ body: String) -> String {
+        guard let data = body.data(using: .utf8),
+              let req = try? JSONDecoder().decode(WebviewShowRequest.self, from: data),
+              let overlayManager = ClientToolsSDK.shared.overlayManager() else {
+            return errorJson("Invalid request")
+        }
+        if let fileURL = overlayManager.fileStore.findFile(tag: req.tag, timestamp: req.timestamp) {
+            overlayManager.showFile(at: fileURL, opacity: 0.5)
+            return "{\"code\":0,\"message\":\"success\",\"sdkVersion\":1,\"data\":null}"
+        }
+        return errorJson("File not found", code: 404)
+    }
+
+    private func handleWebviewHide() -> String {
+        ClientToolsSDK.shared.overlayManager()?.hide()
+        return "{\"code\":0,\"message\":\"success\",\"sdkVersion\":1,\"data\":null}"
+    }
+
+    private func handleWebviewAdjust(_ body: String) -> String {
+        guard let data = body.data(using: .utf8),
+              let req = try? JSONDecoder().decode(WebviewAdjustRequest.self, from: data),
+              let overlayManager = ClientToolsSDK.shared.overlayManager() else {
+            return errorJson("Invalid request")
+        }
+        overlayManager.adjust(offsetX: req.offsetX, offsetY: req.offsetY, opacity: req.opacity)
+        return "{\"code\":0,\"message\":\"success\",\"sdkVersion\":1,\"data\":null}"
+    }
+
     // MARK: - Helpers
 
     private func jsonString<T: Codable>(_ response: ApiResponse<T>) -> String {
         let encoder = JSONEncoder()
-        encoder.outputFormatting = .prettyPrinted
         guard let data = try? encoder.encode(response),
-              let jsonString = String(data: data, encoding: .utf8) else {
+              let str = String(data: data, encoding: .utf8) else {
             return errorJson("Encoding failed")
         }
-        return jsonString
+        return str
     }
 
     private func errorJson(_ message: String, code: Int = 400) -> String {
