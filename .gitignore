@@ -37,8 +37,8 @@ DerivedData/
 .DS_Store
 .kotlin/
 # iOS Pods
-ios/demo/Pods/
-ios/demo/Podfile.lock
+clients/ios/demo/Pods/
+clients/ios/demo/Podfile.lock
 mcp/dist/
 
 # Node / TypeScript
