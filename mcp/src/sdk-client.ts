@@ -1,7 +1,17 @@
+import { execSync } from "child_process";
+
 const PORT = process.env.CLIENT_TOOLS_PORT ?? "8080";
 const BASE_URL = `http://127.0.0.1:${PORT}`;
 const DEFAULT_TIMEOUT_MS = 5000;
 const DOM_TIMEOUT_MS = 8000;
+
+function ensureAdbForward(): void {
+  try {
+    execSync(`adb forward tcp:${PORT} tcp:${PORT}`, { stdio: "ignore" });
+  } catch {
+    // adb not available or no device, ignore
+  }
+}
 
 export class SdkUnreachableError extends Error {
   constructor(cause: unknown) {
@@ -23,12 +33,14 @@ async function fetchWithTimeout(url: string, init: RequestInit, timeoutMs: numbe
 }
 
 export async function sdkGet(path: string): Promise<unknown> {
+  ensureAdbForward();
   const timeoutMs = path.startsWith("/dom") ? DOM_TIMEOUT_MS : DEFAULT_TIMEOUT_MS;
   const res = await fetchWithTimeout(`${BASE_URL}${path}`, { method: "GET" }, timeoutMs);
   return res.json();
 }
 
 export async function sdkPost(path: string, body: unknown): Promise<unknown> {
+  ensureAdbForward();
   const res = await fetchWithTimeout(
     `${BASE_URL}${path}`,
     {
