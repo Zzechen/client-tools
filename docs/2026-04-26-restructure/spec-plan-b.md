@@ -179,7 +179,7 @@ message WebviewAdjustRequest { float offset_x = 1; float offset_y = 2; float opa
 | POST /webview/show | `WebviewShowRequest` | `SimpleResponse` |
 | POST /webview/hide | 无 Body | `SimpleResponse` |
 | POST /webview/adjust | `WebviewAdjustRequest` | `SimpleResponse` |
-| GET /api/capture/:id | 无 Body | `image/png`（成功）/ `CaptureErrorResponse`（失败）|
+| GET /api/capture/:id | 无 Body | `CaptureResponse` |
 
 GET 接口无请求 Body，响应改为 protobuf binary。`push-html` 的 html 内容在 proto 里定义为 `bytes`，传 UTF-8 编码。
 
@@ -293,19 +293,18 @@ buf breaking --against '.git#branch=main'
 
 ## 7. 特殊接口：/api/capture/:id
 
-该接口响应体为原始图片 binary（`image/png`），不适合用 protobuf ApiResponse 包装（会破坏图片数据）。处理方式：
-
-- 响应保持 `Content-Type: image/png`，直接返回图片 bytes，不套任何 message 包装
-- 错误情况（View 不存在）改为返回 `CaptureErrorResponse` protobuf message，`Content-Type: application/x-protobuf`
+图片数据用 `bytes` 字段封装在 pb message 里，响应统一为 `application/x-protobuf`。
 
 在 `api.proto` 中新增：
 
 ```protobuf
-message CaptureErrorResponse {
+message CaptureResponse {
   int32 code = 1;
   string message = 2;
   int32 sdk_version = 3;
+  DeviceInfo device = 4;
+  bytes image_png = 5;   // 成功时为 PNG bytes，失败时为空
 }
 ```
 
-MCP 侧 `capture_view` 工具按 `Content-Type` 判断响应类型：是 `image/png` 则取图片，是 `application/x-protobuf` 则解析错误信息。
+MCP 侧解析 `CaptureResponse`，取 `image_png` 字段写入临时文件后返回给 AI。
