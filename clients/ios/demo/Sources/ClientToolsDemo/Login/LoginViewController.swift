@@ -3,96 +3,428 @@ import SnapKit
 
 class LoginViewController: UIViewController {
 
-    private let logoImageView: UIImageView = {
-        let iv = UIImageView()
-        iv.backgroundColor = .systemBlue
-        iv.layer.cornerRadius = 50
-        iv.clipsToBounds = true
-        iv.accessibilityIdentifier = "login_logo"
-        return iv
-    }()
+    // MARK: - Nav Bar
 
-    private let usernameTextField: UITextField = {
-        let tf = UITextField()
-        tf.placeholder = "用户名"
-        tf.borderStyle = .roundedRect
-        tf.accessibilityIdentifier = "login_username_input"
-        return tf
-    }()
-
-    private let passwordTextField: UITextField = {
-        let tf = UITextField()
-        tf.placeholder = "密码"
-        tf.borderStyle = .roundedRect
-        tf.isSecureTextEntry = true
-        tf.accessibilityIdentifier = "login_password_input"
-        return tf
-    }()
-
-    private let loginButton: UIButton = {
+    private lazy var closeButton: UIButton = {
         let btn = UIButton(type: .system)
-        btn.setTitle("登录", for: .normal)
-        btn.backgroundColor = .systemBlue
+        btn.setTitle("✕", for: .normal)
         btn.setTitleColor(.white, for: .normal)
-        btn.layer.cornerRadius = 8
-        btn.accessibilityIdentifier = "login_btn"
+        btn.titleLabel?.font = .systemFont(ofSize: 18)
+        btn.accessibilityIdentifier = "login_btn_close"
         return btn
     }()
 
-    private let registerButton: UIButton = {
+    private lazy var skipButton: UIButton = {
         let btn = UIButton(type: .system)
-        btn.setTitle("注册", for: .normal)
-        btn.accessibilityIdentifier = "login_register_btn"
+        btn.setTitle("跳过", for: .normal)
+        btn.setTitleColor(UIColor(hex: "#00D4C2"), for: .normal)
+        btn.titleLabel?.font = .systemFont(ofSize: 14)
+        btn.accessibilityIdentifier = "login_btn_skip"
         return btn
     }()
+
+    // MARK: - Logo Section
+
+    private lazy var logoIconView: UIView = {
+        let v = UIView()
+        v.backgroundColor = UIColor(hex: "#00D4C2")
+        v.layer.cornerRadius = 10
+        v.accessibilityIdentifier = "login_logo_icon"
+        return v
+    }()
+
+    private lazy var brandLabel: UILabel = {
+        let lbl = UILabel()
+        lbl.text = "PULSE"
+        lbl.textColor = .white
+        lbl.font = .boldSystemFont(ofSize: 20)
+        lbl.textAlignment = .center
+        lbl.accessibilityIdentifier = "login_text_brand"
+        return lbl
+    }()
+
+    // MARK: - Title Section
+
+    private lazy var titleLabel: UILabel = {
+        let lbl = UILabel()
+        lbl.text = "欢迎回来"
+        lbl.textColor = .white
+        lbl.font = .boldSystemFont(ofSize: 28)
+        lbl.accessibilityIdentifier = "login_text_title"
+        return lbl
+    }()
+
+    private lazy var subtitleLabel: UILabel = {
+        let lbl = UILabel()
+        lbl.text = "登录以继续使用"
+        lbl.textColor = UIColor(hex: "#8A9BB0")
+        lbl.font = .systemFont(ofSize: 14)
+        lbl.accessibilityIdentifier = "login_text_subtitle"
+        return lbl
+    }()
+
+    // MARK: - Tab Selector
+
+    private lazy var tabContainer: UIView = {
+        let v = UIView()
+        v.backgroundColor = UIColor(hex: "#0A1A20")
+        v.layer.cornerRadius = 8
+        v.accessibilityIdentifier = "login_tab_container"
+        return v
+    }()
+
+    private lazy var tabSmsButton: UIButton = makeTabButton(title: "验证码", identifier: "login_tab_sms", selected: true)
+    private lazy var tabPwdButton: UIButton = makeTabButton(title: "密码", identifier: "login_tab_pwd", selected: false)
+    private lazy var tabEmailButton: UIButton = makeTabButton(title: "邮箱", identifier: "login_tab_email", selected: false)
+
+    // MARK: - Phone Input
+
+    private lazy var phoneContainer: UIView = {
+        let v = UIView()
+        v.backgroundColor = UIColor(hex: "#0A1A20")
+        v.layer.cornerRadius = 8
+        v.layer.borderWidth = 1
+        v.layer.borderColor = UIColor(hex: "#1A3040").cgColor
+        v.accessibilityIdentifier = "login_input_phone_container"
+        return v
+    }()
+
+    private lazy var countryCodeLabel: UILabel = {
+        let lbl = UILabel()
+        lbl.text = "+86"
+        lbl.textColor = .white
+        lbl.font = .systemFont(ofSize: 15)
+        lbl.accessibilityIdentifier = "login_text_country_code"
+        return lbl
+    }()
+
+    private lazy var phoneSeparator: UIView = {
+        let v = UIView()
+        v.backgroundColor = UIColor(hex: "#1A3040")
+        v.accessibilityIdentifier = "login_separator_phone"
+        return v
+    }()
+
+    private lazy var phoneTextField: UITextField = {
+        let tf = UITextField()
+        tf.keyboardType = .phonePad
+        tf.textColor = .white
+        tf.font = .systemFont(ofSize: 15)
+        tf.attributedPlaceholder = NSAttributedString(
+            string: "请输入手机号",
+            attributes: [.foregroundColor: UIColor(hex: "#4A6070")]
+        )
+        tf.accessibilityIdentifier = "login_input_phone"
+        return tf
+    }()
+
+    // MARK: - Submit Button
+
+    private lazy var submitButton: UIButton = {
+        let btn = UIButton(type: .system)
+        btn.setTitle("获取验证码 →", for: .normal)
+        btn.setTitleColor(.black, for: .normal)
+        btn.titleLabel?.font = .boldSystemFont(ofSize: 16)
+        btn.backgroundColor = UIColor(hex: "#00D4C2")
+        btn.layer.cornerRadius = 8
+        btn.accessibilityIdentifier = "login_btn_submit"
+        return btn
+    }()
+
+    // MARK: - Agreement Row
+
+    private lazy var agreementCheckbox: UIButton = {
+        let btn = UIButton(type: .system)
+        btn.setTitle("○", for: .normal)
+        btn.setTitle("●", for: .selected)
+        btn.setTitleColor(UIColor(hex: "#8A9BB0"), for: .normal)
+        btn.setTitleColor(UIColor(hex: "#00D4C2"), for: .selected)
+        btn.titleLabel?.font = .systemFont(ofSize: 16)
+        btn.accessibilityIdentifier = "login_checkbox_agreement"
+        return btn
+    }()
+
+    private lazy var agreementLabel: UILabel = {
+        let lbl = UILabel()
+        lbl.text = "已阅读并同意《用户协议》和《隐私政策》"
+        lbl.textColor = UIColor(hex: "#8A9BB0")
+        lbl.font = .systemFont(ofSize: 11)
+        lbl.numberOfLines = 0
+        lbl.accessibilityIdentifier = "login_text_agreement"
+        return lbl
+    }()
+
+    // MARK: - OR Divider
+
+    private lazy var orLeftLine: UIView = {
+        let v = UIView()
+        v.backgroundColor = UIColor(hex: "#1A3040")
+        v.accessibilityIdentifier = "login_divider_left"
+        return v
+    }()
+
+    private lazy var orLabel: UILabel = {
+        let lbl = UILabel()
+        lbl.text = "OR"
+        lbl.textColor = UIColor(hex: "#4A6070")
+        lbl.font = .systemFont(ofSize: 12)
+        lbl.accessibilityIdentifier = "login_text_or"
+        return lbl
+    }()
+
+    private lazy var orRightLine: UIView = {
+        let v = UIView()
+        v.backgroundColor = UIColor(hex: "#1A3040")
+        v.accessibilityIdentifier = "login_divider_right"
+        return v
+    }()
+
+    // MARK: - Social Icons
+
+    private lazy var socialContainer: UIStackView = {
+        let sv = UIStackView()
+        sv.axis = .horizontal
+        sv.distribution = .equalSpacing
+        sv.alignment = .center
+        sv.accessibilityIdentifier = "login_social_container"
+        return sv
+    }()
+
+    // MARK: - Home Indicator
+
+    private lazy var homeIndicator: UIView = {
+        let v = UIView()
+        v.backgroundColor = UIColor(hex: "#FFFFFF").withAlphaComponent(0.3)
+        v.layer.cornerRadius = 2.5
+        v.accessibilityIdentifier = "login_home_indicator"
+        return v
+    }()
+
+    // MARK: - Lifecycle
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        title = "登录"
-        view.backgroundColor = .systemBackground
-        setupUI()
+        navigationController?.setNavigationBarHidden(true, animated: false)
+        view.backgroundColor = UIColor(hex: "#001015")
+        view.accessibilityIdentifier = "login_root"
+        setupSocialIcons()
+        setupHierarchy()
+        setupConstraints()
+        setupActions()
     }
 
-    private func setupUI() {
-        [logoImageView, usernameTextField, passwordTextField, loginButton, registerButton].forEach {
-            view.addSubview($0)
-        }
-
-        logoImageView.snp.makeConstraints { make in
-            make.centerX.equalToSuperview()
-            make.top.equalTo(view.safeAreaLayoutGuide).offset(40)
-            make.width.height.equalTo(100)
-        }
-
-        usernameTextField.snp.makeConstraints { make in
-            make.leading.trailing.equalToSuperview().inset(32)
-            make.top.equalTo(logoImageView.snp.bottom).offset(40)
-            make.height.equalTo(44)
-        }
-
-        passwordTextField.snp.makeConstraints { make in
-            make.leading.trailing.equalTo(usernameTextField)
-            make.top.equalTo(usernameTextField.snp.bottom).offset(16)
-            make.height.equalTo(44)
-        }
-
-        loginButton.snp.makeConstraints { make in
-            make.leading.trailing.equalTo(usernameTextField)
-            make.top.equalTo(passwordTextField.snp.bottom).offset(24)
-            make.height.equalTo(48)
-        }
-
-        registerButton.snp.makeConstraints { make in
-            make.centerX.equalToSuperview()
-            make.top.equalTo(loginButton.snp.bottom).offset(16)
-        }
-
-        loginButton.addTarget(self, action: #selector(loginTapped), for: .touchUpInside)
+    override func viewWillDisappear(_ animated: Bool) {
+        super.viewWillDisappear(animated)
+        navigationController?.setNavigationBarHidden(false, animated: animated)
     }
 
-    @objc private func loginTapped() {
-        let alert = UIAlertController(title: "提示", message: "登录功能演示", preferredStyle: .alert)
-        alert.addAction(UIAlertAction(title: "确定", style: .default))
-        present(alert, animated: true)
+    // MARK: - Setup
+
+    private func makeTabButton(title: String, identifier: String, selected: Bool) -> UIButton {
+        let btn = UIButton(type: .system)
+        btn.setTitle(title, for: .normal)
+        btn.titleLabel?.font = .systemFont(ofSize: 13)
+        btn.layer.cornerRadius = 6
+        btn.accessibilityIdentifier = identifier
+        if selected {
+            btn.backgroundColor = UIColor(hex: "#00D4C2").withAlphaComponent(0.15)
+            btn.setTitleColor(UIColor(hex: "#00D4C2"), for: .normal)
+        } else {
+            btn.backgroundColor = .clear
+            btn.setTitleColor(UIColor(hex: "#8A9BB0"), for: .normal)
+        }
+        return btn
+    }
+
+    private func makeSocialIcon(label: String, identifier: String) -> UIButton {
+        let btn = UIButton(type: .system)
+        btn.backgroundColor = UIColor(hex: "#0A1A20")
+        btn.layer.cornerRadius = 27
+        btn.layer.borderWidth = 1
+        btn.layer.borderColor = UIColor(hex: "#1A3040").cgColor
+        btn.accessibilityIdentifier = identifier
+        let lbl = UILabel()
+        lbl.text = label
+        lbl.textColor = UIColor(hex: "#8A9BB0")
+        lbl.font = .boldSystemFont(ofSize: 16)
+        lbl.textAlignment = .center
+        lbl.isUserInteractionEnabled = false
+        btn.addSubview(lbl)
+        lbl.snp.makeConstraints { $0.edges.equalToSuperview() }
+        btn.snp.makeConstraints { $0.width.height.equalTo(54) }
+        return btn
+    }
+
+    private func setupSocialIcons() {
+        let items: [(String, String)] = [
+            ("W", "login_btn_social_wechat"),
+            ("Q", "login_btn_social_qq"),
+            ("A", "login_btn_social_apple"),
+            ("G", "login_btn_social_google"),
+        ]
+        items.forEach { socialContainer.addArrangedSubview(makeSocialIcon(label: $0.0, identifier: $0.1)) }
+    }
+
+    private func setupHierarchy() {
+        [closeButton, skipButton,
+         logoIconView, brandLabel,
+         titleLabel, subtitleLabel,
+         tabContainer, phoneContainer,
+         submitButton,
+         agreementCheckbox, agreementLabel,
+         orLeftLine, orLabel, orRightLine,
+         socialContainer, homeIndicator].forEach { view.addSubview($0) }
+
+        [tabSmsButton, tabPwdButton, tabEmailButton].forEach { tabContainer.addSubview($0) }
+        [countryCodeLabel, phoneSeparator, phoneTextField].forEach { phoneContainer.addSubview($0) }
+    }
+
+    private func setupConstraints() {
+        closeButton.snp.makeConstraints { make in
+            make.leading.equalToSuperview().offset(20)
+            make.top.equalTo(view.safeAreaLayoutGuide).offset(12)
+            make.width.height.equalTo(36)
+        }
+
+        skipButton.snp.makeConstraints { make in
+            make.trailing.equalToSuperview().offset(-20)
+            make.centerY.equalTo(closeButton)
+        }
+
+        logoIconView.snp.makeConstraints { make in
+            make.centerX.equalToSuperview()
+            make.top.equalTo(closeButton.snp.bottom).offset(28)
+            make.width.height.equalTo(44)
+        }
+
+        brandLabel.snp.makeConstraints { make in
+            make.centerX.equalToSuperview()
+            make.top.equalTo(logoIconView.snp.bottom).offset(8)
+        }
+
+        titleLabel.snp.makeConstraints { make in
+            make.leading.equalToSuperview().offset(24)
+            make.top.equalTo(brandLabel.snp.bottom).offset(32)
+        }
+
+        subtitleLabel.snp.makeConstraints { make in
+            make.leading.equalTo(titleLabel)
+            make.top.equalTo(titleLabel.snp.bottom).offset(6)
+        }
+
+        tabContainer.snp.makeConstraints { make in
+            make.leading.trailing.equalToSuperview().inset(24)
+            make.top.equalTo(subtitleLabel.snp.bottom).offset(20)
+            make.height.equalTo(40)
+        }
+
+        tabSmsButton.snp.makeConstraints { make in
+            make.leading.top.bottom.equalToSuperview().inset(4)
+            make.width.equalToSuperview().multipliedBy(1.0/3.0).offset(-4)
+        }
+        tabPwdButton.snp.makeConstraints { make in
+            make.centerX.equalToSuperview()
+            make.top.bottom.equalToSuperview().inset(4)
+            make.width.equalTo(tabSmsButton)
+        }
+        tabEmailButton.snp.makeConstraints { make in
+            make.trailing.top.bottom.equalToSuperview().inset(4)
+            make.width.equalTo(tabSmsButton)
+        }
+
+        phoneContainer.snp.makeConstraints { make in
+            make.leading.trailing.equalToSuperview().inset(24)
+            make.top.equalTo(tabContainer.snp.bottom).offset(16)
+            make.height.equalTo(52)
+        }
+
+        countryCodeLabel.snp.makeConstraints { make in
+            make.leading.equalToSuperview().offset(16)
+            make.centerY.equalToSuperview()
+            make.width.equalTo(36)
+        }
+
+        phoneSeparator.snp.makeConstraints { make in
+            make.leading.equalTo(countryCodeLabel.snp.trailing).offset(12)
+            make.centerY.equalToSuperview()
+            make.width.equalTo(1)
+            make.height.equalTo(20)
+        }
+
+        phoneTextField.snp.makeConstraints { make in
+            make.leading.equalTo(phoneSeparator.snp.trailing).offset(12)
+            make.trailing.equalToSuperview().offset(-16)
+            make.centerY.equalToSuperview()
+        }
+
+        submitButton.snp.makeConstraints { make in
+            make.leading.trailing.equalToSuperview().inset(24)
+            make.top.equalTo(phoneContainer.snp.bottom).offset(20)
+            make.height.equalTo(50)
+        }
+
+        agreementCheckbox.snp.makeConstraints { make in
+            make.leading.equalToSuperview().offset(24)
+            make.top.equalTo(submitButton.snp.bottom).offset(16)
+            make.width.height.equalTo(20)
+        }
+
+        agreementLabel.snp.makeConstraints { make in
+            make.leading.equalTo(agreementCheckbox.snp.trailing).offset(8)
+            make.trailing.equalToSuperview().offset(-24)
+            make.centerY.equalTo(agreementCheckbox)
+        }
+
+        orLeftLine.snp.makeConstraints { make in
+            make.leading.equalToSuperview().offset(24)
+            make.top.equalTo(agreementLabel.snp.bottom).offset(28)
+            make.height.equalTo(1)
+            make.trailing.equalTo(orLabel.snp.leading).offset(-12)
+        }
+
+        orLabel.snp.makeConstraints { make in
+            make.centerX.equalToSuperview()
+            make.centerY.equalTo(orLeftLine)
+        }
+
+        orRightLine.snp.makeConstraints { make in
+            make.trailing.equalToSuperview().offset(-24)
+            make.centerY.equalTo(orLeftLine)
+            make.height.equalTo(1)
+            make.leading.equalTo(orLabel.snp.trailing).offset(12)
+        }
+
+        socialContainer.snp.makeConstraints { make in
+            make.leading.trailing.equalToSuperview().inset(40)
+            make.top.equalTo(orLeftLine.snp.bottom).offset(24)
+            make.height.equalTo(54)
+        }
+
+        homeIndicator.snp.makeConstraints { make in
+            make.centerX.equalToSuperview()
+            make.bottom.equalTo(view.safeAreaLayoutGuide).offset(-8)
+            make.width.equalTo(134)
+            make.height.equalTo(5)
+        }
+    }
+
+    private func setupActions() {
+        closeButton.addTarget(self, action: #selector(closeTapped), for: .touchUpInside)
+        agreementCheckbox.addTarget(self, action: #selector(checkboxTapped), for: .touchUpInside)
+        submitButton.addTarget(self, action: #selector(submitTapped), for: .touchUpInside)
+    }
+
+    @objc private func closeTapped() {
+        navigationController?.popViewController(animated: true)
+    }
+
+    @objc private func checkboxTapped() {
+        agreementCheckbox.isSelected.toggle()
+    }
+
+    @objc private func submitTapped() {
+        guard let phone = phoneTextField.text, !phone.isEmpty else { return }
+        let vc = VerifyCodeViewController()
+        navigationController?.pushViewController(vc, animated: true)
     }
 }
