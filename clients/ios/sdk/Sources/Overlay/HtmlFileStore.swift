@@ -30,4 +30,10 @@ public class HtmlFileStore {
         let fileURL = baseDir.appendingPathComponent(filename)
         return fileManager.fileExists(atPath: fileURL.path) ? fileURL : nil
     }
+
+    public static func generateTimestamp() -> String {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "yyyyMMddHHmmss"
+        return formatter.string(from: Date())
+    }
 }

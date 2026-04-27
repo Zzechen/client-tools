@@ -10,6 +10,51 @@ class ViewQueryService {
         return getAllNodes().first { $0.id == id }
     }
 
+    func getAllProtoNodes() -> [Clienttools_Node] {
+        return getAllNodes().map { toProtoNode($0) }
+    }
+
+    func getProtoNode(byId id: String) -> Clienttools_Node? {
+        guard let node = getNode(byId: id) else { return nil }
+        return toProtoNode(node)
+    }
+
+    private func toProtoNode(_ vn: ViewNode) -> Clienttools_Node {
+        var node = Clienttools_Node()
+        node.id = vn.id
+        node.screenX = vn.screenX
+        node.screenY = vn.screenY
+        node.widthDp = vn.widthDp
+        node.heightDp = vn.heightDp
+
+        var nodeAttrs = Clienttools_NodeAttrs()
+        switch vn.attrs {
+        case .text(let ta):
+            node.type = .text
+            var textAttrs = Clienttools_TextAttrs()
+            textAttrs.fontSize = ta.fontSize ?? 0
+            textAttrs.color = ta.color ?? ""
+            textAttrs.fontWeight = ta.fontWeight ?? ""
+            nodeAttrs.text = textAttrs
+        case .image(let ia):
+            node.type = .image
+            var imageAttrs = Clienttools_ImageAttrs()
+            imageAttrs.scaleType = ia.scaleType ?? ""
+            nodeAttrs.image = imageAttrs
+        case .list(let la):
+            node.type = .list
+            var listAttrs = Clienttools_ListAttrs()
+            listAttrs.itemSpacing = la.itemSpacing ?? 0
+            listAttrs.orientation = la.orientation ?? ""
+            nodeAttrs.list = listAttrs
+        case nil:
+            node.type = .container
+            nodeAttrs.container = Clienttools_ContainerAttrs()
+        }
+        node.attrs = nodeAttrs
+        return node
+    }
+
     func findView(byId id: String) -> UIView? {
         guard let window = UIApplication.shared.connectedScenes
             .compactMap({ $0 as? UIWindowScene })

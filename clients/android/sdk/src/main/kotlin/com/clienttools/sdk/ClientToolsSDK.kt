@@ -5,26 +5,19 @@ import android.app.Application
 import android.content.Context
 import android.os.Bundle
 import android.util.Log
-import com.clienttools.sdk.http.EventManager
 import com.clienttools.sdk.http.HttpServer
 import com.clienttools.sdk.inspector.ImageFileStore
 import com.clienttools.sdk.inspector.InspectorFileStore
 import com.clienttools.sdk.inspector.InspectorPage
 import com.clienttools.sdk.listener.PageChangeListener
-import com.clienttools.sdk.model.ModifyRequest
-import com.clienttools.sdk.model.ViewInfo
-import com.clienttools.sdk.runtime.ViewModifier
-import com.clienttools.sdk.runtime.ViewQueryService
 import java.util.WeakHashMap
 
 object ClientToolsSDK {
     private var httpServer: HttpServer? = null
-    private var eventManager: EventManager? = null
     private var pageChangeListener: PageChangeListener? = null
     internal var isInitialized = false
     private const val TAG = "ClientToolsSDK"
 
-    // InspectorPage 栈：有序，lastOrNull() = 当前前台页面
     private val pageStack = mutableListOf<InspectorPage>()
     private val pageMap = WeakHashMap<Activity, InspectorPage>()
 
@@ -38,10 +31,9 @@ object ClientToolsSDK {
         try {
             fileStore = InspectorFileStore(context)
             imageFileStore = ImageFileStore(context)
-            eventManager = EventManager()
             pageChangeListener = PageChangeListener()
             pageChangeListener!!.register(context)
-            httpServer = HttpServer(context, eventManager!!, pageChangeListener!!)
+            httpServer = HttpServer(context, pageChangeListener!!)
             httpServer!!.startServer()
             registerInspectorLifecycle(context)
             isInitialized = true
@@ -84,9 +76,6 @@ object ClientToolsSDK {
         })
     }
 
-    fun getViewInfo(viewId: String): ViewInfo? = ViewQueryService.getViewInfo(viewId)
-    fun modify(request: ModifyRequest): Boolean = ViewModifier.apply(request.id, request.props)
-
     fun addPageChangeListener(callback: (pageName: String, timestamp: Long) -> Unit) {
         pageChangeListener?.addListener(callback)
     }
@@ -97,7 +86,5 @@ object ClientToolsSDK {
         isInitialized = false
     }
 
-    // 保留旧接口兼容（空实现）
-    internal fun setCurrentActivity(activity: Activity?) {}
     internal fun getCurrentActivity(): Activity? = getTop()?.activity
 }

@@ -1,0 +1,59 @@
+syntax = "proto3";
+package clienttools;
+option java_package = "com.clienttools.sdk.proto";
+option java_multiple_files = true;
+
+enum NodeType {
+  CONTAINER = 0;
+  TEXT = 1;
+  IMAGE = 2;
+  LIST = 3;
+}
+
+message TextAttrs {
+  float font_size = 1;
+  string color = 2;
+  string font_weight = 3;
+}
+
+message ImageAttrs {
+  string scale_type = 1;
+}
+
+message ListAttrs {
+  float item_spacing = 1;
+  string orientation = 2;
+}
+
+message ContainerAttrs {
+  float padding_top = 1;
+  float padding_bottom = 2;
+  float padding_left = 3;
+  float padding_right = 4;
+}
+
+message NodeAttrs {
+  oneof attrs {
+    TextAttrs text = 1;
+    ImageAttrs image = 2;
+    ListAttrs list = 3;
+    ContainerAttrs container = 4;
+  }
+}
+
+message Node {
+  string id = 1;
+  NodeType type = 2;
+  float screen_x = 3;
+  float screen_y = 4;
+  float width_dp = 5;
+  float height_dp = 6;
+  NodeAttrs attrs = 7;
+  map<string, string> custom_attrs = 8;
+  int32 visibility = 9;
+  bool is_enabled = 10;
+}
+
+message NodeList {
+  repeated Node nodes = 1;
+}

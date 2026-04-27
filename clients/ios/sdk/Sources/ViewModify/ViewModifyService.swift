@@ -4,39 +4,39 @@ class ViewModifyService {
 
     private let viewQueryService = ViewQueryService()
 
-    func modify(id: String, props: ModifyProps) -> Bool {
+    func modifyProto(id: String, props: Clienttools_ViewProps) -> Bool {
         guard let view = viewQueryService.findView(byId: id) else { return false }
-
         DispatchQueue.main.async {
-            if let top = props.marginTopDiffDp {
-                ConstraintModifier.modifyMarginTop(view, diffDp: CGFloat(top))
+            if props.hasMarginTopDiffDp {
+                ConstraintModifier.modifyMarginTop(view, diffDp: CGFloat(props.marginTopDiffDp.value))
             }
-            if let bottom = props.marginBottomDiffDp {
-                ConstraintModifier.modifyMarginBottom(view, diffDp: CGFloat(bottom))
+            if props.hasMarginBottomDiffDp {
+                ConstraintModifier.modifyMarginBottom(view, diffDp: CGFloat(props.marginBottomDiffDp.value))
             }
-            if let leading = props.marginLeftDiffDp {
-                ConstraintModifier.modifyMarginLeading(view, diffDp: CGFloat(leading))
+            if props.hasMarginLeftDiffDp {
+                ConstraintModifier.modifyMarginLeading(view, diffDp: CGFloat(props.marginLeftDiffDp.value))
             }
-            if let trailing = props.marginRightDiffDp {
-                ConstraintModifier.modifyMarginTrailing(view, diffDp: CGFloat(trailing))
+            if props.hasMarginRightDiffDp {
+                ConstraintModifier.modifyMarginTrailing(view, diffDp: CGFloat(props.marginRightDiffDp.value))
             }
-
-            let hasPadding = props.paddingTopDiffDp != nil || props.paddingBottomDiffDp != nil ||
-                             props.paddingLeftDiffDp != nil || props.paddingRightDiffDp != nil
+            let hasPadding = props.hasPaddingTopDiffDp || props.hasPaddingBottomDiffDp ||
+                             props.hasPaddingLeftDiffDp || props.hasPaddingRightDiffDp
             if hasPadding {
                 let insets = UIEdgeInsets(
-                    top: CGFloat(props.paddingTopDiffDp ?? 0),
-                    left: CGFloat(props.paddingLeftDiffDp ?? 0),
-                    bottom: CGFloat(props.paddingBottomDiffDp ?? 0),
-                    right: CGFloat(props.paddingRightDiffDp ?? 0)
+                    top: CGFloat(props.paddingTopDiffDp.value),
+                    left: CGFloat(props.paddingLeftDiffDp.value),
+                    bottom: CGFloat(props.paddingBottomDiffDp.value),
+                    right: CGFloat(props.paddingRightDiffDp.value)
                 )
                 PaddingModifier.modifyPadding(view, insets: insets)
             }
-
-            FrameModifier.modifyFrame(view, widthDp: props.widthDp, heightDp: props.heightDp)
+            let widthStr = props.hasWidthDp ? props.widthDp.value : nil
+            let heightStr = props.hasHeightDp ? props.heightDp.value : nil
+            FrameModifier.modifyFrame(view, widthDp: widthStr, heightDp: heightStr)
             view.setNeedsLayout()
             view.layoutIfNeeded()
         }
         return true
     }
+
 }

@@ -1,0 +1,41 @@
+syntax = "proto3";
+package clienttools;
+option java_package = "com.clienttools.sdk.proto";
+option java_multiple_files = true;
+import "google/protobuf/wrappers.proto";
+
+message ViewProps {
+  google.protobuf.FloatValue margin_top_diff_dp = 1;
+  google.protobuf.FloatValue margin_bottom_diff_dp = 2;
+  google.protobuf.FloatValue margin_left_diff_dp = 3;
+  google.protobuf.FloatValue margin_right_diff_dp = 4;
+  google.protobuf.FloatValue padding_top_diff_dp = 5;
+  google.protobuf.FloatValue padding_bottom_diff_dp = 6;
+  google.protobuf.FloatValue padding_left_diff_dp = 7;
+  google.protobuf.FloatValue padding_right_diff_dp = 8;
+  google.protobuf.StringValue width_dp = 9;
+  google.protobuf.StringValue height_dp = 10;
+  google.protobuf.FloatValue letter_spacing_em = 11;
+  google.protobuf.FloatValue line_spacing_extra_dp = 12;
+  google.protobuf.BoolValue include_font_padding = 13;
+}
+
+message ModifyViewRequest {
+  string id = 1;
+  ViewProps props = 2;
+}
+
+message ClickRequest { string id = 1; }
+message ClickResult  { string id = 1; }
+
+message ScrollRequest {
+  string id = 1;
+  float dx = 2;
+  float dy = 3;
+}
+
+message ScrollResult {
+  string id = 1;
+  float dx = 2;
+  float dy = 3;
+}

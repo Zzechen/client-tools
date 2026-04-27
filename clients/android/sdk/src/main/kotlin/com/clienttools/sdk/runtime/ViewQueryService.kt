@@ -5,26 +5,24 @@ import android.graphics.Canvas
 import android.os.Handler
 import android.os.Looper
 import android.view.View
-import android.widget.TextView
 import android.widget.ImageView
-import android.widget.Button
-import com.clienttools.sdk.models.NodeType
-import com.clienttools.sdk.model.ViewInfo
+import android.widget.TextView
+import androidx.recyclerview.widget.RecyclerView
+import com.clienttools.sdk.proto.Node
+import com.clienttools.sdk.proto.NodeType
 import java.io.ByteArrayOutputStream
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
 
 object ViewQueryService {
-    fun getViewInfo(viewId: String): ViewInfo? {
+    fun getNode(viewId: String): Node? {
         val views = ViewTreeTraversal.findViewById(viewId)
         if (views.isEmpty()) return null
-
-        val view = views.first()
-        return buildViewInfo(view, viewId)
+        return buildNode(views.first(), viewId)
     }
 
-    fun getAllViewInfos(): List<ViewInfo> {
-        val results = mutableListOf<ViewInfo>()
+    fun getAllNodes(): List<Node> {
+        val results = mutableListOf<Node>()
         ViewTreeTraversal.traverseAll { view ->
             if (view.id == View.NO_ID) return@traverseAll
             val id = try {
@@ -32,7 +30,7 @@ object ViewQueryService {
             } catch (e: Exception) {
                 return@traverseAll
             }
-            results.add(buildViewInfo(view, id))
+            results.add(buildNode(view, id))
         }
         return results
     }
@@ -61,31 +59,25 @@ object ViewQueryService {
         return result
     }
 
-    private fun buildViewInfo(view: View, viewId: String): ViewInfo {
-        val displayMetrics = view.resources.displayMetrics
-        val pxToDp = { px: Int -> px / displayMetrics.density }
-
-        val location = IntArray(2)
-        view.getLocationOnScreen(location)
-
-        val typeStr = when (view) {
-            is Button -> "BUTTON"
-            is TextView -> "TEXT"
-            is ImageView -> "IMAGE"
-            is android.widget.ListView -> "LIST"
-            else -> "CONTAINER"
+    private fun buildNode(view: View, id: String): Node {
+        val density = view.resources.displayMetrics.density
+        val loc = IntArray(2)
+        view.getLocationOnScreen(loc)
+        val type = when (view) {
+            is TextView -> NodeType.TEXT
+            is ImageView -> NodeType.IMAGE
+            is RecyclerView -> NodeType.LIST
+            else -> NodeType.CONTAINER
         }
-
-        return ViewInfo(
-            id = viewId,
-            type = typeStr,
-            screenX = pxToDp(location[0]).toFloat(),
-            screenY = pxToDp(location[1]).toFloat(),
-            widthDp = pxToDp(view.width).toFloat(),
-            heightDp = pxToDp(view.height).toFloat(),
-            attrs = null,
-            visibility = view.visibility,
-            isEnabled = view.isEnabled
-        )
+        return Node.newBuilder()
+            .setId(id)
+            .setType(type)
+            .setScreenX(loc[0] / density)
+            .setScreenY(loc[1] / density)
+            .setWidthDp(view.width / density)
+            .setHeightDp(view.height / density)
+            .setVisibility(view.visibility)
+            .setIsEnabled(view.isEnabled)
+            .build()
     }
 }

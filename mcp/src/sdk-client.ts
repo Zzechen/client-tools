@@ -1,4 +1,5 @@
 import { execSync } from "child_process";
+import { fromBinary, toBinary, MessageShape, DescMessage } from "@bufbuild/protobuf";
 
 const PORT = process.env.CLIENT_TOOLS_PORT ?? "8080";
 const BASE_URL = `http://127.0.0.1:${PORT}`;
@@ -32,14 +33,49 @@ async function fetchWithTimeout(url: string, init: RequestInit, timeoutMs: numbe
   }
 }
 
-export async function sdkGet(path: string): Promise<unknown> {
+export async function sdkGet<T extends DescMessage>(
+  path: string,
+  schema: T
+): Promise<MessageShape<T>> {
+  ensureAdbForward();
+  const timeoutMs = path.startsWith("/dom") ? DOM_TIMEOUT_MS : DEFAULT_TIMEOUT_MS;
+  const res = await fetchWithTimeout(`${BASE_URL}${path}`, { method: "GET" }, timeoutMs);
+  const buf = new Uint8Array(await res.arrayBuffer());
+  return fromBinary(schema, buf);
+}
+
+export async function sdkPost<Req extends DescMessage, Res extends DescMessage>(
+  path: string,
+  reqSchema: Req,
+  reqMsg: MessageShape<Req>,
+  resSchema: Res
+): Promise<MessageShape<Res>> {
+  ensureAdbForward();
+  const body = toBinary(reqSchema, reqMsg);
+  const res = await fetchWithTimeout(
+    `${BASE_URL}${path}`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/x-protobuf",
+        "X-CT-Proto-Version": "1",
+      },
+      body,
+    },
+    DEFAULT_TIMEOUT_MS
+  );
+  const buf = new Uint8Array(await res.arrayBuffer());
+  return fromBinary(resSchema, buf);
+}
+
+export async function sdkGetRaw(path: string): Promise<unknown> {
   ensureAdbForward();
   const timeoutMs = path.startsWith("/dom") ? DOM_TIMEOUT_MS : DEFAULT_TIMEOUT_MS;
   const res = await fetchWithTimeout(`${BASE_URL}${path}`, { method: "GET" }, timeoutMs);
   return res.json();
 }
 
-export async function sdkPost(path: string, body: unknown): Promise<unknown> {
+export async function sdkPostRaw(path: string, body: unknown): Promise<unknown> {
   ensureAdbForward();
   const res = await fetchWithTimeout(
     `${BASE_URL}${path}`,

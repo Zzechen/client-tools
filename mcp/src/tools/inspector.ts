@@ -1,5 +1,5 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
-import { sdkGet } from "../sdk-client.js";
+import { sdkGetRaw } from "../sdk-client.js";
 
 function errResult(e: unknown) {
   return {
@@ -15,7 +15,7 @@ export function registerInspectorTools(server: McpServer): void {
     {},
     async () => {
       try {
-        const result = await sdkGet("/webview/files");
+        const result = await sdkGetRaw("/webview/files");
         return { content: [{ type: "text" as const, text: JSON.stringify(result) }] };
       } catch (e) { return errResult(e); }
     }
@@ -27,7 +27,7 @@ export function registerInspectorTools(server: McpServer): void {
     {},
     async () => {
       try {
-        const result = await sdkGet("/inspector/images");
+        const result = await sdkGetRaw("/inspector/images");
         return { content: [{ type: "text" as const, text: JSON.stringify(result) }] };
       } catch (e) { return errResult(e); }
     }

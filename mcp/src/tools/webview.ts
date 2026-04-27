@@ -1,7 +1,15 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
 import { readFileSync } from "fs";
-import { sdkPost } from "../sdk-client.js";
+import { create } from "@bufbuild/protobuf";
+import { sdkPost, sdkPostRaw } from "../sdk-client.js";
+import {
+  PushHtmlRequestSchema,
+  PushHtmlResponseSchema,
+  WebviewShowRequestSchema,
+  WebviewAdjustRequestSchema,
+  SimpleResponseSchema,
+} from "../generated/api_pb.js";
 
 function errResult(e: unknown) {
   return {
@@ -24,8 +32,14 @@ export function registerWebviewTools(server: McpServer): void {
       try {
         const content = file ? readFileSync(file, "utf-8") : html;
         if (!content) throw new Error("需要提供 file 或 html 参数");
-        const result = await sdkPost("/webview/push-html", { tag, html: content, timestamp });
-        return { content: [{ type: "text" as const, text: JSON.stringify(result) }] };
+        const ts = timestamp ?? new Date().toISOString().slice(0, 16).replace(/[-:T]/g, "").slice(2, 12);
+        const req = create(PushHtmlRequestSchema, {
+          tag,
+          timestamp: ts,
+          html: new TextEncoder().encode(content),
+        });
+        const res = await sdkPost("/webview/push-html", PushHtmlRequestSchema, req, PushHtmlResponseSchema);
+        return { content: [{ type: "text" as const, text: JSON.stringify({ tag: res.data?.tag, filePath: res.data?.filePath }) }] };
       } catch (e) { return errResult(e); }
     }
   );
@@ -39,22 +53,22 @@ export function registerWebviewTools(server: McpServer): void {
     },
     async ({ tag, timestamp }) => {
       try {
-        const result = await sdkPost("/webview/show", { tag, timestamp });
-        return { content: [{ type: "text" as const, text: JSON.stringify(result) }] };
+        const req = create(WebviewShowRequestSchema, { tag, timestamp });
+        await sdkPost("/webview/show", WebviewShowRequestSchema, req, SimpleResponseSchema);
+        return { content: [{ type: "text" as const, text: "ok" }] };
       } catch (e) { return errResult(e); }
     }
   );
 
   server.tool(
     "hide_overlay",
-    "隐藏 WebView 或图片叠加层",
-    {
-      type: z.enum(["webview", "image"]).optional().describe("缺省隐藏当前 activeTab"),
-    },
-    async ({ type }) => {
+    "隐藏 WebView 叠加层",
+    {},
+    async () => {
       try {
-        const result = await sdkPost("/inspector/hide", type ? { type } : {});
-        return { content: [{ type: "text" as const, text: JSON.stringify(result) }] };
+        const req = create(SimpleResponseSchema, {});
+        await sdkPost("/webview/hide", SimpleResponseSchema, req, SimpleResponseSchema);
+        return { content: [{ type: "text" as const, text: "ok" }] };
       } catch (e) { return errResult(e); }
     }
   );
@@ -63,15 +77,19 @@ export function registerWebviewTools(server: McpServer): void {
     "adjust_overlay",
     "调整叠加层偏移量（增量 dp）和透明度（绝对值 0~1）",
     {
-      type: z.enum(["webview", "image"]).optional().describe("缺省操作当前 activeTab"),
       offsetX: z.number().optional().describe("X 轴偏移增量，单位 dp"),
       offsetY: z.number().optional().describe("Y 轴偏移增量，单位 dp"),
       opacity: z.number().min(0).max(1).optional().describe("透明度绝对值 0.0~1.0"),
     },
-    async ({ type, offsetX, offsetY, opacity }) => {
+    async ({ offsetX, offsetY, opacity }) => {
       try {
-        const result = await sdkPost("/inspector/adjust", { type, offsetX, offsetY, opacity });
-        return { content: [{ type: "text" as const, text: JSON.stringify(result) }] };
+        const req = create(WebviewAdjustRequestSchema, {
+          offsetX: offsetX ?? 0,
+          offsetY: offsetY ?? 0,
+          opacity: opacity ?? 0.5,
+        });
+        await sdkPost("/webview/adjust", WebviewAdjustRequestSchema, req, SimpleResponseSchema);
+        return { content: [{ type: "text" as const, text: "ok" }] };
       } catch (e) { return errResult(e); }
     }
   );
