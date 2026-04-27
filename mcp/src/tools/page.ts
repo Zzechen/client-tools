@@ -1,6 +1,13 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
+import { create } from "@bufbuild/protobuf";
 import { sdkGet, sdkPost } from "../sdk-client.js";
+import {
+  PageResponseSchema,
+  ClickResponseSchema,
+  ScrollResponseSchema,
+} from "../generated/api_pb.js";
+import { ClickRequestSchema, ScrollRequestSchema } from "../generated/modify_pb.js";
 
 function errResult(e: unknown) {
   return {
@@ -10,29 +17,20 @@ function errResult(e: unknown) {
 }
 
 export function registerPageTools(server: McpServer): void {
-  server.tool(
-    "get_current_page",
-    "查询当前 Android 页面名称",
-    {},
-    async () => {
-      try {
-        const result = await sdkGet("/api/page/current");
-        return { content: [{ type: "text" as const, text: JSON.stringify(result) }] };
-      } catch (e) { return errResult(e); }
-    }
-  );
+  server.tool("get_current_page", "查询当前 Android 页面名称", {}, async () => {
+    try {
+      const res = await sdkGet("/api/page/current", PageResponseSchema);
+      return { content: [{ type: "text" as const, text: JSON.stringify({ pageName: res.data?.pageName, timestamp: res.data?.timestamp }) }] };
+    } catch (e) { return errResult(e); }
+  });
 
-  server.tool(
-    "click_view",
-    "点击指定 id 的 Android View",
-    { id: z.string() },
-    async ({ id }) => {
-      try {
-        const result = await sdkPost("/api/click", { id });
-        return { content: [{ type: "text" as const, text: JSON.stringify(result) }] };
-      } catch (e) { return errResult(e); }
-    }
-  );
+  server.tool("click_view", "点击指定 id 的 Android View", { id: z.string() }, async ({ id }) => {
+    try {
+      const req = create(ClickRequestSchema, { id });
+      const res = await sdkPost("/api/click", ClickRequestSchema, req, ClickResponseSchema);
+      return { content: [{ type: "text" as const, text: JSON.stringify({ id: res.data?.id }) }] };
+    } catch (e) { return errResult(e); }
+  });
 
   server.tool(
     "scroll_view",
@@ -44,8 +42,9 @@ export function registerPageTools(server: McpServer): void {
     },
     async ({ id, dx, dy }) => {
       try {
-        const result = await sdkPost("/api/scroll", { id, dx, dy });
-        return { content: [{ type: "text" as const, text: JSON.stringify(result) }] };
+        const req = create(ScrollRequestSchema, { id, dx, dy });
+        const res = await sdkPost("/api/scroll", ScrollRequestSchema, req, ScrollResponseSchema);
+        return { content: [{ type: "text" as const, text: JSON.stringify({ id: res.data?.id, dx: res.data?.dx, dy: res.data?.dy }) }] };
       } catch (e) { return errResult(e); }
     }
   );

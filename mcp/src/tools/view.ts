@@ -1,6 +1,14 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
+import { create } from "@bufbuild/protobuf";
 import { sdkGet, sdkPost } from "../sdk-client.js";
+import {
+  NodeListResponseSchema,
+  NodeResponseSchema,
+  ModifyResponseSchema,
+  CaptureResponseSchema,
+} from "../generated/api_pb.js";
+import { ModifyViewRequestSchema } from "../generated/modify_pb.js";
 
 function errResult(e: unknown) {
   return {
@@ -11,7 +19,7 @@ function errResult(e: unknown) {
 
 const DpValue = z.union([z.number(), z.literal("wrap_content")]);
 
-const ViewPropsSchema = z.object({
+const ViewPropsZod = z.object({
   marginTopDiffDp: z.number().optional(),
   marginBottomDiffDp: z.number().optional(),
   marginLeftDiffDp: z.number().optional(),
@@ -25,28 +33,18 @@ const ViewPropsSchema = z.object({
   letterSpacingEm: z.number().optional(),
   lineSpacingExtraDp: z.number().optional(),
   includeFontPadding: z.boolean().optional(),
-}).describe("View 布局属性，margin/padding 为差值（dp），width/height 为绝对值（dp）或 \"wrap_content\"；letterSpacingEm 为字间距（em 单位），lineSpacingExtraDp 为额外行间距（dp），includeFontPadding 控制字体内置 padding");
-
-async function fetchImageBase64(url: string): Promise<string> {
-  const res = await fetch(url);
-  if (!res.ok) throw new Error(`HTTP ${res.status}`);
-  const buf = await res.arrayBuffer();
-  return Buffer.from(buf).toString("base64");
-}
+}).describe("View 布局属性，margin/padding 为差值（dp），width/height 为绝对值（dp）或 \"wrap_content\"");
 
 export function registerViewTools(server: McpServer): void {
   server.tool(
     "capture_view",
     "截取指定 Android View 的截图，返回 PNG 图片供视觉分析",
-    {
-      id: z.string().describe("Android View 的 resource id"),
-    },
+    { id: z.string().describe("Android View 的 resource id") },
     async ({ id }) => {
       try {
-        const base64 = await fetchImageBase64(`http://localhost:8080/api/capture/${encodeURIComponent(id)}`);
-        return {
-          content: [{ type: "image" as const, data: base64, mimeType: "image/png" }],
-        };
+        const res = await sdkGet(`/api/capture/${encodeURIComponent(id)}`, CaptureResponseSchema);
+        const base64 = Buffer.from(res.imagePng).toString("base64");
+        return { content: [{ type: "image" as const, data: base64, mimeType: "image/png" }] };
       } catch (e) { return errResult(e); }
     }
   );
@@ -54,13 +52,11 @@ export function registerViewTools(server: McpServer): void {
   server.tool(
     "get_node",
     "查询 Android 原生 View 节点的屏幕位置和尺寸",
-    {
-      id: z.string().describe("Android View 的 resource id（不含包名前缀，如 btn_login）"),
-    },
+    { id: z.string().describe("Android View 的 resource id（不含包名前缀，如 btn_login）") },
     async ({ id }) => {
       try {
-        const result = await sdkGet(`/api/nodes/${encodeURIComponent(id)}`);
-        return { content: [{ type: "text" as const, text: JSON.stringify(result) }] };
+        const res = await sdkGet(`/api/nodes/${encodeURIComponent(id)}`, NodeResponseSchema);
+        return { content: [{ type: "text" as const, text: JSON.stringify(res.data) }] };
       } catch (e) { return errResult(e); }
     }
   );
@@ -71,8 +67,8 @@ export function registerViewTools(server: McpServer): void {
     {},
     async () => {
       try {
-        const result = await sdkGet("/api/nodes/all");
-        return { content: [{ type: "text" as const, text: JSON.stringify(result) }] };
+        const res = await sdkGet("/api/nodes/all", NodeListResponseSchema);
+        return { content: [{ type: "text" as const, text: JSON.stringify(res.data?.nodes) }] };
       } catch (e) { return errResult(e); }
     }
   );
@@ -80,19 +76,27 @@ export function registerViewTools(server: McpServer): void {
   server.tool(
     "modify_view",
     "修改 Android View 的布局属性（margin/padding/size），单位 dp；TextView 额外支持 letterSpacingEm、lineSpacingExtraDp、includeFontPadding",
-    {
-      id: z.string().describe("Android View 的 resource id"),
-      props: ViewPropsSchema,
-    },
+    { id: z.string().describe("Android View 的 resource id"), props: ViewPropsZod },
     async ({ id, props }) => {
       try {
-        const propsToSend = {
-          ...props,
-          widthDp: props.widthDp !== undefined ? String(props.widthDp) : undefined,
-          heightDp: props.heightDp !== undefined ? String(props.heightDp) : undefined,
+        const viewProps = {
+          ...(props.marginTopDiffDp !== undefined && { marginTopDiffDp: props.marginTopDiffDp }),
+          ...(props.marginBottomDiffDp !== undefined && { marginBottomDiffDp: props.marginBottomDiffDp }),
+          ...(props.marginLeftDiffDp !== undefined && { marginLeftDiffDp: props.marginLeftDiffDp }),
+          ...(props.marginRightDiffDp !== undefined && { marginRightDiffDp: props.marginRightDiffDp }),
+          ...(props.paddingTopDiffDp !== undefined && { paddingTopDiffDp: props.paddingTopDiffDp }),
+          ...(props.paddingBottomDiffDp !== undefined && { paddingBottomDiffDp: props.paddingBottomDiffDp }),
+          ...(props.paddingLeftDiffDp !== undefined && { paddingLeftDiffDp: props.paddingLeftDiffDp }),
+          ...(props.paddingRightDiffDp !== undefined && { paddingRightDiffDp: props.paddingRightDiffDp }),
+          ...(props.widthDp !== undefined && { widthDp: String(props.widthDp) }),
+          ...(props.heightDp !== undefined && { heightDp: String(props.heightDp) }),
+          ...(props.letterSpacingEm !== undefined && { letterSpacingEm: props.letterSpacingEm }),
+          ...(props.lineSpacingExtraDp !== undefined && { lineSpacingExtraDp: props.lineSpacingExtraDp }),
+          ...(props.includeFontPadding !== undefined && { includeFontPadding: props.includeFontPadding }),
         };
-        const result = await sdkPost("/api/modify", { id, props: propsToSend });
-        return { content: [{ type: "text" as const, text: JSON.stringify(result) }] };
+        const req = create(ModifyViewRequestSchema, { id, props: viewProps });
+        await sdkPost("/api/modify", ModifyViewRequestSchema, req, ModifyResponseSchema);
+        return { content: [{ type: "text" as const, text: "ok" }] };
       } catch (e) { return errResult(e); }
     }
   );

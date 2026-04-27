@@ -4,4 +4,6 @@ plugins:
     out: ../clients/ios/sdk/Sources/Generated
   - remote: buf.build/bufbuild/es
     out: ../mcp/src/generated
-    opt: target=ts
+    opt:
+      - target=ts
+      - import_extension=js

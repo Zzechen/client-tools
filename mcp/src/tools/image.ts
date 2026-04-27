@@ -2,7 +2,7 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
 import { readFileSync } from "fs";
 import { extname } from "path";
-import { sdkPost } from "../sdk-client.js";
+import { sdkPostRaw } from "../sdk-client.js";
 
 function errResult(e: unknown) {
   return {
@@ -33,7 +33,7 @@ export function registerImageTools(server: McpServer): void {
           else imageExt = "png";
         }
         if (!imageData) throw new Error("需要提供 file 或 image 参数");
-        const result = await sdkPost("/inspector/push-image", { tag, image: imageData, ext: imageExt, timestamp });
+        const result = await sdkPostRaw("/inspector/push-image", { tag, image: imageData, ext: imageExt, timestamp });
         return { content: [{ type: "text" as const, text: JSON.stringify(result) }] };
       } catch (e) { return errResult(e); }
     }
@@ -48,7 +48,7 @@ export function registerImageTools(server: McpServer): void {
     },
     async ({ tag, timestamp }) => {
       try {
-        const result = await sdkPost("/inspector/show-image", { tag, timestamp });
+        const result = await sdkPostRaw("/inspector/show-image", { tag, timestamp });
         return { content: [{ type: "text" as const, text: JSON.stringify(result) }] };
       } catch (e) { return errResult(e); }
     }

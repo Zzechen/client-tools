@@ -1,7 +1,7 @@
 {
   "name": "@client-tools/mcp",
   "version": "0.1.0",
-  "description": "MCP Server for Client Tools Android SDK",
+  "description": "MCP Server for Client Tools SDK",
   "type": "module",
   "main": "./dist/index.js",
   "bin": {
@@ -13,6 +13,7 @@
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.10.2",
+    "@bufbuild/protobuf": "^2.2.3",
     "zod": "^3.23.8"
   },
   "devDependencies": {
