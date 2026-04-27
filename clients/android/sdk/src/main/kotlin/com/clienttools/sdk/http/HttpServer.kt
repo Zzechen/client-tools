@@ -47,6 +47,9 @@ class HttpServer(
                 method == Method.POST && uri == "/api/modify" ->
                     ApiHandler.handleModify(readBodyBytes(session))
 
+                method == Method.GET && uri == "/webview/files" ->
+                    ApiHandler.handleWebviewFiles(ClientToolsSDK.fileStore)
+
                 method == Method.POST && uri == "/webview/push-html" ->
                     ApiHandler.handlePushHtml(readBodyBytes(session), ClientToolsSDK.fileStore)
 

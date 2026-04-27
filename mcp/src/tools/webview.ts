@@ -2,7 +2,7 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
 import { readFileSync } from "fs";
 import { create } from "@bufbuild/protobuf";
-import { sdkGet, sdkPost, sdkPostRaw } from "../sdk-client.js";
+import { sdkPost, sdkPostRaw } from "../sdk-client.js";
 import {
   PushHtmlRequestSchema,
   PushHtmlResponseSchema,
@@ -66,7 +66,8 @@ export function registerWebviewTools(server: McpServer): void {
     {},
     async () => {
       try {
-        await sdkGet("/webview/hide", SimpleResponseSchema);
+        const req = create(SimpleResponseSchema, {});
+        await sdkPost("/webview/hide", SimpleResponseSchema, req, SimpleResponseSchema);
         return { content: [{ type: "text" as const, text: "ok" }] };
       } catch (e) { return errResult(e); }
     }

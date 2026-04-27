@@ -134,6 +134,17 @@ object ApiHandler {
         }
     }
 
+    fun handleWebviewFiles(fileStore: InspectorFileStore): NanoHTTPD.Response {
+        val files = fileStore.getAllFiles()
+        val currentFile = ClientToolsSDK.getTop()?.viewModel?.webView?.value?.currentFile
+        val filesJson = files.joinToString(",") { f ->
+            val isCurrent = currentFile?.tag == f.tag && currentFile?.timestamp == f.timestamp
+            """{"tag":"${f.tag}","timestamp":"${f.timestamp}","filePath":"${f.fileUrl}","isCurrent":$isCurrent}"""
+        }
+        val json = """{"code":0,"data":{"files":[$filesJson]}}"""
+        return NanoHTTPD.newFixedLengthResponse(NanoHTTPD.Response.Status.OK, "application/json", json)
+    }
+
     fun handlePushHtml(bodyBytes: ByteArray, fileStore: InspectorFileStore): NanoHTTPD.Response {
         return try {
             val req = PushHtmlRequest.parseFrom(bodyBytes)
