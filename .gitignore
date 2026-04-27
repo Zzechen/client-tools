@@ -21,6 +21,7 @@ local.properties
 
 # iOS / Xcode
 *.xcworkspace/
+xcuserdata/
 *.xcuserdata/
 *.xccheckout
 DerivedData/
