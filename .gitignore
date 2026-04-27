@@ -41,6 +41,11 @@ clients/ios/demo/Pods/
 clients/ios/demo/Podfile.lock
 mcp/dist/
 
+# Proto generated code
+clients/android/sdk/src/main/kotlin/com/clienttools/sdk/proto/
+clients/ios/sdk/Sources/Generated/
+mcp/src/generated/
+
 # Node / TypeScript
 node_modules/
 *.js.map
