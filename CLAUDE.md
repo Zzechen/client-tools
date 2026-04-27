@@ -34,7 +34,7 @@ AI Coding 客户端页面开发增强套件，目标是让 AI 高质量完成「
 ## 技术约定
 
 - **Android 布局**：统一使用 XML（不使用 Jetpack Compose）
-- **数据模型**：各端独立维护，Android 模型在 `android/sdk/src/main/kotlin/com/clienttools/sdk/models/`，无 KMP 共享层
+- **数据模型**：跨端 HTTP 通信使用 Protocol Buffers，schema 在 `proto/`，由 `buf generate` 生成各端代码；Inspector/DOM 接口（`/inspector/*`、`/dom/*`）仍使用 JSON
 - **Android 最低版本**：API 26（Android 8.0）
 - **iOS 最低版本**：iOS 14
 - **Gradle 工程**：根目录在 `clients/android/`（`settings.gradle.kts` 在此），使用 Java 17
@@ -49,6 +49,19 @@ AI Coding 客户端页面开发增强套件，目标是让 AI 高质量完成「
 # Android SDK（在 clients/android/ 目录下执行）
 cd clients/android && ./gradlew :sdk:assembleDebug
 ```
+
+## Proto 代码生成（修改 .proto 文件后执行）
+
+```bash
+cd proto && buf generate
+```
+
+生成目标：
+- iOS Swift → `clients/ios/sdk/Sources/Generated/`
+- MCP TypeScript → `mcp/src/generated/`
+- Android 由 Gradle 自动生成（`clients/android/sdk/src/main/proto/` → build 目录）
+
+**注意：** Android proto 文件需同步更新 `clients/android/sdk/src/main/proto/`（与 `proto/` 保持一致）。
 
 ## Superpowers 文档路径
 
