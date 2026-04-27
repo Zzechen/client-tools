@@ -48,10 +48,29 @@ class HttpServer {
             if let data = data { newData.append(data) }
             if isComplete || data == nil {
                 completion(newData)
-            } else {
-                self.receiveAll(connection: connection, accumulated: newData, completion: completion)
+                return
             }
+            if self.isHttpRequestComplete(newData) {
+                completion(newData)
+                return
+            }
+            self.receiveAll(connection: connection, accumulated: newData, completion: completion)
         }
+    }
+
+    // 判断 HTTP 请求是否已完整接收：header 结束后，body 长度达到 Content-Length
+    private func isHttpRequestComplete(_ data: Data) -> Bool {
+        guard let str = String(data: data, encoding: .utf8),
+              let headerEnd = str.range(of: "\r\n\r\n") else { return false }
+        let headers = String(str[str.startIndex..<headerEnd.lowerBound])
+        let bodyStr = String(str[headerEnd.upperBound...])
+        if let clLine = headers.components(separatedBy: "\r\n")
+            .first(where: { $0.lowercased().hasPrefix("content-length:") }),
+           let cl = Int(clLine.components(separatedBy: ":").last?.trimmingCharacters(in: .whitespaces) ?? "") {
+            return bodyStr.utf8.count >= cl
+        }
+        // 无 Content-Length（GET 等无 body 请求），header 结束即完整
+        return true
     }
 
     private func okMeta() -> Clienttools_ResponseMeta {
