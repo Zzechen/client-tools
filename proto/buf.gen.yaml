@@ -1,7 +1,5 @@
 version: v2
 plugins:
-  - remote: buf.build/protocolbuffers/kotlin
-    out: ../clients/android/sdk/src/main/kotlin
   - remote: buf.build/apple/swift
     out: ../clients/ios/sdk/Sources/Generated
   - remote: buf.build/bufbuild/es

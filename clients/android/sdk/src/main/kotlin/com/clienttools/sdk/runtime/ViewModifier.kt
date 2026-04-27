@@ -5,7 +5,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
 import com.clienttools.sdk.ClientToolsSDK
-import com.clienttools.sdk.models.ViewProps
+import com.clienttools.sdk.proto.ViewProps
 
 object ViewModifier {
     fun apply(viewId: String, props: ViewProps): Boolean {
@@ -64,8 +64,7 @@ object ViewModifier {
     }
 
     private fun modify(view: View, props: ViewProps) {
-        val displayMetrics = view.resources.displayMetrics
-        val density = displayMetrics.density
+        val density = view.resources.displayMetrics.density
         val dpToPx = { dp: Float -> (dp * density).toInt() }
 
         val layoutParams = view.layoutParams ?: ViewGroup.LayoutParams(
@@ -74,37 +73,41 @@ object ViewModifier {
         )
 
         if (layoutParams is ViewGroup.MarginLayoutParams) {
-            val top = props.marginTopDiffDp?.let { layoutParams.topMargin + dpToPx(it) } ?: layoutParams.topMargin
-            val bottom = props.marginBottomDiffDp?.let { layoutParams.bottomMargin + dpToPx(it) } ?: layoutParams.bottomMargin
-            val left = props.marginLeftDiffDp?.let { layoutParams.leftMargin + dpToPx(it) } ?: layoutParams.leftMargin
-            val right = props.marginRightDiffDp?.let { layoutParams.rightMargin + dpToPx(it) } ?: layoutParams.rightMargin
+            val top = if (props.hasMarginTopDiffDp()) layoutParams.topMargin + dpToPx(props.marginTopDiffDp.value) else layoutParams.topMargin
+            val bottom = if (props.hasMarginBottomDiffDp()) layoutParams.bottomMargin + dpToPx(props.marginBottomDiffDp.value) else layoutParams.bottomMargin
+            val left = if (props.hasMarginLeftDiffDp()) layoutParams.leftMargin + dpToPx(props.marginLeftDiffDp.value) else layoutParams.leftMargin
+            val right = if (props.hasMarginRightDiffDp()) layoutParams.rightMargin + dpToPx(props.marginRightDiffDp.value) else layoutParams.rightMargin
             layoutParams.setMargins(left, top, right, bottom)
         }
 
-        resolveDimension(props.widthDp, density)?.let { layoutParams.width = it }
-        resolveDimension(props.heightDp, density)?.let { layoutParams.height = it }
+        if (props.hasWidthDp()) resolveDimension(props.widthDp.value, density)?.let { layoutParams.width = it }
+        if (props.hasHeightDp()) resolveDimension(props.heightDp.value, density)?.let { layoutParams.height = it }
 
         view.layoutParams = layoutParams
 
-        props.paddingTopDiffDp?.let {
-            view.setPadding(view.paddingLeft, view.paddingTop + dpToPx(it), view.paddingRight, view.paddingBottom)
+        if (props.hasPaddingTopDiffDp()) {
+            val extra = dpToPx(props.paddingTopDiffDp.value)
+            view.setPadding(view.paddingLeft, view.paddingTop + extra, view.paddingRight, view.paddingBottom)
         }
-        props.paddingBottomDiffDp?.let {
-            view.setPadding(view.paddingLeft, view.paddingTop, view.paddingRight, view.paddingBottom + dpToPx(it))
+        if (props.hasPaddingBottomDiffDp()) {
+            val extra = dpToPx(props.paddingBottomDiffDp.value)
+            view.setPadding(view.paddingLeft, view.paddingTop, view.paddingRight, view.paddingBottom + extra)
         }
-        props.paddingLeftDiffDp?.let {
-            view.setPadding(view.paddingLeft + dpToPx(it), view.paddingTop, view.paddingRight, view.paddingBottom)
+        if (props.hasPaddingLeftDiffDp()) {
+            val extra = dpToPx(props.paddingLeftDiffDp.value)
+            view.setPadding(view.paddingLeft + extra, view.paddingTop, view.paddingRight, view.paddingBottom)
         }
-        props.paddingRightDiffDp?.let {
-            view.setPadding(view.paddingLeft, view.paddingTop, view.paddingRight + dpToPx(it), view.paddingBottom)
+        if (props.hasPaddingRightDiffDp()) {
+            val extra = dpToPx(props.paddingRightDiffDp.value)
+            view.setPadding(view.paddingLeft, view.paddingTop, view.paddingRight + extra, view.paddingBottom)
         }
 
         if (view is TextView) {
-            props.letterSpacingEm?.let { view.letterSpacing = it }
-            props.lineSpacingExtraDp?.let { extra ->
-                view.setLineSpacing(extra * density, view.lineSpacingMultiplier)
+            if (props.hasLetterSpacingEm()) view.letterSpacing = props.letterSpacingEm.value
+            if (props.hasLineSpacingExtraDp()) {
+                view.setLineSpacing(props.lineSpacingExtraDp.value * density, view.lineSpacingMultiplier)
             }
-            props.includeFontPadding?.let { view.includeFontPadding = it }
+            if (props.hasIncludeFontPadding()) view.includeFontPadding = props.includeFontPadding.value
         }
     }
 }
