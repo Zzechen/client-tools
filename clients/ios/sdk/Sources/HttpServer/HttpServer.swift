@@ -141,7 +141,10 @@ class HttpServer {
         case ("POST", "/webview/adjust"):
             handleWebviewAdjust(bodyData, connection: connection)
         default:
-            if method == "GET" && path.hasPrefix("/api/nodes/") {
+            if method == "GET" && path.hasPrefix("/api/capture/") {
+                let nodeId = String(path.dropFirst("/api/capture/".count))
+                handleCaptureView(nodeId, connection: connection)
+            } else if method == "GET" && path.hasPrefix("/api/nodes/") {
                 let nodeId = String(path.dropFirst("/api/nodes/".count))
                 handleNodeById(nodeId, connection: connection)
             } else {
@@ -275,6 +278,17 @@ class HttpServer {
         ClientToolsSDK.shared.overlayManager()?.hide()
         var resp = Clienttools_SimpleResponse()
         resp.meta = okMeta()
+        sendProto(resp, connection: connection)
+    }
+
+    private func handleCaptureView(_ id: String, connection: NWConnection) {
+        guard let data = viewQueryService.captureView(id: id) else {
+            sendError(code: 404, message: "View not found or has no size", httpCode: 404, connection: connection)
+            return
+        }
+        var resp = Clienttools_CaptureResponse()
+        resp.meta = okMeta()
+        resp.imagePng = data
         sendProto(resp, connection: connection)
     }
 
