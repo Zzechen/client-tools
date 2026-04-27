@@ -16,7 +16,7 @@
 | 模块6：Inspector v2 | ✅ 完成 | `docs/2026-04-20-inspect-v2/` |
 | Skill：client-tools 三个skill | ✅ 完成 | `docs/2026-04-19-client-tools-skills/` |
 | HarmonyOS可行性调研 | ✅ 完成（结论：不做） | `docs/2026-04-19-harmonyos-feasibility/research.md` |
-| iOS SDK（SwiftProtobuf） | ✅ 完成 | `clients/ios/sdk/` |
+| iOS SDK（SwiftProtobuf，基础接口） | ✅ 完成（10/19 接口） | `clients/ios/sdk/` |
 | MCP Server | ✅ 完成 | `mcp/` |
 | 跨端数据迁移至Protocol Buffers | ✅ 完成 | `proto/`，三端均已迁移 |
 
@@ -37,9 +37,13 @@
 
 | 优先级 | 任务 | 说明 |
 |--------|------|------|
+| P0 | iOS SDK 补齐：View 截图 | `GET /api/capture/{id}`，UIView → PNG |
+| P0 | iOS SDK 补齐：WebView 文件列表 | `GET /webview/files` |
+| P0 | iOS SDK 补齐：DOM 查询 | `GET /dom/all` + `GET /dom/{id}`，WKWebView JavaScriptBridge |
+| P0 | iOS SDK 补齐：Inspector 图片覆盖层 | push-image / show-image / images / hide / adjust，含 ImageFileStore |
+| P0 | iOS Demo 重构：删除多余页面 | 删除 Profile/Settings/List/Login/VerifyCode，首页只保留 Login、VerifyCode 占位入口 |
 | P1 | TODO #7：modify_view支持wrap_content | SDK侧改造 |
 | P1 | TODO #8：TextView行高对齐 | implement阶段自动计算lineHeight |
-| P1 | TODO #10：Skill瘦身 | inspect专注运行时，预处理/实现移出skill，交给AI自主判断 |
 | P2 | HarmonyOS SDK | 参考Kuikly方案，KMP通过ohosArm64Main支持 |
 
 ---
