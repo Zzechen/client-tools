@@ -13,10 +13,8 @@ class HomeViewController: UIViewController {
     }()
 
     private let pages: [(title: String, subtitle: String, icon: String, vcClass: String)] = [
-        ("Login Demo", "登录页面测试", "📄", "LoginViewController"),
-        ("Profile Demo", "个人资料页面测试", "👤", "ProfileViewController"),
-        ("Settings Demo", "设置页面测试", "⚙️", "SettingsViewController"),
-        ("List Demo", "列表页面测试", "📋", "ListViewController"),
+        ("Login Demo", "手机号验证码登录", "📱", "LoginViewController"),
+        ("VerifyCode Demo", "验证码输入页", "🔐", "VerifyCodeViewController"),
     ]
 
     override func viewDidLoad() {
