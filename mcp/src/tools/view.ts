@@ -2,6 +2,8 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
 import { create } from "@bufbuild/protobuf";
 import { sdkGet, sdkPost } from "../sdk-client.js";
+import { writeFileSync, mkdirSync } from "fs";
+import { join } from "path";
 import {
   NodeListResponseSchema,
   NodeResponseSchema,
@@ -38,12 +40,20 @@ const ViewPropsZod = z.object({
 export function registerViewTools(server: McpServer): void {
   server.tool(
     "capture_view",
-    "截取指定 Android View 的截图，返回 PNG 图片供视觉分析",
-    { id: z.string().describe("Android View 的 resource id") },
-    async ({ id }) => {
+    "截取指定 View 的截图，返回 PNG 图片供视觉分析",
+    {
+      id: z.string().describe("View 的 id"),
+      save_dir: z.string().optional().describe("若提供，将截图保存到该目录，文件名为 {id}_{timestamp}.png"),
+    },
+    async ({ id, save_dir }) => {
       try {
         const res = await sdkGet(`/api/capture/${encodeURIComponent(id)}`, CaptureResponseSchema);
         const base64 = Buffer.from(res.imagePng).toString("base64");
+        if (save_dir) {
+          mkdirSync(save_dir, { recursive: true });
+          const filepath = join(save_dir, `${id}_${Date.now()}.png`);
+          writeFileSync(filepath, Buffer.from(res.imagePng));
+        }
         return { content: [{ type: "image" as const, data: base64, mimeType: "image/png" }] };
       } catch (e) { return errResult(e); }
     }
