@@ -7,6 +7,7 @@ import { registerDomTools } from "./tools/dom.js";
 import { registerViewTools } from "./tools/view.js";
 import { registerInspectorTools } from "./tools/inspector.js";
 import { registerPageTools } from "./tools/page.js";
+import { registerDesignTools } from "./tools/design.js";
 
 const server = new McpServer({
   name: "client-tools",
@@ -19,6 +20,7 @@ registerDomTools(server);
 registerViewTools(server);
 registerInspectorTools(server);
 registerPageTools(server);
+registerDesignTools(server);
 
 const transport = new StdioServerTransport();
 await server.connect(transport);
