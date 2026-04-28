@@ -62,18 +62,20 @@ class HttpServer {
         }
     }
 
-    // 判断 HTTP 请求是否已完整接收：header 结束后，body 长度达到 Content-Length
+    // 判断 HTTP 请求是否已完整接收：header 结束后，body 字节数达到 Content-Length
     private func isHttpRequestComplete(_ data: Data) -> Bool {
-        guard let str = String(data: data, encoding: .utf8),
-              let headerEnd = str.range(of: "\r\n\r\n") else { return false }
-        let headers = String(str[str.startIndex..<headerEnd.lowerBound])
-        let bodyStr = String(str[headerEnd.upperBound...])
-        if let clLine = headers.components(separatedBy: "\r\n")
+        // 用字节序列定位 \r\n\r\n，避免把 binary body 当 UTF-8 解析
+        let separator: [UInt8] = [0x0D, 0x0A, 0x0D, 0x0A]
+        guard let sepRange = data.range(of: Data(separator)) else { return false }
+        let headerData = data[data.startIndex..<sepRange.lowerBound]
+        let bodyStart  = sepRange.upperBound
+        let bodyLen    = data.count - bodyStart
+        guard let headerStr = String(data: headerData, encoding: .utf8) else { return false }
+        if let clLine = headerStr.components(separatedBy: "\r\n")
             .first(where: { $0.lowercased().hasPrefix("content-length:") }),
            let cl = Int(clLine.components(separatedBy: ":").last?.trimmingCharacters(in: .whitespaces) ?? "") {
-            return bodyStr.utf8.count >= cl
+            return bodyLen >= cl
         }
-        // 无 Content-Length（GET 等无 body 请求），header 结束即完整
         return true
     }
 
@@ -130,7 +132,15 @@ class HttpServer {
     }
 
     private func processRequest(_ rawData: Data, connection: NWConnection) {
-        guard let requestStr = String(data: rawData, encoding: .utf8) else {
+        // 用字节定位 header/body 分隔符，避免 binary body 被 UTF-8 解码破坏
+        let separator = Data([0x0D, 0x0A, 0x0D, 0x0A])
+        guard let sepRange = rawData.range(of: separator) else {
+            sendError(code: 400, message: "Invalid request", connection: connection); return
+        }
+        let headerData = rawData[rawData.startIndex..<sepRange.lowerBound]
+        let bodyData   = rawData[sepRange.upperBound...]
+
+        guard let requestStr = String(data: headerData, encoding: .utf8) else {
             sendError(code: 400, message: "Invalid request", connection: connection); return
         }
 
@@ -145,12 +155,6 @@ class HttpServer {
 
         let method = parts[0]
         let path = parts[1]
-
-        var bodyData = Data()
-        if let bodyRange = requestStr.range(of: "\r\n\r\n") {
-            let bodyStr = String(requestStr[bodyRange.upperBound...])
-            bodyData = bodyStr.data(using: .utf8) ?? Data()
-        }
 
         switch (method, path) {
         case ("GET", "/api/page/current"):
