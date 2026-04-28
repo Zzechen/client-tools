@@ -18,6 +18,7 @@ public class OverlayManager {
     private var webView: WKWebView?
     private var imageView: UIImageView?
     private var inspectorPanel: InspectorPanel?
+    private var loadedWebFilePath: String?
 
     public let fileStore = HtmlFileStore()
 
@@ -70,7 +71,10 @@ public class OverlayManager {
         wv.isHidden = !state.isVisible
         wv.alpha = CGFloat(state.opacity)
         updateFrame(of: wv, offsetX: state.offsetX, offsetY: state.offsetY)
-        if state.isVisible, let filePath = state.currentFile?.filePath, !filePath.isEmpty {
+        let filePath = state.currentFile?.filePath ?? ""
+        if state.isVisible && !filePath.isEmpty && filePath != loadedWebFilePath {
+            loadedWebFilePath = filePath
+            wv.stopLoading()
             let fileURL = URL(fileURLWithPath: filePath)
             wv.loadFileURL(fileURL, allowingReadAccessTo: fileURL.deletingLastPathComponent())
         }
