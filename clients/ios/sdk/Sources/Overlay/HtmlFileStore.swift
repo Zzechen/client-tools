@@ -25,6 +25,19 @@ public class HtmlFileStore {
         }
     }
 
+    public func getAllFiles() -> [FileInfo] {
+        guard let files = try? fileManager.contentsOfDirectory(at: baseDir, includingPropertiesForKeys: nil) else { return [] }
+        return files
+            .filter { $0.pathExtension.lowercased() == "html" }
+            .compactMap { url -> FileInfo? in
+                let name = url.deletingPathExtension().lastPathComponent
+                let parts = name.split(separator: "_", maxSplits: 1)
+                guard parts.count == 2 else { return nil }
+                return FileInfo(tag: String(parts[0]), timestamp: String(parts[1]), filePath: url.path)
+            }
+            .sorted { $0.timestamp > $1.timestamp }
+    }
+
     public func findFile(tag: String, timestamp: String) -> URL? {
         let filename = "\(tag)_\(timestamp).html"
         let fileURL = baseDir.appendingPathComponent(filename)
