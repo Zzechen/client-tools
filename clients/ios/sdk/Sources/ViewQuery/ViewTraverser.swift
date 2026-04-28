@@ -37,7 +37,8 @@ class ViewTraverser {
         guard let window = UIApplication.shared.connectedScenes
             .compactMap({ $0 as? UIWindowScene })
             .flatMap({ $0.windows })
-            .first(where: { $0.tag != OverlayManager.overlayTag && !$0.isHidden }) else {
+            .filter({ $0.tag != OverlayManager.overlayTag && !$0.isHidden })
+            .min(by: { $0.windowLevel < $1.windowLevel }) else {
             return []
         }
         return traverse(window)
