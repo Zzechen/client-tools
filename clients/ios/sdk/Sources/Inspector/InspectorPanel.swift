@@ -15,6 +15,8 @@ class InspectorPanel {
     private var isPanelVisible = false
     private var panStartCenter: CGPoint = .zero
     private var panMoved = false
+    private var panelCenterX: NSLayoutConstraint?
+    private var panelCenterY: NSLayoutConstraint?
 
     init(viewModel: InspectorViewModel,
          imageFileStore: ImageFileStore,
@@ -46,9 +48,13 @@ class InspectorPanel {
         panelView.translatesAutoresizingMaskIntoConstraints = false
         panelView.isHidden = true
         view.addSubview(panelView)
+        let cx = panelView.centerXAnchor.constraint(equalTo: view.centerXAnchor)
+        let cy = panelView.centerYAnchor.constraint(equalTo: view.centerYAnchor)
+        panelCenterX = cx
+        panelCenterY = cy
         NSLayoutConstraint.activate([
-            panelView.centerXAnchor.constraint(equalTo: view.centerXAnchor),
-            panelView.centerYAnchor.constraint(equalTo: view.centerYAnchor),
+            cx,
+            cy,
             panelView.widthAnchor.constraint(equalToConstant: 288),
         ])
 
@@ -98,12 +104,13 @@ class InspectorPanel {
     // MARK: - 面板拖拽
 
     @objc private func handlePanelPan(_ g: UIPanGestureRecognizer) {
-        guard let view = container else { return }
+        guard let view = container,
+              let cx = panelCenterX, let cy = panelCenterY else { return }
         let t = g.translation(in: view)
-        panelView.center = CGPoint(
-            x: (panelView.center.x + t.x).clamped(to: 144...(view.bounds.width - 144)),
-            y: (panelView.center.y + t.y).clamped(to: 0...view.bounds.height)
-        )
+        let newCx = (cx.constant + t.x).clamped(to: (144 - view.bounds.midX)...(view.bounds.midX - 144))
+        let newCy = (cy.constant + t.y).clamped(to: -view.bounds.midY...view.bounds.midY)
+        cx.constant = newCx
+        cy.constant = newCy
         g.setTranslation(.zero, in: view)
     }
 
@@ -226,13 +233,13 @@ class InspectorPanel {
     // MARK: - ViewModel 观察
 
     private func setupObservers() {
-        viewModel.onWebViewStateChanged = { [weak self] state in
+        viewModel.addWebViewStateObserver { [weak self] state in
             DispatchQueue.main.async { self?.syncWebViewUI(state) }
         }
-        viewModel.onImageStateChanged = { [weak self] state in
+        viewModel.addImageStateObserver { [weak self] state in
             DispatchQueue.main.async { self?.syncImageUI(state) }
         }
-        viewModel.onActiveTabChanged = { [weak self] tab in
+        viewModel.addActiveTabObserver { [weak self] tab in
             DispatchQueue.main.async { self?.applyTab(tab) }
         }
     }

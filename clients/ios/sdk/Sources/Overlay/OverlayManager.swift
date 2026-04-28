@@ -70,7 +70,7 @@ public class OverlayManager {
         guard let wv = webView else { return }
         wv.isHidden = !state.isVisible
         wv.alpha = CGFloat(state.opacity)
-        updateFrame(of: wv, offsetX: state.offsetX, offsetY: state.offsetY)
+        wv.transform = CGAffineTransform(translationX: CGFloat(state.offsetX), y: CGFloat(state.offsetY))
         let filePath = state.currentFile?.filePath ?? ""
         if state.isVisible && !filePath.isEmpty && filePath != loadedWebFilePath {
             loadedWebFilePath = filePath
@@ -86,7 +86,7 @@ public class OverlayManager {
         guard let iv = imageView else { return }
         iv.isHidden = !state.isVisible
         iv.alpha = CGFloat(state.opacity)
-        updateFrame(of: iv, offsetX: state.offsetX, offsetY: state.offsetY)
+        iv.transform = CGAffineTransform(translationX: CGFloat(state.offsetX), y: CGFloat(state.offsetY))
         if state.isVisible, let filePath = state.currentImage?.filePath {
             iv.image = UIImage(contentsOfFile: filePath)
         }
@@ -114,7 +114,8 @@ public class OverlayManager {
         window.isHidden = false
         overlayWindow = window
 
-        let wv = WKWebView(frame: .zero)
+        let wv = WKWebView(frame: vc.view.bounds)
+        wv.autoresizingMask = [.flexibleWidth, .flexibleHeight]
         wv.isOpaque = false
         wv.backgroundColor = .clear
         wv.scrollView.isScrollEnabled = false
@@ -122,7 +123,8 @@ public class OverlayManager {
         vc.view.addSubview(wv)
         webView = wv
 
-        let iv = UIImageView(frame: .zero)
+        let iv = UIImageView(frame: vc.view.bounds)
+        iv.autoresizingMask = [.flexibleWidth, .flexibleHeight]
         iv.contentMode = .scaleAspectFit
         iv.isHidden = true
         vc.view.addSubview(iv)
@@ -138,13 +140,4 @@ public class OverlayManager {
         inspectorPanel = panel
     }
 
-    private func updateFrame(of view: UIView, offsetX: Float, offsetY: Float) {
-        guard let screen = overlayWindow?.screen else { return }
-        view.frame = CGRect(
-            x: CGFloat(offsetX),
-            y: CGFloat(offsetY),
-            width: screen.bounds.width,
-            height: screen.bounds.height
-        )
-    }
 }

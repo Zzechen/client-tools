@@ -50,13 +50,31 @@ public struct ImageState {
 public enum ActiveTab { case webview, image, status }
 
 public class InspectorViewModel {
-    public var webViewState: WebViewState = WebViewState() { didSet { onWebViewStateChanged?(webViewState) } }
-    public var imageState: ImageState = ImageState()       { didSet { onImageStateChanged?(imageState) } }
-    public var activeTab: ActiveTab = .webview             { didSet { onActiveTabChanged?(activeTab) } }
+    public var webViewState: WebViewState = WebViewState() { didSet { webViewStateObservers.forEach { $0(webViewState) } } }
+    public var imageState: ImageState = ImageState()       { didSet { imageStateObservers.forEach { $0(imageState) } } }
+    public var activeTab: ActiveTab = .webview             { didSet { activeTabObservers.forEach { $0(activeTab) } } }
 
-    public var onWebViewStateChanged: ((WebViewState) -> Void)?
-    public var onImageStateChanged: ((ImageState) -> Void)?
-    public var onActiveTabChanged: ((ActiveTab) -> Void)?
+    private var webViewStateObservers: [(WebViewState) -> Void] = []
+    private var imageStateObservers:   [(ImageState) -> Void]   = []
+    private var activeTabObservers:    [(ActiveTab) -> Void]    = []
+
+    public func addWebViewStateObserver(_ cb: @escaping (WebViewState) -> Void) { webViewStateObservers.append(cb) }
+    public func addImageStateObserver(_ cb: @escaping (ImageState) -> Void)     { imageStateObservers.append(cb) }
+    public func addActiveTabObserver(_ cb: @escaping (ActiveTab) -> Void)       { activeTabObservers.append(cb) }
+
+    // 向后兼容单回调写法（set 会替换第一个订阅者）
+    public var onWebViewStateChanged: ((WebViewState) -> Void)? {
+        get { webViewStateObservers.first }
+        set { if webViewStateObservers.isEmpty { webViewStateObservers.append(newValue!) } else if let v = newValue { webViewStateObservers[0] = v } else { webViewStateObservers.removeAll() } }
+    }
+    public var onImageStateChanged: ((ImageState) -> Void)? {
+        get { imageStateObservers.first }
+        set { if imageStateObservers.isEmpty { if let v = newValue { imageStateObservers.append(v) } } else if let v = newValue { imageStateObservers[0] = v } else { imageStateObservers.removeAll() } }
+    }
+    public var onActiveTabChanged: ((ActiveTab) -> Void)? {
+        get { activeTabObservers.first }
+        set { if activeTabObservers.isEmpty { if let v = newValue { activeTabObservers.append(v) } } else if let v = newValue { activeTabObservers[0] = v } else { activeTabObservers.removeAll() } }
+    }
 
     public init() {}
 }

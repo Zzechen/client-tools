@@ -40,10 +40,12 @@
 |--------|------|------|
 | ~~P0~~ | ~~iOS SDK 补齐：View 截图~~ | ✅ 已完成，`GET /api/capture/{id}`，`layer.render` 截图 |
 | ~~P0~~ | ~~iOS SDK 补齐：Inspector 图片覆盖层~~ | ✅ 已完成，push-image / show-image / images / hide / adjust + InspectorPanel |
+| ~~P0~~ | ~~iOS SDK inspect 流程跑通~~ | ✅ 已完成：get_all_nodes 返回业务节点、modify_view 改约束生效、push_html WebView 显示 |
 | P0 | MCP 适配 iOS 连接 | 当前 MCP 走 `adb forward` + `127.0.0.1`，仅适用 Android；iOS 模拟器需直连 `localhost`，iOS 真机需 `iproxy`；需在 MCP 中增加 iOS 连接模式 |
 | P0 | iOS SDK 补齐：WebView 文件列表 | `GET /webview/files` |
 | P0 | iOS SDK 补齐：DOM 查询 | `GET /dom/all` + `GET /dom/{id}`，WKWebView JavaScriptBridge |
 | ~~P0~~ | ~~iOS Demo 重构：删除多余页面~~ | ✅ 已完成 |
+| P1 | iOS modify_view：相对约束（multiplier）场景未处理 | 当前只查找 secondItem==nil 的固定尺寸约束；若宽高由相对约束决定（如 equal to superview width），会新增约束产生冲突 |
 | P1 | TODO #7：modify_view支持wrap_content | SDK侧改造 |
 | P1 | TODO #8：TextView行高对齐 | implement阶段自动计算lineHeight |
 | P2 | HarmonyOS SDK | 参考Kuikly方案，KMP通过ohosArm64Main支持 |
