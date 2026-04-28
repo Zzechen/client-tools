@@ -8,32 +8,36 @@ class FrameModifier {
     private static var frameModeViews: Set<String> = []
 
     static func modifyFrame(_ view: UIView, widthDp: String?, heightDp: String?) {
-        let scale = CGFloat(UIScreen.main.scale)
-        
+        guard widthDp != nil || heightDp != nil else { return }
+
         // 判断是否有约束
-        let hasConstraints = !view.constraints.isEmpty || 
+        let hasConstraints = !view.constraints.isEmpty ||
             (view.superview?.constraints.contains(where: { $0.firstItem === view }) ?? false)
-        
-        // 如果有约束且不在 frame 模式，启用 frame 模式
+
         if hasConstraints && !isInFrameMode(view) {
             enableFrameMode(view)
         }
 
+        var newSize = view.frame.size
         if let widthStr = widthDp {
             if widthStr == "wrap_content" {
                 view.sizeToFit()
+                return
             } else if let width = parseDp(widthStr) {
-                view.frame.size.width = width * scale
+                newSize.width = width
             }
         }
-
         if let heightStr = heightDp {
             if heightStr == "wrap_content" {
                 view.sizeToFit()
+                return
             } else if let height = parseDp(heightStr) {
-                view.frame.size.height = height * scale
+                newSize.height = height
             }
         }
+        view.frame.size = newSize
+        view.superview?.setNeedsLayout()
+        view.superview?.layoutIfNeeded()
     }
     
     static func enableFrameMode(_ view: UIView) -> Bool {
