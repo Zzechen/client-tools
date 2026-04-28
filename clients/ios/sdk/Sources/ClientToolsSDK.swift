@@ -9,14 +9,15 @@ public class ClientToolsSDK {
     private var _overlayManager: OverlayManager?
     private var isRunning = false
 
+    public let inspectorViewModel = InspectorViewModel()
+    public let imageFileStore = ImageFileStore()
+
     private init() {}
 
-    /// 启动 SDK（DEBUG 模式下生效，生产环境自动跳过）
     public func start(port: Int = 8080) {
         #if DEBUG
         guard !isRunning else { return }
         isRunning = true
-
         startHttpServer(port: port)
         startPageTracking()
         startOverlayManager()
@@ -35,7 +36,7 @@ public class ClientToolsSDK {
     }
 
     private func startOverlayManager() {
-        _overlayManager = OverlayManager()
+        _overlayManager = OverlayManager(viewModel: inspectorViewModel)
     }
 
     public func getCurrentPage() -> (pageName: String, timestamp: String) {
