@@ -9,6 +9,7 @@ public class OverlayManager {
     private var overlayWindow: UIWindow?
     private var webView: WKWebView?
     private var imageView: UIImageView?
+    private var inspectorPanel: InspectorPanel?
 
     public let fileStore = HtmlFileStore()
 
@@ -114,6 +115,15 @@ public class OverlayManager {
         iv.isHidden = true
         vc.view.addSubview(iv)
         imageView = iv
+
+        let panel = InspectorPanel(
+            viewModel: viewModel,
+            imageFileStore: ClientToolsSDK.shared.imageFileStore,
+            htmlFileStore: fileStore,
+            port: ClientToolsSDK.shared.port
+        )
+        panel.attach(to: vc.view)
+        inspectorPanel = panel
     }
 
     private func updateFrame(of view: UIView, offsetX: Float, offsetY: Float) {
