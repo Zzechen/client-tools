@@ -29,10 +29,10 @@ public class OverlayManager {
     }
 
     private func setupObservers() {
-        viewModel.onWebViewStateChanged = { [weak self] state in
+        viewModel.addWebViewStateObserver { [weak self] state in
             DispatchQueue.main.async { self?.applyWebViewState(state) }
         }
-        viewModel.onImageStateChanged = { [weak self] state in
+        viewModel.addImageStateObserver { [weak self] state in
             DispatchQueue.main.async { self?.applyImageState(state) }
         }
     }
@@ -108,7 +108,6 @@ public class OverlayManager {
         vc.view.backgroundColor = .clear
         window.rootViewController = vc
         window.isHidden = false
-        window.makeKeyAndVisible()
         overlayWindow = window
 
         let wv = WKWebView(frame: .zero)
