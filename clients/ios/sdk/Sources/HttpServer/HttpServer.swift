@@ -10,6 +10,10 @@ class HttpServer {
     private let queue = DispatchQueue(label: "HttpServer", qos: .userInitiated)
     private let viewQueryService = ViewQueryService()
     private let viewModifyService = ViewModifyService()
+    private lazy var inspectorHandler = InspectorApiHandler(
+        viewModel: ClientToolsSDK.shared.inspectorViewModel,
+        imageFileStore: ClientToolsSDK.shared.imageFileStore
+    )
     private static let sdkVersion: Int32 = 1
 
     init(port: Int = 8080) {
@@ -111,6 +115,14 @@ class HttpServer {
         connection.send(content: full, completion: .contentProcessed { _ in connection.cancel() })
     }
 
+    private func sendJson(_ json: String, statusCode: Int = 200, connection: NWConnection) {
+        let body = json.data(using: .utf8) ?? Data()
+        let header = "HTTP/1.1 \(statusCode) OK\r\nContent-Type: application/json\r\nContent-Length: \(body.count)\r\n\r\n"
+        var full = header.data(using: .utf8)!
+        full.append(body)
+        connection.send(content: full, completion: .contentProcessed { _ in connection.cancel() })
+    }
+
     private func sendError(code: Int32, message: String, httpCode: Int = 400, connection: NWConnection) {
         var resp = Clienttools_SimpleResponse()
         resp.meta = errMeta(code: code, message: message)
@@ -159,6 +171,21 @@ class HttpServer {
             handleWebviewHide(connection: connection)
         case ("POST", "/webview/adjust"):
             handleWebviewAdjust(bodyData, connection: connection)
+        case ("POST", "/inspector/push-image"):
+            let (code, json) = inspectorHandler.handlePushImage(bodyData)
+            sendJson(json, statusCode: code, connection: connection)
+        case ("POST", "/inspector/show-image"):
+            let (code, json) = inspectorHandler.handleShowImage(bodyData)
+            sendJson(json, statusCode: code, connection: connection)
+        case ("GET", "/inspector/images"):
+            let (code, json) = inspectorHandler.handleGetImages()
+            sendJson(json, statusCode: code, connection: connection)
+        case ("POST", "/inspector/hide"):
+            let (code, json) = inspectorHandler.handleHide(bodyData)
+            sendJson(json, statusCode: code, connection: connection)
+        case ("POST", "/inspector/adjust"):
+            let (code, json) = inspectorHandler.handleAdjust(bodyData)
+            sendJson(json, statusCode: code, connection: connection)
         default:
             if method == "GET" && path.hasPrefix("/api/capture/") {
                 let nodeId = String(path.dropFirst("/api/capture/".count))
