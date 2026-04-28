@@ -16,6 +16,8 @@ public class OverlayManager {
     public init(viewModel: InspectorViewModel) {
         self.viewModel = viewModel
         setupObservers()
+        // 启动时主动创建 UIWindow，确保 InspectorPanel 悬浮按钮立即可见
+        DispatchQueue.main.async { self.ensureWindow() }
     }
 
     private func setupObservers() {
@@ -97,7 +99,7 @@ public class OverlayManager {
         let vc = UIViewController()
         vc.view.backgroundColor = .clear
         window.rootViewController = vc
-        window.isHidden = true
+        window.isHidden = false
         window.makeKeyAndVisible()
         overlayWindow = window
 
