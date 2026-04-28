@@ -80,9 +80,8 @@ public class OverlayManager {
     }
 
     private func hideWindowIfBothHidden() {
-        let wvHidden = webView?.isHidden ?? true
-        let ivHidden = imageView?.isHidden ?? true
-        overlayWindow?.isHidden = wvHidden && ivHidden
+        // InspectorPanel 的悬浮按钮需要始终可见，不随覆盖层隐藏
+        overlayWindow?.isHidden = false
     }
 
     // MARK: - UIWindow 管理
