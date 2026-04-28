@@ -47,15 +47,16 @@ public struct ImageState {
     }
 }
 
-public enum ActiveTab { case webview, image }
+public enum ActiveTab { case webview, image, status }
 
 public class InspectorViewModel {
     public var webViewState: WebViewState = WebViewState() { didSet { onWebViewStateChanged?(webViewState) } }
     public var imageState: ImageState = ImageState()       { didSet { onImageStateChanged?(imageState) } }
-    public var activeTab: ActiveTab = .webview
+    public var activeTab: ActiveTab = .webview             { didSet { onActiveTabChanged?(activeTab) } }
 
     public var onWebViewStateChanged: ((WebViewState) -> Void)?
     public var onImageStateChanged: ((ImageState) -> Void)?
+    public var onActiveTabChanged: ((ActiveTab) -> Void)?
 
     public init() {}
 }
