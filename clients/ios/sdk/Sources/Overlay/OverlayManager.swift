@@ -5,73 +5,122 @@ public class OverlayManager {
 
     public static let overlayTag = 998
 
-    private var webView: WKWebView?
+    private var viewModel: InspectorViewModel
     private var overlayWindow: UIWindow?
-    private var currentOpacity: Float = 0.5
-    private var offsetX: CGFloat = 0
-    private var offsetY: CGFloat = 0
+    private var webView: WKWebView?
+    private var imageView: UIImageView?
+
     public let fileStore = HtmlFileStore()
 
-    public init() {}
+    public init(viewModel: InspectorViewModel) {
+        self.viewModel = viewModel
+        setupObservers()
+    }
+
+    private func setupObservers() {
+        viewModel.onWebViewStateChanged = { [weak self] state in
+            DispatchQueue.main.async { self?.applyWebViewState(state) }
+        }
+        viewModel.onImageStateChanged = { [weak self] state in
+            DispatchQueue.main.async { self?.applyImageState(state) }
+        }
+    }
+
+    // MARK: - 公开方法（向后兼容）
 
     public func showFile(at fileURL: URL, opacity: Float) {
-        DispatchQueue.main.async { [weak self] in
-            guard let self = self else { return }
-            self.ensureWebView(opacity: opacity)
-            self.webView?.loadFileURL(fileURL, allowingReadAccessTo: fileURL.deletingLastPathComponent())
-        }
+        let info = FileInfo(tag: "", timestamp: "", filePath: fileURL.path)
+        viewModel.webViewState = WebViewState(
+            currentFile: info,
+            isVisible: true,
+            offsetX: viewModel.webViewState.offsetX,
+            offsetY: viewModel.webViewState.offsetY,
+            opacity: opacity
+        )
     }
 
     public func hide() {
-        DispatchQueue.main.async { [weak self] in
-            self?.overlayWindow?.isHidden = true
-            self?.overlayWindow = nil
-            self?.webView = nil
-        }
+        viewModel.webViewState.isVisible = false
     }
 
     public func adjust(offsetX: Float?, offsetY: Float?, opacity: Float?) {
-        DispatchQueue.main.async { [weak self] in
-            guard let self = self else { return }
-            if let ox = offsetX { self.offsetX = CGFloat(ox) }
-            if let oy = offsetY { self.offsetY = CGFloat(oy) }
-            if let op = opacity {
-                self.currentOpacity = op
-                self.webView?.alpha = CGFloat(op)
-            }
-            self.updateWebViewFrame()
-        }
+        var s = viewModel.webViewState
+        if let ox = offsetX { s.offsetX = ox }
+        if let oy = offsetY { s.offsetY = oy }
+        if let op = opacity { s.opacity = min(max(op, 0), 1) }
+        viewModel.webViewState = s
     }
 
-    private func ensureWebView(opacity: Float) {
-        if webView == nil {
-            guard let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene else { return }
-            overlayWindow = UIWindow(windowScene: windowScene)
-            overlayWindow?.windowLevel = .alert - 1
-            overlayWindow?.tag = OverlayManager.overlayTag
+    // MARK: - 状态应用
 
-            let wv = WKWebView(frame: .zero)
-            wv.isOpaque = false
-            wv.backgroundColor = .clear
-            wv.scrollView.isScrollEnabled = false
-            webView = wv
-
-            let vc = UIViewController()
-            vc.view.backgroundColor = .clear
-            vc.view.addSubview(wv)
-            overlayWindow?.rootViewController = vc
-            overlayWindow?.makeKeyAndVisible()
+    private func applyWebViewState(_ state: WebViewState) {
+        ensureWindow()
+        guard let wv = webView else { return }
+        wv.isHidden = !state.isVisible
+        wv.alpha = CGFloat(state.opacity)
+        updateFrame(of: wv, offsetX: state.offsetX, offsetY: state.offsetY)
+        if state.isVisible, let filePath = state.currentFile?.filePath, !filePath.isEmpty {
+            let fileURL = URL(fileURLWithPath: filePath)
+            wv.loadFileURL(fileURL, allowingReadAccessTo: fileURL.deletingLastPathComponent())
         }
-        currentOpacity = opacity
-        webView?.alpha = CGFloat(opacity)
-        updateWebViewFrame()
+        hideWindowIfBothHidden()
     }
 
-    private func updateWebViewFrame() {
+    private func applyImageState(_ state: ImageState) {
+        ensureWindow()
+        guard let iv = imageView else { return }
+        iv.isHidden = !state.isVisible
+        iv.alpha = CGFloat(state.opacity)
+        updateFrame(of: iv, offsetX: state.offsetX, offsetY: state.offsetY)
+        if state.isVisible, let filePath = state.currentImage?.filePath {
+            iv.image = UIImage(contentsOfFile: filePath)
+        }
+        hideWindowIfBothHidden()
+    }
+
+    private func hideWindowIfBothHidden() {
+        let wvHidden = webView?.isHidden ?? true
+        let ivHidden = imageView?.isHidden ?? true
+        overlayWindow?.isHidden = wvHidden && ivHidden
+    }
+
+    // MARK: - UIWindow 管理
+
+    private func ensureWindow() {
+        guard overlayWindow == nil else { return }
+        guard let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene else { return }
+
+        let window = UIWindow(windowScene: windowScene)
+        window.windowLevel = .alert - 1
+        window.tag = OverlayManager.overlayTag
+
+        let vc = UIViewController()
+        vc.view.backgroundColor = .clear
+        window.rootViewController = vc
+        window.isHidden = true
+        window.makeKeyAndVisible()
+        overlayWindow = window
+
+        let wv = WKWebView(frame: .zero)
+        wv.isOpaque = false
+        wv.backgroundColor = .clear
+        wv.scrollView.isScrollEnabled = false
+        wv.isHidden = true
+        vc.view.addSubview(wv)
+        webView = wv
+
+        let iv = UIImageView(frame: .zero)
+        iv.contentMode = .scaleAspectFit
+        iv.isHidden = true
+        vc.view.addSubview(iv)
+        imageView = iv
+    }
+
+    private func updateFrame(of view: UIView, offsetX: Float, offsetY: Float) {
         guard let screen = overlayWindow?.screen else { return }
-        webView?.frame = CGRect(
-            x: offsetX,
-            y: offsetY,
+        view.frame = CGRect(
+            x: CGFloat(offsetX),
+            y: CGFloat(offsetY),
             width: screen.bounds.width,
             height: screen.bounds.height
         )

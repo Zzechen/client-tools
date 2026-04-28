@@ -1,6 +1,6 @@
 import Foundation
 
-class ImageFileStore {
+public class ImageFileStore {
 
     private let fileManager = FileManager.default
     private lazy var baseDir: URL = {
@@ -8,11 +8,11 @@ class ImageFileStore {
         return docs.appendingPathComponent("client_tools/images")
     }()
 
-    init() {
+    public init() {
         try? fileManager.createDirectory(at: baseDir, withIntermediateDirectories: true)
     }
 
-    func saveImage(tag: String, timestamp: String, bytes: Data, ext: String) -> ImageInfo? {
+    public func saveImage(tag: String, timestamp: String, bytes: Data, ext: String) -> ImageInfo? {
         let tagDir = baseDir.appendingPathComponent(tag)
         do {
             try fileManager.createDirectory(at: tagDir, withIntermediateDirectories: true)
@@ -25,7 +25,7 @@ class ImageFileStore {
         }
     }
 
-    func getAllImages() -> [ImageInfo] {
+    public func getAllImages() -> [ImageInfo] {
         var result: [ImageInfo] = []
         guard let tagDirs = try? fileManager.contentsOfDirectory(at: baseDir, includingPropertiesForKeys: [.isDirectoryKey]) else { return [] }
         for tagDir in tagDirs {
@@ -41,7 +41,7 @@ class ImageFileStore {
         return result.sorted { $0.timestamp > $1.timestamp }
     }
 
-    func getFilePath(tag: String, timestamp: String) -> String? {
+    public func getFilePath(tag: String, timestamp: String) -> String? {
         let tagDir = baseDir.appendingPathComponent(tag)
         guard let files = try? fileManager.contentsOfDirectory(at: tagDir, includingPropertiesForKeys: nil) else { return nil }
         return files.first { f in
@@ -50,7 +50,7 @@ class ImageFileStore {
         }?.path
     }
 
-    func deleteAll() -> Bool {
+    public func deleteAll() -> Bool {
         do {
             try fileManager.removeItem(at: baseDir)
             try fileManager.createDirectory(at: baseDir, withIntermediateDirectories: true)
@@ -61,7 +61,7 @@ class ImageFileStore {
         }
     }
 
-    func generateTimestamp() -> String {
+    public func generateTimestamp() -> String {
         let formatter = DateFormatter()
         formatter.dateFormat = "MMdd-HHmm"
         return formatter.string(from: Date())

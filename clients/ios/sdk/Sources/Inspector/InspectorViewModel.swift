@@ -1,41 +1,61 @@
 import Foundation
 
-struct FileInfo {
-    let tag: String
-    let timestamp: String
-    let filePath: String
+public struct FileInfo {
+    public let tag: String
+    public let timestamp: String
+    public let filePath: String
+
+    public init(tag: String, timestamp: String, filePath: String) {
+        self.tag = tag; self.timestamp = timestamp; self.filePath = filePath
+    }
 }
 
-struct ImageInfo {
-    let tag: String
-    let timestamp: String
-    let filePath: String
-    let ext: String
+public struct ImageInfo {
+    public let tag: String
+    public let timestamp: String
+    public let filePath: String
+    public let ext: String
+
+    public init(tag: String, timestamp: String, filePath: String, ext: String) {
+        self.tag = tag; self.timestamp = timestamp; self.filePath = filePath; self.ext = ext
+    }
 }
 
-struct WebViewState {
-    var currentFile: FileInfo? = nil
-    var isVisible: Bool = false
-    var offsetX: Float = 0
-    var offsetY: Float = 0
-    var opacity: Float = 0.5
+public struct WebViewState {
+    public var currentFile: FileInfo? = nil
+    public var isVisible: Bool = false
+    public var offsetX: Float = 0
+    public var offsetY: Float = 0
+    public var opacity: Float = 0.5
+
+    public init(currentFile: FileInfo? = nil, isVisible: Bool = false, offsetX: Float = 0, offsetY: Float = 0, opacity: Float = 0.5) {
+        self.currentFile = currentFile; self.isVisible = isVisible
+        self.offsetX = offsetX; self.offsetY = offsetY; self.opacity = opacity
+    }
 }
 
-struct ImageState {
-    var currentImage: ImageInfo? = nil
-    var isVisible: Bool = false
-    var offsetX: Float = 0
-    var offsetY: Float = 0
-    var opacity: Float = 0.5
+public struct ImageState {
+    public var currentImage: ImageInfo? = nil
+    public var isVisible: Bool = false
+    public var offsetX: Float = 0
+    public var offsetY: Float = 0
+    public var opacity: Float = 0.5
+
+    public init(currentImage: ImageInfo? = nil, isVisible: Bool = false, offsetX: Float = 0, offsetY: Float = 0, opacity: Float = 0.5) {
+        self.currentImage = currentImage; self.isVisible = isVisible
+        self.offsetX = offsetX; self.offsetY = offsetY; self.opacity = opacity
+    }
 }
 
-enum ActiveTab { case webview, image }
+public enum ActiveTab { case webview, image }
 
-class InspectorViewModel {
-    var webViewState: WebViewState = WebViewState() { didSet { onWebViewStateChanged?(webViewState) } }
-    var imageState: ImageState = ImageState()       { didSet { onImageStateChanged?(imageState) } }
-    var activeTab: ActiveTab = .webview
+public class InspectorViewModel {
+    public var webViewState: WebViewState = WebViewState() { didSet { onWebViewStateChanged?(webViewState) } }
+    public var imageState: ImageState = ImageState()       { didSet { onImageStateChanged?(imageState) } }
+    public var activeTab: ActiveTab = .webview
 
-    var onWebViewStateChanged: ((WebViewState) -> Void)?
-    var onImageStateChanged: ((ImageState) -> Void)?
+    public var onWebViewStateChanged: ((WebViewState) -> Void)?
+    public var onImageStateChanged: ((ImageState) -> Void)?
+
+    public init() {}
 }
