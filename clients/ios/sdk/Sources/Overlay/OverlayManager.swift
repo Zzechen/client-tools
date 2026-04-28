@@ -1,6 +1,14 @@
 import UIKit
 import WebKit
 
+/// 触摸透传：只消费命中可见子视图的触摸，其余透传给下层窗口
+private class PassthroughWindow: UIWindow {
+    override func hitTest(_ point: CGPoint, with event: UIEvent?) -> UIView? {
+        let hit = super.hitTest(point, with: event)
+        return hit == rootViewController?.view ? nil : hit
+    }
+}
+
 public class OverlayManager {
 
     public static let overlayTag = 998
@@ -92,7 +100,7 @@ public class OverlayManager {
         guard overlayWindow == nil else { return }
         guard let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene else { return }
 
-        let window = UIWindow(windowScene: windowScene)
+        let window = PassthroughWindow(windowScene: windowScene)
         window.windowLevel = .alert - 1
         window.tag = OverlayManager.overlayTag
 
