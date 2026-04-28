@@ -11,6 +11,7 @@ public class ClientToolsSDK {
 
     public let inspectorViewModel = InspectorViewModel()
     public let imageFileStore = ImageFileStore()
+    public private(set) var port: Int = 8080
 
     private init() {}
 
@@ -18,6 +19,7 @@ public class ClientToolsSDK {
         #if DEBUG
         guard !isRunning else { return }
         isRunning = true
+        self.port = port
         startHttpServer(port: port)
         startPageTracking()
         startOverlayManager()
