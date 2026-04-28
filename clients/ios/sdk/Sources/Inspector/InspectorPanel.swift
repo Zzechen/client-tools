@@ -43,20 +43,14 @@ class InspectorPanel {
             floatBtn.heightAnchor.constraint(equalToConstant: 40),
         ])
 
+        panelView.translatesAutoresizingMaskIntoConstraints = false
         panelView.isHidden = true
         view.addSubview(panelView)
-        // 用 AutoLayout 算出合适高度后转 frame 模式，拖动后不被 layout pass 重置
-        panelView.translatesAutoresizingMaskIntoConstraints = false
-        let widthC = panelView.widthAnchor.constraint(equalToConstant: 288)
-        let centerXC = panelView.centerXAnchor.constraint(equalTo: view.centerXAnchor)
-        let centerYC = panelView.centerYAnchor.constraint(equalTo: view.centerYAnchor)
-        NSLayoutConstraint.activate([widthC, centerXC, centerYC])
-        view.layoutIfNeeded()
-        // 算好位置后切换为 frame 模式，后续拖动不受约束干扰
-        let f = panelView.frame
-        NSLayoutConstraint.deactivate([widthC, centerXC, centerYC])
-        panelView.translatesAutoresizingMaskIntoConstraints = true
-        panelView.frame = f
+        NSLayoutConstraint.activate([
+            panelView.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+            panelView.centerYAnchor.constraint(equalTo: view.centerYAnchor),
+            panelView.widthAnchor.constraint(equalToConstant: 288),
+        ])
 
         applyTab(viewModel.activeTab)
         updateStatusSection()
@@ -232,13 +226,13 @@ class InspectorPanel {
     // MARK: - ViewModel 观察
 
     private func setupObservers() {
-        viewModel.addWebViewStateObserver { [weak self] state in
+        viewModel.onWebViewStateChanged = { [weak self] state in
             DispatchQueue.main.async { self?.syncWebViewUI(state) }
         }
-        viewModel.addImageStateObserver { [weak self] state in
+        viewModel.onImageStateChanged = { [weak self] state in
             DispatchQueue.main.async { self?.syncImageUI(state) }
         }
-        viewModel.addActiveTabObserver { [weak self] tab in
+        viewModel.onActiveTabChanged = { [weak self] tab in
             DispatchQueue.main.async { self?.applyTab(tab) }
         }
     }
