@@ -22,7 +22,13 @@ class ViewControllerSwizzling {
 extension UIViewController {
     @objc func ct_viewDidAppear(_ animated: Bool) {
         self.ct_viewDidAppear(animated)
-        let className = String(describing: type(of: self))
-        ClientToolsSDK.shared.recordPageChange(className)
+        let cls = type(of: self)
+        let name = String(describing: cls)
+        // 跳过系统 VC：UIKit 内部类名以 UI/NS/_UI 开头，或非 app bundle 中的类
+        guard !name.hasPrefix("UI"),
+              !name.hasPrefix("NS"),
+              !name.hasPrefix("_"),
+              Bundle(for: cls) == Bundle.main else { return }
+        ClientToolsSDK.shared.recordPageChange(name)
     }
 }
