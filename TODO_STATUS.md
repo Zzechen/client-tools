@@ -39,9 +39,10 @@
 | 优先级 | 任务 | 说明 |
 |--------|------|------|
 | ~~P0~~ | ~~iOS SDK 补齐：View 截图~~ | ✅ 已完成，`GET /api/capture/{id}`，`layer.render` 截图 |
+| ~~P0~~ | ~~iOS SDK 补齐：Inspector 图片覆盖层~~ | ✅ 已完成，push-image / show-image / images / hide / adjust + InspectorPanel |
+| P0 | MCP 适配 iOS 连接 | 当前 MCP 走 `adb forward` + `127.0.0.1`，仅适用 Android；iOS 模拟器需直连 `localhost`，iOS 真机需 `iproxy`；需在 MCP 中增加 iOS 连接模式 |
 | P0 | iOS SDK 补齐：WebView 文件列表 | `GET /webview/files` |
 | P0 | iOS SDK 补齐：DOM 查询 | `GET /dom/all` + `GET /dom/{id}`，WKWebView JavaScriptBridge |
-| P0 | iOS SDK 补齐：Inspector 图片覆盖层 | push-image / show-image / images / hide / adjust，含 ImageFileStore |
 | ~~P0~~ | ~~iOS Demo 重构：删除多余页面~~ | ✅ 已完成 |
 | P1 | TODO #7：modify_view支持wrap_content | SDK侧改造 |
 | P1 | TODO #8：TextView行高对齐 | implement阶段自动计算lineHeight |
