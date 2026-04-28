@@ -10,34 +10,29 @@ class FrameModifier {
     static func modifyFrame(_ view: UIView, widthDp: String?, heightDp: String?) {
         guard widthDp != nil || heightDp != nil else { return }
 
+        // 先记录当前屏幕坐标下的 frame（约束禁掉前）
+        let currentFrame = view.superview.map { view.convert(view.bounds, to: $0) } ?? view.frame
+
         // 判断是否有约束
         let hasConstraints = !view.constraints.isEmpty ||
             (view.superview?.constraints.contains(where: { $0.firstItem === view }) ?? false)
 
         if hasConstraints && !isInFrameMode(view) {
             enableFrameMode(view)
+            // 约束禁掉后立即把 frame 恢复到禁约束前的位置/尺寸，防止 layout pass 把它归零
+            view.frame = currentFrame
         }
 
         var newSize = view.frame.size
         if let widthStr = widthDp {
-            if widthStr == "wrap_content" {
-                view.sizeToFit()
-                return
-            } else if let width = parseDp(widthStr) {
-                newSize.width = width
-            }
+            if widthStr == "wrap_content" { view.sizeToFit(); return }
+            if let width = parseDp(widthStr) { newSize.width = width }
         }
         if let heightStr = heightDp {
-            if heightStr == "wrap_content" {
-                view.sizeToFit()
-                return
-            } else if let height = parseDp(heightStr) {
-                newSize.height = height
-            }
+            if heightStr == "wrap_content" { view.sizeToFit(); return }
+            if let height = parseDp(heightStr) { newSize.height = height }
         }
         view.frame.size = newSize
-        view.superview?.setNeedsLayout()
-        view.superview?.layoutIfNeeded()
     }
     
     static func enableFrameMode(_ view: UIView) -> Bool {
