@@ -1,6 +1,7 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
-import { sdkGetRaw } from "../sdk-client.js";
+import { sdkGet } from "../sdk-client.js";
+import { DomAllResponseSchema, DomNodeResponseSchema } from "../generated/inspector_pb.js";
 
 function errResult(e: unknown) {
   return {
@@ -16,8 +17,8 @@ export function registerDomTools(server: McpServer): void {
     {},
     async () => {
       try {
-        const result = await sdkGetRaw("/dom/all");
-        return { content: [{ type: "text" as const, text: JSON.stringify(result) }] };
+        const res = await sdkGet("/dom/all", DomAllResponseSchema);
+        return { content: [{ type: "text" as const, text: JSON.stringify(res.data?.nodes) }] };
       } catch (e) { return errResult(e); }
     }
   );
@@ -28,8 +29,8 @@ export function registerDomTools(server: McpServer): void {
     { id: z.string().describe("DOM 元素的 id 属性值") },
     async ({ id }) => {
       try {
-        const result = await sdkGetRaw(`/dom/${encodeURIComponent(id)}`);
-        return { content: [{ type: "text" as const, text: JSON.stringify(result) }] };
+        const res = await sdkGet(`/dom/${encodeURIComponent(id)}`, DomNodeResponseSchema);
+        return { content: [{ type: "text" as const, text: JSON.stringify(res.data) }] };
       } catch (e) { return errResult(e); }
     }
   );

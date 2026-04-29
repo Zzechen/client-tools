@@ -2,7 +2,15 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
 import { readFileSync } from "fs";
 import { extname } from "path";
-import { sdkPostRaw } from "../sdk-client.js";
+import { create } from "@bufbuild/protobuf";
+import { sdkGet, sdkPost } from "../sdk-client.js";
+import {
+  PushImageRequestSchema,
+  PushImageResponseSchema,
+  ShowImageRequestSchema,
+  ShowImageResponseSchema,
+  ImageListResponseSchema,
+} from "../generated/inspector_pb.js";
 
 function errResult(e: unknown) {
   return {
@@ -24,17 +32,21 @@ export function registerImageTools(server: McpServer): void {
     },
     async ({ tag, file, image, ext, timestamp }) => {
       try {
-        let imageData = image;
+        let imageBytes: Uint8Array;
         let imageExt = ext ?? "png";
         if (file) {
-          imageData = readFileSync(file).toString("base64");
+          imageBytes = new Uint8Array(readFileSync(file));
           const e = extname(file).slice(1).toLowerCase();
-          if (e === "jpg" || e === "jpeg") imageExt = "jpg";
-          else imageExt = "png";
+          imageExt = (e === "jpg" || e === "jpeg") ? "jpg" : "png";
+        } else if (image) {
+          imageBytes = Uint8Array.from(Buffer.from(image, "base64"));
+        } else {
+          throw new Error("需要提供 file 或 image 参数");
         }
-        if (!imageData) throw new Error("需要提供 file 或 image 参数");
-        const result = await sdkPostRaw("/inspector/push-image", { tag, image: imageData, ext: imageExt, timestamp });
-        return { content: [{ type: "text" as const, text: JSON.stringify(result) }] };
+        const ts = timestamp ?? new Date().toISOString().slice(0, 16).replace(/[-:T]/g, "").slice(2, 12);
+        const req = create(PushImageRequestSchema, { tag, timestamp: ts, image: imageBytes, ext: imageExt });
+        const res = await sdkPost("/inspector/push-image", PushImageRequestSchema, req, PushImageResponseSchema);
+        return { content: [{ type: "text" as const, text: JSON.stringify({ tag: res.data?.tag, filePath: res.data?.filePath }) }] };
       } catch (e) { return errResult(e); }
     }
   );
@@ -48,8 +60,21 @@ export function registerImageTools(server: McpServer): void {
     },
     async ({ tag, timestamp }) => {
       try {
-        const result = await sdkPostRaw("/inspector/show-image", { tag, timestamp });
-        return { content: [{ type: "text" as const, text: JSON.stringify(result) }] };
+        const req = create(ShowImageRequestSchema, { tag, timestamp });
+        const res = await sdkPost("/inspector/show-image", ShowImageRequestSchema, req, ShowImageResponseSchema);
+        return { content: [{ type: "text" as const, text: JSON.stringify({ tag: res.data?.tag, opacity: res.data?.opacity }) }] };
+      } catch (e) { return errResult(e); }
+    }
+  );
+
+  server.tool(
+    "list_images",
+    "返回设备上已保存的图片列表",
+    {},
+    async () => {
+      try {
+        const res = await sdkGet("/inspector/images", ImageListResponseSchema);
+        return { content: [{ type: "text" as const, text: JSON.stringify(res.data?.images) }] };
       } catch (e) { return errResult(e); }
     }
   );
