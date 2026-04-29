@@ -55,12 +55,97 @@ public class OverlayManager {
         viewModel.webViewState.isVisible = false
     }
 
+    public var currentWebViewState: WebViewState { viewModel.webViewState }
+
+    public func applyState(_ state: WebViewState) {
+        viewModel.webViewState = state
+    }
+
     public func adjust(offsetX: Float?, offsetY: Float?, opacity: Float?) {
         var s = viewModel.webViewState
         if let ox = offsetX { s.offsetX = ox }
         if let oy = offsetY { s.offsetY = oy }
         if let op = opacity { s.opacity = min(max(op, 0), 1) }
         viewModel.webViewState = s
+    }
+
+    // MARK: - DOM 查询
+
+    /// 返回 WebView 中所有有 id 的 DOM 节点，坐标已换算为屏幕绝对坐标（pt）
+    public func queryDomAll(completion: @escaping (String) -> Void) {
+        queryDom(js: domAllJS(), completion: completion)
+    }
+
+    /// 返回指定 id 的 DOM 节点，坐标已换算为屏幕绝对坐标（pt）
+    public func queryDomById(_ id: String, completion: @escaping (String) -> Void) {
+        let escaped = id.replacingOccurrences(of: "\"", with: "\\\"")
+        queryDom(js: domByIdJS(escaped), completion: completion)
+    }
+
+    private func queryDom(js: String, completion: @escaping (String) -> Void) {
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self, let wv = self.webView else {
+                completion("{\"error\":\"WebView not ready\"}")
+                return
+            }
+            // wv.convert(.zero, to:nil) 返回 WebView 左上角的屏幕绝对坐标（含 transform 偏移）
+            // getBoundingClientRect 是 viewport 内坐标，两者相加即元素的屏幕坐标
+            let screenOrigin = wv.convert(CGPoint.zero, to: nil)
+            let originX = screenOrigin.x
+            // wv.safeAreaInsets.top 补偿状态栏高度：WebView 内容实际从 safeArea 下方开始渲染，
+            // 但 wv.convert(.zero, to:nil) 返回的是 frame 原点（不含 safeArea 偏移）
+            let originY = screenOrigin.y
+            print("[CT-DEBUG] DOM origin: wv.frame=\(wv.frame) safeAreaInsets.top=\(wv.safeAreaInsets.top) wv.convert(.zero,nil)=\(screenOrigin) originY=\(originY)")
+            let injected = "(\(js))(\(originX), \(originY))"
+            wv.evaluateJavaScript(injected) { result, error in
+                if let json = result as? String {
+                    completion(json)
+                } else {
+                    completion("{\"error\":\"\(error?.localizedDescription ?? "unknown")\"}")
+                }
+            }
+        }
+    }
+
+    private func domAllJS() -> String {
+        return """
+        function(originX, originY) {
+            var nodes = [];
+            document.querySelectorAll('[id]').forEach(function(el) {
+                var r = el.getBoundingClientRect();
+                if (r.width === 0 && r.height === 0) return;
+                nodes.push({
+                    id: el.id,
+                    tag: el.tagName.toLowerCase(),
+                    text: (el.innerText || '').trim().substring(0, 100),
+                    x: Math.round((originX + r.left) * 100) / 100,
+                    y: Math.round((originY + r.top) * 100) / 100,
+                    width: Math.round(r.width * 100) / 100,
+                    height: Math.round(r.height * 100) / 100
+                });
+            });
+            return JSON.stringify(nodes);
+        }
+        """
+    }
+
+    private func domByIdJS(_ id: String) -> String {
+        return """
+        function(originX, originY) {
+            var el = document.getElementById("\(id)");
+            if (!el) return JSON.stringify(null);
+            var r = el.getBoundingClientRect();
+            return JSON.stringify({
+                id: el.id,
+                tag: el.tagName.toLowerCase(),
+                text: (el.innerText || '').trim().substring(0, 100),
+                x: Math.round((originX + r.left) * 100) / 100,
+                y: Math.round((originY + r.top) * 100) / 100,
+                width: Math.round(r.width * 100) / 100,
+                height: Math.round(r.height * 100) / 100
+            });
+        }
+        """
     }
 
     // MARK: - 状态应用
@@ -119,6 +204,7 @@ public class OverlayManager {
         wv.isOpaque = false
         wv.backgroundColor = .clear
         wv.scrollView.isScrollEnabled = false
+        wv.scrollView.contentInsetAdjustmentBehavior = .never
         wv.isHidden = true
         vc.view.addSubview(wv)
         webView = wv

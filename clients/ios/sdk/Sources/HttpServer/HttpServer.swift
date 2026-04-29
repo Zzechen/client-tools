@@ -157,6 +157,8 @@ class HttpServer {
         let path = parts[1]
 
         switch (method, path) {
+        case ("GET", "/dom/all"):
+            handleDomAll(connection: connection)
         case ("GET", "/api/page/current"):
             handlePageCurrent(connection: connection)
         case ("GET", "/api/nodes/all"):
@@ -197,6 +199,9 @@ class HttpServer {
             } else if method == "GET" && path.hasPrefix("/api/nodes/") {
                 let nodeId = String(path.dropFirst("/api/nodes/".count))
                 handleNodeById(nodeId, connection: connection)
+            } else if method == "GET" && path.hasPrefix("/dom/") {
+                let domId = String(path.dropFirst("/dom/".count))
+                handleDomById(domId, connection: connection)
             } else {
                 sendError(code: 404, message: "Not found", httpCode: 404, connection: connection)
             }
@@ -347,9 +352,32 @@ class HttpServer {
               let overlayManager = ClientToolsSDK.shared.overlayManager() else {
             sendError(code: 400, message: "Invalid request", connection: connection); return
         }
-        overlayManager.adjust(offsetX: req.offsetX, offsetY: req.offsetY, opacity: req.opacity)
+        // offsetX/Y 是增量，opacity 是绝对值（0 表示未传，不更新）
+        var s = overlayManager.currentWebViewState
+        s.offsetX += req.offsetX
+        s.offsetY += req.offsetY
+        if req.opacity > 0 { s.opacity = min(max(req.opacity, 0), 1) }
+        overlayManager.applyState(s)
         var resp = Clienttools_SimpleResponse()
         resp.meta = okMeta()
         sendProto(resp, connection: connection)
+    }
+
+    private func handleDomAll(connection: NWConnection) {
+        guard let overlayManager = ClientToolsSDK.shared.overlayManager() else {
+            sendJson("{\"error\":\"OverlayManager not ready\"}", statusCode: 503, connection: connection); return
+        }
+        overlayManager.queryDomAll { json in
+            self.sendJson(json, connection: connection)
+        }
+    }
+
+    private func handleDomById(_ id: String, connection: NWConnection) {
+        guard let overlayManager = ClientToolsSDK.shared.overlayManager() else {
+            sendJson("{\"error\":\"OverlayManager not ready\"}", statusCode: 503, connection: connection); return
+        }
+        overlayManager.queryDomById(id) { json in
+            self.sendJson(json, connection: connection)
+        }
     }
 }

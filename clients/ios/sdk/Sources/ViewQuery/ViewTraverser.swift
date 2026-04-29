@@ -12,6 +12,9 @@ class ViewTraverser {
             let viewId = ViewHashGenerator.generateId(for: subview, path: childPath)
 
             let origin = subview.convert(CGPoint.zero, to: nil)
+            if viewId == "login_btn_close" {
+                print("[CT-DEBUG] View login_btn_close: frame=\(subview.frame) transform=\(subview.transform) convert(.zero,nil)=\(origin) superview.frame=\(subview.superview?.frame ?? .zero)")
+            }
             let visibilityCode: Int = subview.isHidden ? 8 : (subview.alpha == 0 ? 4 : 0)
 
             let node = ViewNode(
