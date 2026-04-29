@@ -3,8 +3,13 @@ package com.clienttools.sdk.http
 import android.content.Context
 import android.util.Log
 import com.clienttools.sdk.ClientToolsSDK
+import com.clienttools.sdk.inspector.ActiveTab
 import com.clienttools.sdk.inspector.FileInfo
+import com.clienttools.sdk.inspector.ImageFileStore
+import com.clienttools.sdk.inspector.ImageInfo
+import com.clienttools.sdk.inspector.ImageState
 import com.clienttools.sdk.inspector.InspectorFileStore
+import com.clienttools.sdk.inspector.DomQueryService
 import com.clienttools.sdk.inspector.WebViewState
 import com.clienttools.sdk.listener.PageChangeListener
 import com.clienttools.sdk.proto.*
@@ -134,16 +139,6 @@ object ApiHandler {
         }
     }
 
-    fun handleWebviewFiles(fileStore: InspectorFileStore): NanoHTTPD.Response {
-        val files = fileStore.getAllFiles()
-        val currentFile = ClientToolsSDK.getTop()?.viewModel?.webView?.value?.currentFile
-        val filesJson = files.joinToString(",") { f ->
-            val isCurrent = currentFile?.tag == f.tag && currentFile?.timestamp == f.timestamp
-            """{"tag":"${f.tag}","timestamp":"${f.timestamp}","filePath":"${f.fileUrl}","isCurrent":$isCurrent}"""
-        }
-        val json = """{"code":0,"data":{"files":[$filesJson]}}"""
-        return NanoHTTPD.newFixedLengthResponse(NanoHTTPD.Response.Status.OK, "application/json", json)
-    }
 
     fun handlePushHtml(bodyBytes: ByteArray, fileStore: InspectorFileStore): NanoHTTPD.Response {
         return try {
@@ -210,6 +205,197 @@ object ApiHandler {
             okResponse(resp.toByteArray())
         } catch (e: Exception) {
             Log.e("ApiHandler", "handleWebviewAdjust", e)
+            errResponse(NanoHTTPD.Response.Status.INTERNAL_ERROR, e.message ?: "error")
+        }
+    }
+
+    fun handleWebviewFiles(fileStore: InspectorFileStore): NanoHTTPD.Response {
+        return try {
+            val files = fileStore.getAllFiles()
+            val currentFile = ClientToolsSDK.getTop()?.viewModel?.webView?.value?.currentFile
+            val items = files.map { f ->
+                val isCurrent = currentFile?.tag == f.tag && currentFile?.timestamp == f.timestamp
+                FileItem.newBuilder()
+                    .setTag(f.tag)
+                    .setTimestamp(f.timestamp)
+                    .setFilePath(f.fileUrl)
+                    .setIsCurrent(isCurrent)
+                    .build()
+            }
+            val result = FileListResult.newBuilder().addAllFiles(items).build()
+            val resp = FileListResponse.newBuilder().setMeta(ProtoHelper.okMeta(ctx())).setData(result).build()
+            okResponse(resp.toByteArray())
+        } catch (e: Exception) {
+            Log.e("ApiHandler", "handleWebviewFiles", e)
+            errResponse(NanoHTTPD.Response.Status.INTERNAL_ERROR, e.message ?: "error")
+        }
+    }
+
+    fun handlePushImage(bodyBytes: ByteArray, imageFileStore: ImageFileStore): NanoHTTPD.Response {
+        return try {
+            val req = PushImageRequest.parseFrom(bodyBytes)
+            val bytes = req.image.toByteArray()
+            val timestamp = req.timestamp.ifEmpty { imageFileStore.generateTimestamp() }
+            val saved = imageFileStore.saveImage(req.tag, timestamp, bytes, req.ext.ifEmpty { "png" })
+                ?: return errResponse(NanoHTTPD.Response.Status.INTERNAL_ERROR, "Failed to save image")
+            ClientToolsSDK.getTop()?.viewModel?.let { vm ->
+                vm.image.value = vm.image.value.copy(currentImage = saved, isVisible = true)
+            }
+            val result = PushImageResult.newBuilder()
+                .setTag(req.tag).setTimestamp(timestamp)
+                .setFilePath(saved.filePath).setFileSize(bytes.size.toLong())
+                .build()
+            val resp = PushImageResponse.newBuilder().setMeta(ProtoHelper.okMeta(ctx())).setData(result).build()
+            okResponse(resp.toByteArray())
+        } catch (e: Exception) {
+            Log.e("ApiHandler", "handlePushImage", e)
+            errResponse(NanoHTTPD.Response.Status.INTERNAL_ERROR, e.message ?: "error")
+        }
+    }
+
+    fun handleShowImage(bodyBytes: ByteArray, imageFileStore: ImageFileStore): NanoHTTPD.Response {
+        return try {
+            val req = ShowImageRequest.parseFrom(bodyBytes)
+            val filePath = imageFileStore.getFilePath(req.tag, req.timestamp)
+                ?: return errResponse(NanoHTTPD.Response.Status.NOT_FOUND, "Image not found")
+            val ext = java.io.File(filePath).extension.lowercase()
+            ClientToolsSDK.getTop()?.viewModel?.let { vm ->
+                vm.image.value = vm.image.value.copy(
+                    currentImage = ImageInfo(req.tag, req.timestamp, filePath, ext),
+                    isVisible = true
+                )
+            }
+            val s = ClientToolsSDK.getTop()?.viewModel?.image?.value ?: ImageState()
+            val result = ShowImageResult.newBuilder()
+                .setTag(req.tag).setTimestamp(req.timestamp)
+                .setOpacity(s.opacity).setOffsetX(s.offsetX).setOffsetY(s.offsetY)
+                .build()
+            val resp = ShowImageResponse.newBuilder().setMeta(ProtoHelper.okMeta(ctx())).setData(result).build()
+            okResponse(resp.toByteArray())
+        } catch (e: Exception) {
+            Log.e("ApiHandler", "handleShowImage", e)
+            errResponse(NanoHTTPD.Response.Status.INTERNAL_ERROR, e.message ?: "error")
+        }
+    }
+
+    fun handleGetImages(imageFileStore: ImageFileStore): NanoHTTPD.Response {
+        return try {
+            val vmCurrentImage = ClientToolsSDK.getTop()?.viewModel?.image?.value?.currentImage
+            val images = imageFileStore.getAllImages()
+            val items = images.map { img ->
+                val isCurrent = vmCurrentImage?.tag == img.tag && vmCurrentImage?.timestamp == img.timestamp
+                val size = java.io.File(img.filePath).length()
+                ImageItem.newBuilder()
+                    .setTag(img.tag).setTimestamp(img.timestamp)
+                    .setExt(img.ext).setSize(size).setIsCurrent(isCurrent)
+                    .build()
+            }
+            val result = ImageListResult.newBuilder().addAllImages(items).build()
+            val resp = ImageListResponse.newBuilder().setMeta(ProtoHelper.okMeta(ctx())).setData(result).build()
+            okResponse(resp.toByteArray())
+        } catch (e: Exception) {
+            Log.e("ApiHandler", "handleGetImages", e)
+            errResponse(NanoHTTPD.Response.Status.INTERNAL_ERROR, e.message ?: "error")
+        }
+    }
+
+    fun handleInspectorHide(bodyBytes: ByteArray): NanoHTTPD.Response {
+        return try {
+            val req = HideRequest.parseFrom(bodyBytes)
+            val vm = ClientToolsSDK.getTop()?.viewModel
+            when (req.type) {
+                "image"   -> vm?.image?.value = vm?.image?.value?.copy(isVisible = false) ?: ImageState()
+                "webview" -> vm?.webView?.value = vm?.webView?.value?.copy(isVisible = false) ?: WebViewState()
+                else -> when (vm?.activeTab?.value) {
+                    ActiveTab.IMAGE -> vm.image.value = vm.image.value.copy(isVisible = false)
+                    else -> vm?.webView?.value = vm?.webView?.value?.copy(isVisible = false) ?: WebViewState()
+                }
+            }
+            val resp = SimpleResponse.newBuilder().setMeta(ProtoHelper.okMeta(ctx())).build()
+            okResponse(resp.toByteArray())
+        } catch (e: Exception) {
+            Log.e("ApiHandler", "handleInspectorHide", e)
+            errResponse(NanoHTTPD.Response.Status.INTERNAL_ERROR, e.message ?: "error")
+        }
+    }
+
+    fun handleInspectorAdjust(bodyBytes: ByteArray): NanoHTTPD.Response {
+        return try {
+            val req = InspectorAdjustRequest.parseFrom(bodyBytes)
+            val vm = ClientToolsSDK.getTop()?.viewModel
+            val isImage = req.type == "image" || (req.type.isEmpty() && vm?.activeTab?.value == ActiveTab.IMAGE)
+            val result: InspectorAdjustResult
+            if (isImage) {
+                val s = vm?.image?.value ?: ImageState()
+                val newState = s.copy(
+                    offsetX = s.offsetX + req.offsetX,
+                    offsetY = s.offsetY + req.offsetY,
+                    opacity = if (req.opacity > 0f) req.opacity.coerceIn(0f, 1f) else s.opacity
+                )
+                vm?.image?.value = newState
+                result = InspectorAdjustResult.newBuilder()
+                    .setOffsetX(newState.offsetX).setOffsetY(newState.offsetY).setOpacity(newState.opacity).build()
+            } else {
+                val s = vm?.webView?.value ?: WebViewState()
+                val newState = s.copy(
+                    offsetX = s.offsetX + req.offsetX,
+                    offsetY = s.offsetY + req.offsetY,
+                    opacity = if (req.opacity > 0f) req.opacity.coerceIn(0f, 1f) else s.opacity
+                )
+                vm?.webView?.value = newState
+                result = InspectorAdjustResult.newBuilder()
+                    .setOffsetX(newState.offsetX).setOffsetY(newState.offsetY).setOpacity(newState.opacity).build()
+            }
+            val resp = InspectorAdjustResponse.newBuilder().setMeta(ProtoHelper.okMeta(ctx())).setData(result).build()
+            okResponse(resp.toByteArray())
+        } catch (e: Exception) {
+            Log.e("ApiHandler", "handleInspectorAdjust", e)
+            errResponse(NanoHTTPD.Response.Status.INTERNAL_ERROR, e.message ?: "error")
+        }
+    }
+
+    suspend fun handleDomAll(webView: android.webkit.WebView?): NanoHTTPD.Response {
+        if (webView == null) return errResponse(NanoHTTPD.Response.Status.INTERNAL_ERROR, "webview not ready")
+        val vm = ClientToolsSDK.getTop()?.viewModel
+        val offsetX = vm?.webView?.value?.offsetX ?: 0f
+        val offsetY = vm?.webView?.value?.offsetY ?: 0f
+        return try {
+            val nodes = DomQueryService(timeoutMs = 3000L).queryAll(webView, offsetX, offsetY)
+            val domNodes = nodes.map { n ->
+                DomNode.newBuilder()
+                    .setId(n.id).setTag(n.tagName).setText(n.text)
+                    .setX(n.x.toFloat()).setY(n.y.toFloat()).setWidth(n.width.toFloat()).setHeight(n.height.toFloat())
+                    .build()
+            }
+            val nodeList = DomNodeList.newBuilder().addAllNodes(domNodes).build()
+            val resp = DomAllResponse.newBuilder().setMeta(ProtoHelper.okMeta(ctx())).setData(nodeList).build()
+            okResponse(resp.toByteArray())
+        } catch (e: kotlinx.coroutines.TimeoutCancellationException) {
+            errResponse(NanoHTTPD.Response.Status.INTERNAL_ERROR, "dom query timeout")
+        } catch (e: Exception) {
+            Log.e("ApiHandler", "handleDomAll", e)
+            errResponse(NanoHTTPD.Response.Status.INTERNAL_ERROR, e.message ?: "error")
+        }
+    }
+
+    suspend fun handleDomById(webView: android.webkit.WebView?, id: String): NanoHTTPD.Response {
+        if (webView == null) return errResponse(NanoHTTPD.Response.Status.INTERNAL_ERROR, "webview not ready")
+        val vm = ClientToolsSDK.getTop()?.viewModel
+        val offsetX = vm?.webView?.value?.offsetX ?: 0f
+        val offsetY = vm?.webView?.value?.offsetY ?: 0f
+        return try {
+            val n = DomQueryService(timeoutMs = 3000L).queryById(webView, id, offsetX, offsetY)
+                ?: return errResponse(NanoHTTPD.Response.Status.NOT_FOUND, "dom node not found")
+            val domNode = DomNode.newBuilder()
+                .setId(n.id).setTag(n.tagName).setText(n.text)
+                .setX(n.x.toFloat()).setY(n.y.toFloat()).setWidth(n.width.toFloat()).setHeight(n.height.toFloat())
+                .build()
+            val resp = DomNodeResponse.newBuilder().setMeta(ProtoHelper.okMeta(ctx())).setData(domNode).build()
+            okResponse(resp.toByteArray())
+        } catch (e: kotlinx.coroutines.TimeoutCancellationException) {
+            errResponse(NanoHTTPD.Response.Status.INTERNAL_ERROR, "dom query timeout")
+        } catch (e: Exception) {
+            Log.e("ApiHandler", "handleDomById $id", e)
             errResponse(NanoHTTPD.Response.Status.INTERNAL_ERROR, e.message ?: "error")
         }
     }
