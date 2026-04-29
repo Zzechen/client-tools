@@ -12,7 +12,9 @@ class HttpServer {
     private let viewModifyService = ViewModifyService()
     private lazy var inspectorHandler = InspectorApiHandler(
         viewModel: ClientToolsSDK.shared.inspectorViewModel,
-        imageFileStore: ClientToolsSDK.shared.imageFileStore
+        imageFileStore: ClientToolsSDK.shared.imageFileStore,
+        sendProto: { [weak self] msg, code, conn in self?.sendProto(msg, statusCode: code, connection: conn) },
+        sendError: { [weak self] code, msg, httpCode, conn in self?.sendError(code: code, message: msg, httpCode: httpCode, connection: conn) }
     )
     private static let sdkVersion: Int32 = 1
 
@@ -177,21 +179,18 @@ class HttpServer {
             handleWebviewHide(connection: connection)
         case ("POST", "/webview/adjust"):
             handleWebviewAdjust(bodyData, connection: connection)
+        case ("GET", "/webview/files"):
+            handleWebviewFiles(connection: connection)
         case ("POST", "/inspector/push-image"):
-            let (code, json) = inspectorHandler.handlePushImage(bodyData)
-            sendJson(json, statusCode: code, connection: connection)
+            inspectorHandler.handlePushImage(bodyData, connection: connection)
         case ("POST", "/inspector/show-image"):
-            let (code, json) = inspectorHandler.handleShowImage(bodyData)
-            sendJson(json, statusCode: code, connection: connection)
+            inspectorHandler.handleShowImage(bodyData, connection: connection)
         case ("GET", "/inspector/images"):
-            let (code, json) = inspectorHandler.handleGetImages()
-            sendJson(json, statusCode: code, connection: connection)
+            inspectorHandler.handleGetImages(connection: connection)
         case ("POST", "/inspector/hide"):
-            let (code, json) = inspectorHandler.handleHide(bodyData)
-            sendJson(json, statusCode: code, connection: connection)
+            inspectorHandler.handleHide(bodyData, connection: connection)
         case ("POST", "/inspector/adjust"):
-            let (code, json) = inspectorHandler.handleAdjust(bodyData)
-            sendJson(json, statusCode: code, connection: connection)
+            inspectorHandler.handleAdjust(bodyData, connection: connection)
         default:
             if method == "GET" && path.hasPrefix("/api/capture/") {
                 let nodeId = String(path.dropFirst("/api/capture/".count))
@@ -363,21 +362,50 @@ class HttpServer {
         sendProto(resp, connection: connection)
     }
 
+    private func handleWebviewFiles(connection: NWConnection) {
+        guard let overlayManager = ClientToolsSDK.shared.overlayManager() else {
+            sendError(code: 503, message: "OverlayManager not ready", httpCode: 503, connection: connection); return
+        }
+        let files = overlayManager.fileStore.getAllFiles()
+        let currentFile = ClientToolsSDK.shared.inspectorViewModel.webViewState.currentFile
+        let items: [Clienttools_FileItem] = files.map { f in
+            var item = Clienttools_FileItem()
+            item.tag = f.tag; item.timestamp = f.timestamp
+            item.filePath = f.filePath
+            item.isCurrent = f.tag == currentFile?.tag && f.timestamp == currentFile?.timestamp
+            return item
+        }
+        var result = Clienttools_FileListResult()
+        result.files = items
+        var resp = Clienttools_FileListResponse()
+        resp.meta = okMeta(); resp.data = result
+        sendProto(resp, connection: connection)
+    }
+
     private func handleDomAll(connection: NWConnection) {
         guard let overlayManager = ClientToolsSDK.shared.overlayManager() else {
-            sendJson("{\"error\":\"OverlayManager not ready\"}", statusCode: 503, connection: connection); return
+            sendError(code: 503, message: "OverlayManager not ready", httpCode: 503, connection: connection); return
         }
-        overlayManager.queryDomAll { json in
-            self.sendJson(json, connection: connection)
+        overlayManager.queryDomAll { nodes in
+            var nodeList = Clienttools_DomNodeList()
+            nodeList.nodes = nodes
+            var resp = Clienttools_DomAllResponse()
+            resp.meta = self.okMeta(); resp.data = nodeList
+            self.sendProto(resp, connection: connection)
         }
     }
 
     private func handleDomById(_ id: String, connection: NWConnection) {
         guard let overlayManager = ClientToolsSDK.shared.overlayManager() else {
-            sendJson("{\"error\":\"OverlayManager not ready\"}", statusCode: 503, connection: connection); return
+            sendError(code: 503, message: "OverlayManager not ready", httpCode: 503, connection: connection); return
         }
-        overlayManager.queryDomById(id) { json in
-            self.sendJson(json, connection: connection)
+        overlayManager.queryDomById(id) { node in
+            guard let node = node else {
+                self.sendError(code: 404, message: "DOM node not found", httpCode: 404, connection: connection); return
+            }
+            var resp = Clienttools_DomNodeResponse()
+            resp.meta = self.okMeta(); resp.data = node
+            self.sendProto(resp, connection: connection)
         }
     }
 }

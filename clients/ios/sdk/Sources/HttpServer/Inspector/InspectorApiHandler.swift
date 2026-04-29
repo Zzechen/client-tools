@@ -1,125 +1,152 @@
 import Foundation
+import Network
+import SwiftProtobuf
 
 class InspectorApiHandler {
 
     private let viewModel: InspectorViewModel
     private let imageFileStore: ImageFileStore
+    private let sendProtoFn: (SwiftProtobuf.Message, Int, NWConnection) -> Void
+    private let sendErrorFn: (Int32, String, Int, NWConnection) -> Void
 
-    init(viewModel: InspectorViewModel, imageFileStore: ImageFileStore) {
+    init(
+        viewModel: InspectorViewModel,
+        imageFileStore: ImageFileStore,
+        sendProto: @escaping (SwiftProtobuf.Message, Int, NWConnection) -> Void,
+        sendError: @escaping (Int32, String, Int, NWConnection) -> Void
+    ) {
         self.viewModel = viewModel
         self.imageFileStore = imageFileStore
+        self.sendProtoFn = sendProto
+        self.sendErrorFn = sendError
     }
 
     // MARK: - push-image
 
-    func handlePushImage(_ body: Data) -> (Int, String) {
-        guard let obj = try? JSONSerialization.jsonObject(with: body) as? [String: Any],
-              let tag = obj["tag"] as? String,
-              let imageBase64 = obj["image"] as? String else {
-            return (400, #"{"code":400,"message":"Missing tag or image"}"#)
+    func handlePushImage(_ body: Data, connection: NWConnection) {
+        guard let req = try? Clienttools_PushImageRequest(serializedBytes: body) else {
+            sendErrorFn(400, "Invalid request", 400, connection); return
         }
-        let ext = (obj["ext"] as? String)?.lowercased() ?? "png"
-        let timestamp = (obj["timestamp"] as? String) ?? imageFileStore.generateTimestamp()
-
-        guard let bytes = Data(base64Encoded: imageBase64) else {
-            return (400, #"{"code":400,"message":"Invalid base64"}"#)
+        let bytes = Data(req.image)
+        let timestamp = req.timestamp.isEmpty ? imageFileStore.generateTimestamp() : req.timestamp
+        let ext = req.ext.isEmpty ? "png" : req.ext
+        guard let saved = imageFileStore.saveImage(tag: req.tag, timestamp: timestamp, bytes: bytes, ext: ext) else {
+            sendErrorFn(500, "Failed to save image", 500, connection); return
         }
-        guard let saved = imageFileStore.saveImage(tag: tag, timestamp: timestamp, bytes: bytes, ext: ext) else {
-            return (500, #"{"code":500,"message":"Failed to save image"}"#)
-        }
-
         viewModel.imageState = ImageState(
-            currentImage: saved,
-            isVisible: true,
+            currentImage: saved, isVisible: true,
             offsetX: viewModel.imageState.offsetX,
             offsetY: viewModel.imageState.offsetY,
             opacity: viewModel.imageState.opacity
         )
         viewModel.activeTab = .image
-
-        let json = #"{"code":0,"message":"success","data":{"tag":"\#(tag)","timestamp":"\#(timestamp)","filePath":"\#(saved.filePath)","fileSize":\#(bytes.count)}}"#
-        return (200, json)
+        var result = Clienttools_PushImageResult()
+        result.tag = req.tag; result.timestamp = timestamp
+        result.filePath = saved.filePath; result.fileSize = Int64(bytes.count)
+        var resp = Clienttools_PushImageResponse()
+        resp.meta = okMeta(); resp.data = result
+        sendProtoFn(resp, 200, connection)
     }
 
     // MARK: - show-image
 
-    func handleShowImage(_ body: Data) -> (Int, String) {
-        guard let obj = try? JSONSerialization.jsonObject(with: body) as? [String: Any],
-              let tag = obj["tag"] as? String,
-              let timestamp = obj["timestamp"] as? String else {
-            return (400, #"{"code":400,"message":"Missing tag or timestamp"}"#)
+    func handleShowImage(_ body: Data, connection: NWConnection) {
+        guard let req = try? Clienttools_ShowImageRequest(serializedBytes: body) else {
+            sendErrorFn(400, "Invalid request", 400, connection); return
         }
-        guard let filePath = imageFileStore.getFilePath(tag: tag, timestamp: timestamp) else {
-            return (404, #"{"code":404,"message":"Image not found"}"#)
+        guard let filePath = imageFileStore.getFilePath(tag: req.tag, timestamp: req.timestamp) else {
+            sendErrorFn(404, "Image not found", 404, connection); return
         }
         let ext = URL(fileURLWithPath: filePath).pathExtension.lowercased()
-        let info = ImageInfo(tag: tag, timestamp: timestamp, filePath: filePath, ext: ext)
-
+        let info = ImageInfo(tag: req.tag, timestamp: req.timestamp, filePath: filePath, ext: ext)
         viewModel.imageState = ImageState(
-            currentImage: info,
-            isVisible: true,
+            currentImage: info, isVisible: true,
             offsetX: viewModel.imageState.offsetX,
             offsetY: viewModel.imageState.offsetY,
             opacity: viewModel.imageState.opacity
         )
         viewModel.activeTab = .image
-
         let s = viewModel.imageState
-        let json = #"{"code":0,"message":"success","data":{"tag":"\#(tag)","timestamp":"\#(timestamp)","opacity":\#(s.opacity),"offsetX":\#(s.offsetX),"offsetY":\#(s.offsetY)}}"#
-        return (200, json)
+        var result = Clienttools_ShowImageResult()
+        result.tag = req.tag; result.timestamp = req.timestamp
+        result.opacity = s.opacity; result.offsetX = s.offsetX; result.offsetY = s.offsetY
+        var resp = Clienttools_ShowImageResponse()
+        resp.meta = okMeta(); resp.data = result
+        sendProtoFn(resp, 200, connection)
     }
 
     // MARK: - images
 
-    func handleGetImages() -> (Int, String) {
+    func handleGetImages(connection: NWConnection) {
         let currentImage = viewModel.imageState.currentImage
         let images = imageFileStore.getAllImages()
-        let items = images.map { img -> String in
+        let items: [Clienttools_ImageItem] = images.map { img in
             let isCurrent = img.tag == currentImage?.tag && img.timestamp == currentImage?.timestamp
             let size = (try? FileManager.default.attributesOfItem(atPath: img.filePath)[.size] as? Int) ?? 0
-            return #"{"tag":"\#(img.tag)","timestamp":"\#(img.timestamp)","ext":"\#(img.ext)","size":\#(size),"isCurrent":\#(isCurrent)}"#
-        }.joined(separator: ",")
-        return (200, #"{"code":0,"data":{"images":[\#(items)]}}"#)
+            var item = Clienttools_ImageItem()
+            item.tag = img.tag; item.timestamp = img.timestamp
+            item.ext = img.ext; item.size = Int64(size); item.isCurrent = isCurrent
+            return item
+        }
+        var result = Clienttools_ImageListResult()
+        result.images = items
+        var resp = Clienttools_ImageListResponse()
+        resp.meta = okMeta(); resp.data = result
+        sendProtoFn(resp, 200, connection)
     }
 
     // MARK: - hide
 
-    func handleHide(_ body: Data) -> (Int, String) {
-        let obj = (try? JSONSerialization.jsonObject(with: body) as? [String: Any]) ?? [:]
-        let typeStr = obj["type"] as? String
-        let isImage = typeStr == "image" || (typeStr == nil && viewModel.activeTab == .image)
-        if isImage {
+    func handleHide(_ body: Data, connection: NWConnection) {
+        let req = (try? Clienttools_HideRequest(serializedBytes: body)) ?? Clienttools_HideRequest()
+        switch req.type {
+        case "image":
             viewModel.imageState.isVisible = false
-        } else {
+        case "webview":
             viewModel.webViewState.isVisible = false
+        default:
+            if viewModel.activeTab == .image {
+                viewModel.imageState.isVisible = false
+            } else {
+                viewModel.webViewState.isVisible = false
+            }
         }
-        return (200, #"{"code":0,"message":"success"}"#)
+        var resp = Clienttools_SimpleResponse()
+        resp.meta = okMeta()
+        sendProtoFn(resp, 200, connection)
     }
 
     // MARK: - adjust
 
-    func handleAdjust(_ body: Data) -> (Int, String) {
-        guard let obj = try? JSONSerialization.jsonObject(with: body) as? [String: Any] else {
-            return (400, #"{"code":400,"message":"Invalid JSON"}"#)
+    func handleAdjust(_ body: Data, connection: NWConnection) {
+        guard let req = try? Clienttools_InspectorAdjustRequest(serializedBytes: body) else {
+            sendErrorFn(400, "Invalid request", 400, connection); return
         }
-        let typeStr = obj["type"] as? String
-        let dx = (obj["offsetX"] as? NSNumber)?.floatValue ?? 0
-        let dy = (obj["offsetY"] as? NSNumber)?.floatValue ?? 0
-        let opacity = (obj["opacity"] as? NSNumber)?.floatValue
-
-        let isImage = typeStr == "image" || (typeStr == nil && viewModel.activeTab == .image)
+        let isImage = req.type == "image" || (req.type.isEmpty && viewModel.activeTab == .image)
+        var result = Clienttools_InspectorAdjustResult()
         if isImage {
             var s = viewModel.imageState
-            s.offsetX += dx; s.offsetY += dy
-            if let op = opacity { s.opacity = min(max(op, 0), 1) }
+            s.offsetX += req.offsetX; s.offsetY += req.offsetY
+            if req.opacity > 0 { s.opacity = min(max(req.opacity, 0), 1) }
             viewModel.imageState = s
-            return (200, #"{"code":0,"data":{"offsetX":\#(s.offsetX),"offsetY":\#(s.offsetY),"opacity":\#(s.opacity)}}"#)
+            result.offsetX = s.offsetX; result.offsetY = s.offsetY; result.opacity = s.opacity
         } else {
             var s = viewModel.webViewState
-            s.offsetX += dx; s.offsetY += dy
-            if let op = opacity { s.opacity = min(max(op, 0), 1) }
+            s.offsetX += req.offsetX; s.offsetY += req.offsetY
+            if req.opacity > 0 { s.opacity = min(max(req.opacity, 0), 1) }
             viewModel.webViewState = s
-            return (200, #"{"code":0,"data":{"offsetX":\#(s.offsetX),"offsetY":\#(s.offsetY),"opacity":\#(s.opacity)}}"#)
+            result.offsetX = s.offsetX; result.offsetY = s.offsetY; result.opacity = s.opacity
         }
+        var resp = Clienttools_InspectorAdjustResponse()
+        resp.meta = okMeta(); resp.data = result
+        sendProtoFn(resp, 200, connection)
+    }
+
+    // MARK: - private
+
+    private func okMeta() -> Clienttools_ResponseMeta {
+        var meta = Clienttools_ResponseMeta()
+        meta.code = 0; meta.message = "success"
+        return meta
     }
 }
