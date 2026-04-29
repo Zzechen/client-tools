@@ -1,0 +1,41 @@
+syntax = "proto3";
+package clienttools;
+option java_package = "com.clienttools.sdk.proto";
+option java_multiple_files = true;
+import "api.proto";
+
+// /webview/files
+message FileItem          { string tag = 1; string timestamp = 2; string file_path = 3; bool is_current = 4; }
+message FileListResult    { repeated FileItem files = 1; }
+message FileListResponse  { ResponseMeta meta = 1; FileListResult data = 2; }
+
+// /inspector/push-image
+message PushImageRequest  { string tag = 1; string timestamp = 2; bytes image = 3; string ext = 4; }
+message PushImageResult   { string tag = 1; string timestamp = 2; string file_path = 3; int64 file_size = 4; }
+message PushImageResponse { ResponseMeta meta = 1; PushImageResult data = 2; }
+
+// /inspector/show-image
+message ShowImageRequest  { string tag = 1; string timestamp = 2; }
+message ShowImageResult   { string tag = 1; string timestamp = 2; float opacity = 3; float offset_x = 4; float offset_y = 5; }
+message ShowImageResponse { ResponseMeta meta = 1; ShowImageResult data = 2; }
+
+// /inspector/images
+message ImageItem         { string tag = 1; string timestamp = 2; string ext = 3; int64 size = 4; bool is_current = 5; }
+message ImageListResult   { repeated ImageItem images = 1; }
+message ImageListResponse { ResponseMeta meta = 1; ImageListResult data = 2; }
+
+// /inspector/hide  (type: "image" | "webview" | "" 空=按当前 activeTab 判断)
+message HideRequest       { string type = 1; }
+
+// /inspector/adjust
+message InspectorAdjustRequest  { string type = 1; float offset_x = 2; float offset_y = 3; float opacity = 4; }
+message InspectorAdjustResult   { float offset_x = 1; float offset_y = 2; float opacity = 3; }
+message InspectorAdjustResponse { ResponseMeta meta = 1; InspectorAdjustResult data = 2; }
+
+// /dom/all
+message DomNode           { string id = 1; string tag = 2; string text = 3; float x = 4; float y = 5; float width = 6; float height = 7; }
+message DomNodeList       { repeated DomNode nodes = 1; }
+message DomAllResponse    { ResponseMeta meta = 1; DomNodeList data = 2; }
+
+// /dom/:id
+message DomNodeResponse   { ResponseMeta meta = 1; DomNode data = 2; }
