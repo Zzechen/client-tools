@@ -72,17 +72,46 @@ public class OverlayManager {
     // MARK: - DOM 查询
 
     /// 返回 WebView 中所有有 id 的 DOM 节点，坐标已换算为屏幕绝对坐标（pt）
-    public func queryDomAll(completion: @escaping (String) -> Void) {
-        queryDom(js: domAllJS(), completion: completion)
+    func queryDomAll(completion: @escaping ([Clienttools_DomNode]) -> Void) {
+        queryDomRaw(js: domAllJS()) { json in
+            completion(Self.parseDomNodes(from: json))
+        }
     }
 
     /// 返回指定 id 的 DOM 节点，坐标已换算为屏幕绝对坐标（pt）
-    public func queryDomById(_ id: String, completion: @escaping (String) -> Void) {
+    func queryDomById(_ id: String, completion: @escaping (Clienttools_DomNode?) -> Void) {
         let escaped = id.replacingOccurrences(of: "\"", with: "\\\"")
-        queryDom(js: domByIdJS(escaped), completion: completion)
+        queryDomRaw(js: domByIdJS(escaped)) { json in
+            completion(Self.parseDomNode(from: json))
+        }
     }
 
-    private func queryDom(js: String, completion: @escaping (String) -> Void) {
+    private static func parseDomNodes(from json: String) -> [Clienttools_DomNode] {
+        guard let data = json.data(using: .utf8),
+              let arr = try? JSONSerialization.jsonObject(with: data) as? [[String: Any]] else { return [] }
+        return arr.compactMap { parseDomNodeDict($0) }
+    }
+
+    private static func parseDomNode(from json: String) -> Clienttools_DomNode? {
+        guard let data = json.data(using: .utf8),
+              let dict = try? JSONSerialization.jsonObject(with: data) as? [String: Any] else { return nil }
+        return parseDomNodeDict(dict)
+    }
+
+    private static func parseDomNodeDict(_ d: [String: Any]) -> Clienttools_DomNode? {
+        guard let id = d["id"] as? String else { return nil }
+        var node = Clienttools_DomNode()
+        node.id     = id
+        node.tag    = (d["tag"] as? String) ?? ""
+        node.text   = (d["text"] as? String) ?? ""
+        node.x      = Float((d["x"] as? NSNumber)?.doubleValue ?? 0)
+        node.y      = Float((d["y"] as? NSNumber)?.doubleValue ?? 0)
+        node.width  = Float((d["width"]  as? NSNumber)?.doubleValue ?? 0)
+        node.height = Float((d["height"] as? NSNumber)?.doubleValue ?? 0)
+        return node
+    }
+
+    private func queryDomRaw(js: String, completion: @escaping (String) -> Void) {
         DispatchQueue.main.async { [weak self] in
             guard let self = self, let wv = self.webView else {
                 completion("{\"error\":\"WebView not ready\"}")
