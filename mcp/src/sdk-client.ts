@@ -67,24 +67,3 @@ export async function sdkPost<Req extends DescMessage, Res extends DescMessage>(
   const buf = new Uint8Array(await res.arrayBuffer());
   return fromBinary(resSchema, buf);
 }
-
-export async function sdkGetRaw(path: string): Promise<unknown> {
-  ensureAdbForward();
-  const timeoutMs = path.startsWith("/dom") ? DOM_TIMEOUT_MS : DEFAULT_TIMEOUT_MS;
-  const res = await fetchWithTimeout(`${BASE_URL}${path}`, { method: "GET" }, timeoutMs);
-  return res.json();
-}
-
-export async function sdkPostRaw(path: string, body: unknown): Promise<unknown> {
-  ensureAdbForward();
-  const res = await fetchWithTimeout(
-    `${BASE_URL}${path}`,
-    {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(body),
-    },
-    DEFAULT_TIMEOUT_MS
-  );
-  return res.json();
-}

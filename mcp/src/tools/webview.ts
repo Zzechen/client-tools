@@ -2,7 +2,7 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
 import { readFileSync } from "fs";
 import { create } from "@bufbuild/protobuf";
-import { sdkPost, sdkPostRaw } from "../sdk-client.js";
+import { sdkPost } from "../sdk-client.js";
 import {
   PushHtmlRequestSchema,
   PushHtmlResponseSchema,
