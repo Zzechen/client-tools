@@ -3,7 +3,6 @@ package com.clienttools.sdk.http
 import android.content.Context
 import android.util.Log
 import com.clienttools.sdk.ClientToolsSDK
-import com.clienttools.sdk.inspector.InspectorApiHandler
 import com.clienttools.sdk.listener.PageChangeListener
 import fi.iki.elonen.NanoHTTPD
 
@@ -63,26 +62,24 @@ class HttpServer(
                     ApiHandler.handleWebviewAdjust(readBodyBytes(session))
 
                 method == Method.POST && uri == "/inspector/push-image" ->
-                    inspectorHandler().handlePushImage(readBody(session))
+                    ApiHandler.handlePushImage(readBodyBytes(session), ClientToolsSDK.imageFileStore)
 
                 method == Method.POST && uri == "/inspector/show-image" ->
-                    inspectorHandler().handleShowImage(readBody(session))
+                    ApiHandler.handleShowImage(readBodyBytes(session), ClientToolsSDK.imageFileStore)
 
                 method == Method.GET && uri == "/inspector/images" ->
-                    inspectorHandler().handleGetImages(
-                        currentImage = ClientToolsSDK.getTop()?.viewModel?.image?.value?.currentImage
-                    )
+                    ApiHandler.handleGetImages(ClientToolsSDK.imageFileStore)
 
                 method == Method.POST && uri == "/inspector/hide" ->
-                    inspectorHandler().handleHide(readBody(session))
+                    ApiHandler.handleInspectorHide(readBodyBytes(session))
 
                 method == Method.POST && uri == "/inspector/adjust" ->
-                    inspectorHandler().handleAdjust(readBody(session))
+                    ApiHandler.handleInspectorAdjust(readBodyBytes(session))
 
                 method == Method.GET && uri == "/dom/all" -> {
                     val webView = ClientToolsSDK.getTop()?.renderer?.webView
                     kotlinx.coroutines.runBlocking {
-                        inspectorHandler().handleDomAll(webView)
+                        ApiHandler.handleDomAll(webView)
                     }
                 }
 
@@ -90,7 +87,7 @@ class HttpServer(
                     val id = uri.removePrefix("/dom/")
                     val webView = ClientToolsSDK.getTop()?.renderer?.webView
                     kotlinx.coroutines.runBlocking {
-                        inspectorHandler().handleDomById(webView, id)
+                        ApiHandler.handleDomById(webView, id)
                     }
                 }
 
@@ -101,12 +98,6 @@ class HttpServer(
             newFixedLengthResponse(Response.Status.INTERNAL_ERROR, MIME_PLAINTEXT, e.message ?: "Internal error")
         }
     }
-
-    private fun inspectorHandler() = InspectorApiHandler(
-        fileStore = ClientToolsSDK.fileStore,
-        imageFileStore = ClientToolsSDK.imageFileStore,
-        getTopViewModel = { ClientToolsSDK.getTop()?.viewModel }
-    )
 
     private fun readBodyBytes(session: IHTTPSession): ByteArray {
         val contentLength = session.headers["content-length"]?.toIntOrNull() ?: 0
