@@ -21,7 +21,7 @@ function errResult(e: unknown) {
 export function registerWebviewTools(server: McpServer): void {
   server.tool(
     "push_html",
-    "推送 HTML 到设备 WebView 叠加层并自动显示。优先使用 file 参数（本地绝对路径），其次 html 字符串",
+    "推送 HTML 到设备 WebView 叠加层并自动显示（Android/iOS 通用）。优先使用 file 参数（本地绝对路径），其次 html 字符串",
     {
       tag: z.string().describe("页面标识，如 login、home"),
       file: z.string().optional().describe("本地 HTML 文件的绝对路径，优先于 html 参数"),
@@ -47,7 +47,7 @@ export function registerWebviewTools(server: McpServer): void {
 
   server.tool(
     "show_webview",
-    "切换显示设备上已保存的 HTML 文件",
+    "切换显示设备上已保存的 HTML 文件（Android/iOS 通用）",
     {
       tag: z.string().describe("页面标识"),
       timestamp: z.string().describe("时间戳，格式 MMdd-HHmm"),
@@ -63,7 +63,7 @@ export function registerWebviewTools(server: McpServer): void {
 
   server.tool(
     "hide_overlay",
-    "隐藏 WebView 叠加层",
+    "隐藏 WebView 叠加层（Android/iOS 通用）",
     {},
     async () => {
       try {
@@ -76,7 +76,7 @@ export function registerWebviewTools(server: McpServer): void {
 
   server.tool(
     "adjust_overlay",
-    "调整叠加层偏移量（增量 dp）和透明度（绝对值 0~1）",
+    "调整叠加层偏移量（增量 dp）和透明度（绝对值 0~1）（Android/iOS 通用）",
     {
       offsetX: z.number().optional().describe("X 轴偏移增量，单位 dp"),
       offsetY: z.number().optional().describe("Y 轴偏移增量，单位 dp"),
