@@ -171,6 +171,8 @@ class HttpServer {
             handleScroll(bodyData, connection: connection)
         case ("POST", "/api/modify"):
             handleModify(bodyData, connection: connection)
+        case ("POST", "/api/modify/ios"):
+            handleModifyIos(bodyData, connection: connection)
         case ("POST", "/webview/push-html"):
             handleWebviewPushHtml(bodyData, connection: connection)
         case ("POST", "/webview/show"):
@@ -282,7 +284,32 @@ class HttpServer {
     }
 
     private func handleModify(_ body: Data, connection: NWConnection) {
-        sendError(code: 501, message: "iOS 暂不支持 modify_view", httpCode: 501, connection: connection)
+        guard let req = try? Clienttools_ModifyViewRequest(serializedBytes: body) else {
+            sendError(code: 400, message: "Invalid request", connection: connection); return
+        }
+        let (success, message) = viewModifyService.modifyProto(id: req.id, props: req.props)
+        if success {
+            var resp = Clienttools_ModifyResponse()
+            resp.meta = okMeta()
+            sendProto(resp, connection: connection)
+        } else {
+            sendError(code: 404, message: message, httpCode: 404, connection: connection)
+        }
+    }
+
+    private func handleModifyIos(_ body: Data, connection: NWConnection) {
+        guard let req = try? Clienttools_ModifyViewIosRequest(serializedBytes: body) else {
+            sendError(code: 400, message: "Invalid request", connection: connection); return
+        }
+        let (success, message) = viewModifyService.modifyIosProto(id: req.id, props: req.props)
+        var resp = Clienttools_ModifyResponse()
+        resp.meta = okMeta()
+        resp.message = message
+        if success {
+            sendProto(resp, connection: connection)
+        } else {
+            sendError(code: 404, message: message, httpCode: 404, connection: connection)
+        }
     }
 
     private func handleWebviewPushHtml(_ body: Data, connection: NWConnection) {
