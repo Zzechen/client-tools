@@ -12,7 +12,7 @@ function errResult(e: unknown) {
 export function registerInspectorTools(server: McpServer): void {
   server.tool(
     "list_files",
-    "返回设备上已保存的 HTML 文件列表",
+    "返回设备上已保存的 HTML 文件列表（Android/iOS 通用）",
     {},
     async () => {
       try {
