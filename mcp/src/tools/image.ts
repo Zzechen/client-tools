@@ -43,10 +43,11 @@ export function registerImageTools(server: McpServer): void {
         } else {
           throw new Error("需要提供 file 或 image 参数");
         }
-        const ts = timestamp ?? new Date().toISOString().slice(0, 16).replace(/[-:T]/g, "").slice(2, 12);
+        const _now = new Date().toISOString();
+        const ts = timestamp ?? (_now.slice(5, 10).replace("-", "") + "-" + _now.slice(11, 13) + _now.slice(14, 16));
         const req = create(PushImageRequestSchema, { tag, timestamp: ts, image: imageBytes, ext: imageExt });
         const res = await sdkPost("/inspector/push-image", PushImageRequestSchema, req, PushImageResponseSchema);
-        return { content: [{ type: "text" as const, text: JSON.stringify({ tag: res.data?.tag, filePath: res.data?.filePath }) }] };
+        return { content: [{ type: "text" as const, text: JSON.stringify({ tag: res.data?.tag, filePath: res.data?.filePath, fileSize: Number(res.data?.fileSize ?? 0) }) }] };
       } catch (e) { return errResult(e); }
     }
   );
@@ -74,7 +75,8 @@ export function registerImageTools(server: McpServer): void {
     async () => {
       try {
         const res = await sdkGet("/inspector/images", ImageListResponseSchema);
-        return { content: [{ type: "text" as const, text: JSON.stringify(res.data?.images) }] };
+        const images = (res.data?.images ?? []).map(img => ({ ...img, size: Number(img.size) }));
+        return { content: [{ type: "text" as const, text: JSON.stringify(images) }] };
       } catch (e) { return errResult(e); }
     }
   );

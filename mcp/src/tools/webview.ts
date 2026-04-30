@@ -32,7 +32,8 @@ export function registerWebviewTools(server: McpServer): void {
       try {
         const content = file ? readFileSync(file, "utf-8") : html;
         if (!content) throw new Error("需要提供 file 或 html 参数");
-        const ts = timestamp ?? new Date().toISOString().slice(0, 16).replace(/[-:T]/g, "").slice(2, 12);
+        const _now = new Date().toISOString();
+        const ts = timestamp ?? (_now.slice(5, 10).replace("-", "") + "-" + _now.slice(11, 13) + _now.slice(14, 16));
         const req = create(PushHtmlRequestSchema, {
           tag,
           timestamp: ts,
