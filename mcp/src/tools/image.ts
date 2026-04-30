@@ -22,7 +22,7 @@ function errResult(e: unknown) {
 export function registerImageTools(server: McpServer): void {
   server.tool(
     "push_image",
-    "推送图片到设备叠加层并自动显示。优先使用 file 参数（本地绝对路径），其次 image base64 字符串",
+    "推送图片到设备叠加层并自动显示（Android/iOS 通用）。优先使用 file 参数（本地绝对路径），其次 image base64 字符串",
     {
       tag: z.string().describe("图片标识，如 login、home"),
       file: z.string().optional().describe("本地图片文件的绝对路径（png/jpg），优先于 image 参数"),
@@ -54,7 +54,7 @@ export function registerImageTools(server: McpServer): void {
 
   server.tool(
     "show_image",
-    "切换显示设备上已保存的图片",
+    "切换显示设备上已保存的图片（Android/iOS 通用）",
     {
       tag: z.string().describe("图片标识"),
       timestamp: z.string().describe("时间戳，格式 MMdd-HHmm"),
@@ -70,7 +70,7 @@ export function registerImageTools(server: McpServer): void {
 
   server.tool(
     "list_images",
-    "返回设备上已保存的图片列表",
+    "返回设备上已保存的图片列表（Android/iOS 通用）",
     {},
     async () => {
       try {
