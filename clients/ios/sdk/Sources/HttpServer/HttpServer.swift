@@ -282,17 +282,7 @@ class HttpServer {
     }
 
     private func handleModify(_ body: Data, connection: NWConnection) {
-        guard let req = try? Clienttools_ModifyViewRequest(serializedBytes: body) else {
-            sendError(code: 400, message: "Invalid request", connection: connection); return
-        }
-        let success = viewModifyService.modifyProto(id: req.id, props: req.props)
-        if success {
-            var resp = Clienttools_ModifyResponse()
-            resp.meta = okMeta()
-            sendProto(resp, connection: connection)
-        } else {
-            sendError(code: 500, message: "Failed to modify view", httpCode: 500, connection: connection)
-        }
+        sendError(code: 501, message: "iOS 暂不支持 modify_view", httpCode: 501, connection: connection)
     }
 
     private func handleWebviewPushHtml(_ body: Data, connection: NWConnection) {

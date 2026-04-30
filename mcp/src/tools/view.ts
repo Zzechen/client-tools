@@ -61,8 +61,8 @@ export function registerViewTools(server: McpServer): void {
 
   server.tool(
     "get_node",
-    "查询 Android 原生 View 节点的屏幕位置和尺寸",
-    { id: z.string().describe("Android View 的 resource id（不含包名前缀，如 btn_login）") },
+    "查询原生 View 节点的屏幕位置和尺寸（Android/iOS 通用）",
+    { id: z.string().describe("View 的 id（Android resource id 不含包名前缀，iOS 为 accessibilityIdentifier）") },
     async ({ id }) => {
       try {
         const res = await sdkGet(`/api/nodes/${encodeURIComponent(id)}`, NodeResponseSchema);
@@ -73,7 +73,7 @@ export function registerViewTools(server: McpServer): void {
 
   server.tool(
     "get_all_nodes",
-    "获取当前页面所有 Android View 节点的屏幕坐标和尺寸快照",
+    "获取当前页面所有原生 View 节点的屏幕坐标和尺寸快照（Android/iOS 通用）",
     {},
     async () => {
       try {

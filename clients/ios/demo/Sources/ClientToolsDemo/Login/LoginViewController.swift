@@ -16,7 +16,7 @@ class LoginViewController: UIViewController {
 
     private lazy var skipButton: UIButton = {
         let btn = UIButton(type: .system)
-        btn.setTitle("跳过", for: .normal)
+        btn.setTitle("跳过 ›", for: .normal)
         btn.setTitleColor(UIColor(hex: "#00D4C2"), for: .normal)
         btn.titleLabel?.font = .systemFont(ofSize: 14)
         btn.accessibilityIdentifier = "login_btn_skip"
@@ -56,7 +56,7 @@ class LoginViewController: UIViewController {
 
     private lazy var subtitleLabel: UILabel = {
         let lbl = UILabel()
-        lbl.text = "登录以继续使用"
+        lbl.text = "// 登录以同步你的训练数据"
         lbl.textColor = UIColor(hex: "#8A9BB0")
         lbl.font = .systemFont(ofSize: 14)
         lbl.accessibilityIdentifier = "login_text_subtitle"
@@ -289,22 +289,23 @@ class LoginViewController: UIViewController {
         skipButton.snp.makeConstraints { make in
             make.trailing.equalToSuperview().offset(-20)
             make.centerY.equalTo(closeButton)
+            make.width.greaterThanOrEqualTo(54)
         }
 
         logoIconView.snp.makeConstraints { make in
-            make.centerX.equalToSuperview()
-            make.top.equalTo(closeButton.snp.bottom).offset(28)
+            make.leading.equalToSuperview().offset(24)
+            make.top.equalTo(closeButton.snp.bottom).offset(38)
             make.width.height.equalTo(44)
         }
 
         brandLabel.snp.makeConstraints { make in
-            make.centerX.equalToSuperview()
-            make.top.equalTo(logoIconView.snp.bottom).offset(8)
+            make.leading.equalTo(logoIconView.snp.trailing).offset(10)
+            make.centerY.equalTo(logoIconView)
         }
 
         titleLabel.snp.makeConstraints { make in
             make.leading.equalToSuperview().offset(24)
-            make.top.equalTo(brandLabel.snp.bottom).offset(32)
+            make.top.equalTo(logoIconView.snp.bottom).offset(36)
         }
 
         subtitleLabel.snp.makeConstraints { make in
@@ -314,7 +315,7 @@ class LoginViewController: UIViewController {
 
         tabContainer.snp.makeConstraints { make in
             make.leading.trailing.equalToSuperview().inset(24)
-            make.top.equalTo(subtitleLabel.snp.bottom).offset(20)
+            make.top.equalTo(subtitleLabel.snp.bottom).offset(28)
             make.height.equalTo(40)
         }
 
@@ -359,8 +360,8 @@ class LoginViewController: UIViewController {
 
         submitButton.snp.makeConstraints { make in
             make.leading.trailing.equalToSuperview().inset(24)
-            make.top.equalTo(phoneContainer.snp.bottom).offset(20)
-            make.height.equalTo(50)
+            make.top.equalTo(phoneContainer.snp.bottom).offset(22)
+            make.height.equalTo(52)
         }
 
         agreementCheckbox.snp.makeConstraints { make in
@@ -375,29 +376,29 @@ class LoginViewController: UIViewController {
             make.centerY.equalTo(agreementCheckbox)
         }
 
-        orLeftLine.snp.makeConstraints { make in
-            make.leading.equalToSuperview().offset(24)
-            make.top.equalTo(agreementLabel.snp.bottom).offset(28)
-            make.height.equalTo(1)
-            make.trailing.equalTo(orLabel.snp.leading).offset(-12)
+        socialContainer.snp.makeConstraints { make in
+            make.leading.trailing.equalToSuperview().inset(40)
+            make.bottom.equalTo(homeIndicator.snp.top).offset(-24)
+            make.height.equalTo(54)
         }
 
         orLabel.snp.makeConstraints { make in
             make.centerX.equalToSuperview()
-            make.centerY.equalTo(orLeftLine)
+            make.bottom.equalTo(socialContainer.snp.top).offset(-18)
+        }
+
+        orLeftLine.snp.makeConstraints { make in
+            make.leading.equalToSuperview().offset(24)
+            make.centerY.equalTo(orLabel)
+            make.height.equalTo(1)
+            make.trailing.equalTo(orLabel.snp.leading).offset(-12)
         }
 
         orRightLine.snp.makeConstraints { make in
             make.trailing.equalToSuperview().offset(-24)
-            make.centerY.equalTo(orLeftLine)
+            make.centerY.equalTo(orLabel)
             make.height.equalTo(1)
             make.leading.equalTo(orLabel.snp.trailing).offset(12)
-        }
-
-        socialContainer.snp.makeConstraints { make in
-            make.leading.trailing.equalToSuperview().inset(40)
-            make.top.equalTo(orLeftLine.snp.bottom).offset(24)
-            make.height.equalTo(54)
         }
 
         homeIndicator.snp.makeConstraints { make in
