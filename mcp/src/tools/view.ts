@@ -22,7 +22,7 @@ function errResult(e: unknown) {
 export function registerViewTools(server: McpServer): void {
   server.tool(
     "capture_view",
-    "截取指定 View 的截图，返回 PNG 图片供视觉分析",
+    "截取指定 View 的截图，返回 PNG 图片供视觉分析（Android/iOS 通用）",
     {
       id: z.string().describe("View 的 id"),
       save_dir: z.string().optional().describe("若提供，将截图保存到该目录，文件名为 {id}_{timestamp}.png"),
