@@ -2,48 +2,31 @@ import UIKit
 
 class FrameModifier {
 
+    // Android 路径：解析字符串形式的 dp 值
     static func modifyFrame(_ view: UIView, widthDp: String?, heightDp: String?) {
         guard widthDp != nil || heightDp != nil else { return }
-
-        if let widthStr = widthDp {
-            if widthStr == "wrap_content" {
-                view.sizeToFit()
-            } else if let value = parseDp(widthStr) {
-                setDimension(view, attribute: .width, value: value)
-            }
+        if let widthStr = widthDp, let value = parseDp(widthStr) {
+            setFixedDimension(view, attribute: .width, value: value)
         }
-        if let heightStr = heightDp {
-            if heightStr == "wrap_content" {
-                view.sizeToFit()
-            } else if let value = parseDp(heightStr) {
-                setDimension(view, attribute: .height, value: value)
-            }
+        if let heightStr = heightDp, let value = parseDp(heightStr) {
+            setFixedDimension(view, attribute: .height, value: value)
         }
     }
 
-    // 找到现有尺寸约束改 constant；找不到则添加一条
-    private static func setDimension(_ view: UIView, attribute: NSLayoutConstraint.Attribute, value: CGFloat) {
-        // 先找 view 自身带的固定尺寸约束（firstItem == view, secondItem == nil）
-        if let existing = view.constraints.first(where: {
-            $0.firstItem === view && $0.firstAttribute == attribute && $0.secondItem == nil
-        }) {
-            existing.constant = value
-            return
-        }
-        // 再找父视图上关于该 view 的尺寸约束
-        if let existing = view.superview?.constraints.first(where: {
-            $0.firstItem === view && $0.firstAttribute == attribute && $0.secondItem == nil
-        }) {
-            existing.constant = value
-            return
-        }
-        // 都没找到：添加一条（同时把 translatesAutoresizingMask 约束关掉，避免冲突）
+    // iOS 路径直接传 CGFloat
+    static func setFixedDimension(_ view: UIView, attribute: NSLayoutConstraint.Attribute, value: CGFloat) {
+        guard let superview = view.superview else { return }
         view.translatesAutoresizingMaskIntoConstraints = false
-        let c = NSLayoutConstraint(item: view, attribute: attribute, relatedBy: .equal,
-                                   toItem: nil, attribute: .notAnAttribute,
-                                   multiplier: 1, constant: value)
-        c.priority = .required
-        view.addConstraint(c)
+        let allConstraints = view.constraints + superview.constraints
+        for c in allConstraints where c.firstAttribute == attribute && c.secondItem == nil
+            && (c.firstItem as? UIView) === view {
+            c.isActive = false
+        }
+        NSLayoutConstraint.activate([
+            NSLayoutConstraint(item: view, attribute: attribute, relatedBy: .equal,
+                               toItem: nil, attribute: .notAnAttribute,
+                               multiplier: 1, constant: value)
+        ])
     }
 
     private static func parseDp(_ str: String) -> CGFloat? {
