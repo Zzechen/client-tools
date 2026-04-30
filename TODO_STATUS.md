@@ -43,8 +43,11 @@
 | ~~P0~~ | ~~iOS SDK inspect 流程跑通~~ | ✅ 已完成：get_all_nodes 返回业务节点、modify_view 改约束生效、push_html WebView 显示 |
 | P0 | MCP 适配 iOS 连接 | 当前 MCP 走 `adb forward` + `127.0.0.1`，仅适用 Android；iOS 模拟器需直连 `localhost`，iOS 真机需 `iproxy`；需在 MCP 中增加 iOS 连接模式 |
 | P0 | iOS SDK 补齐：WebView 文件列表 | `GET /webview/files` |
-| P0 | iOS SDK 补齐：DOM 查询 | `GET /dom/all` + `GET /dom/{id}`，WKWebView JavaScriptBridge |
+| ~~P0~~ | ~~iOS SDK 补齐：DOM 查询~~ | ✅ 已完成，`GET /dom/all` + `GET /dom/{id}`，WKWebView evaluateJavaScript |
+| P2 | 所有接口统一迁移至 Protobuf | 当前 inspector/dom 系列接口仍用 JSON，统一为 PB 可减少序列化代码，与 nodes/modify 等接口一致 |
 | ~~P0~~ | ~~iOS Demo 重构：删除多余页面~~ | ✅ 已完成 |
+| P1 | inspect skill 优化：锚点对齐改为询问用户，不自动计算 | 自动计算锚点在 iOS 上因坐标系差异（WebView origin 未计入）导致视觉不对齐；应列出候选元素让用户选择，再由用户视觉确认叠加层对齐后继续 |
+| P0 | iOS modify_view 重写：约束查找逻辑缺陷导致调整无效 | 当前只查找 superview.constraints 中直接以 view 为 firstItem/secondItem 的约束，漏掉相对兄弟 View 的约束（如 top to sibling.bottom）；且找不到时新增约束与原约束冲突导致位置不变；需递归向上查找所有祖先 View 的 constraints，并正确处理 secondItem 为兄弟节点的情况 |
 | P1 | iOS modify_view：相对约束（multiplier）场景未处理 | 当前只查找 secondItem==nil 的固定尺寸约束；若宽高由相对约束决定（如 equal to superview width），会新增约束产生冲突 |
 | P1 | TODO #7：modify_view支持wrap_content | SDK侧改造 |
 | P1 | TODO #8：TextView行高对齐 | implement阶段自动计算lineHeight |
