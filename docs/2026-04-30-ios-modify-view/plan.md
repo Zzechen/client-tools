@@ -817,12 +817,59 @@ modify_view_ios(id="login_text_title", props={ text: { content: "新标题" } })
 
 ```
 modify_view_ios(id="login_social_container", props={ translateYDp: -94 })
-→ 视图整体上移 94dp，约束不被破坏，高度不变
+→ 视图整体上移 94dp，约束不被破坏，高度不变（区别于之前 margin 实现会拉伸高度）
+get_all_nodes → login_social_container.heightDp 与修改前相同
 modify_view_ios(id="login_social_container", props={ translateYDp: 0 })
+→ 恢复原位，高度仍不变
+```
+
+- [ ] **Step 8: 测试 widthDp/heightDp**
+
+```
+记录初始值：get_all_nodes → login_input_phone_container.widthDp（应为 327）
+modify_view_ios(id="login_input_phone_container", props={ widthDp: 200 })
+get_all_nodes → login_input_phone_container.widthDp 应为 200
+modify_view_ios(id="login_input_phone_container", props={ widthDp: 327 })
+get_all_nodes → 恢复 327
+```
+
+- [ ] **Step 9: 测试 widthDp 与 translateX 组合（互不干扰）**
+
+```
+modify_view_ios(id="login_input_phone_container", props={ widthDp: 200, translateXDp: 24 })
+get_all_nodes → widthDp=200，screenX 相对原值增加 24
+modify_view_ios(id="login_input_phone_container", props={ widthDp: 327, translateXDp: 0 })
 → 恢复
 ```
 
-- [ ] **Step 8: Commit**
+- [ ] **Step 10: 测试 text.content + letterSpacingEm 组合**
+
+```
+modify_view_ios(id="login_text_title", props={ text: { content: "欢迎回来，测试文案较长看省略", letterSpacingEm: 0.05 } })
+→ 文案替换，字间距增大，视觉可见
+modify_view_ios(id="login_text_title", props={ text: { content: "欢迎回来" } })
+→ 文案恢复
+```
+
+- [ ] **Step 11: 测试 text 断言失败时其他属性也不生效**
+
+```
+记录初始值：get_all_nodes → login_btn_submit.screenY
+modify_view_ios(id="login_btn_submit", props={ translateYDp: -30, text: { content: "测试" } })
+→ 应返回错误，message 包含"UILabel"
+get_all_nodes → login_btn_submit.screenY 与初始值相同（translateYDp 也没有生效）
+```
+
+- [ ] **Step 12: 测试幂等性（多次相同调用结果一致）**
+
+```
+modify_view_ios(id="login_btn_submit", props={ translateYDp: -20 })
+modify_view_ios(id="login_btn_submit", props={ translateYDp: -20 })
+modify_view_ios(id="login_btn_submit", props={ translateYDp: -20 })
+get_all_nodes → login_btn_submit.screenY 减少约 20（不是 60）
+```
+
+- [ ] **Step 13: Commit**
 
 ```bash
 git add -A
