@@ -73,28 +73,7 @@ class ViewModifyService {
             // 1. transform
             Self.applyTransform(to: view, props: props)
 
-            // 2. 宽高
-            if props.hasWidthDp {
-                FrameModifier.setFixedDimension(view, attribute: .width, value: CGFloat(props.widthDp.value))
-            }
-            if props.hasHeightDp {
-                FrameModifier.setFixedDimension(view, attribute: .height, value: CGFloat(props.heightDp.value))
-            }
-
-            // 3. padding
-            let hasPadding = props.hasPaddingTopDiffDp || props.hasPaddingBottomDiffDp ||
-                             props.hasPaddingLeftDiffDp || props.hasPaddingRightDiffDp
-            if hasPadding {
-                let insets = UIEdgeInsets(
-                    top: CGFloat(props.paddingTopDiffDp.value),
-                    left: CGFloat(props.paddingLeftDiffDp.value),
-                    bottom: CGFloat(props.paddingBottomDiffDp.value),
-                    right: CGFloat(props.paddingRightDiffDp.value)
-                )
-                PaddingModifier.modifyPadding(view, insets: insets)
-            }
-
-            // 4. 文字属性（已断言是 UILabel）
+            // 2. 文字属性（已断言是 UILabel）
             if props.hasText, let label = view as? UILabel {
                 Self.applyTextProps(to: label, text: props.text)
             }

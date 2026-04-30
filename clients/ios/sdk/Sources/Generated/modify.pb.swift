@@ -266,60 +266,6 @@ struct Clienttools_IosViewProps: Sendable {
   /// Clears the value of `scaleY`. Subsequent reads from it will return its default value.
   mutating func clearScaleY() {self._scaleY = nil}
 
-  var widthDp: SwiftProtobuf.Google_Protobuf_FloatValue {
-    get {_widthDp ?? SwiftProtobuf.Google_Protobuf_FloatValue()}
-    set {_widthDp = newValue}
-  }
-  /// Returns true if `widthDp` has been explicitly set.
-  var hasWidthDp: Bool {self._widthDp != nil}
-  /// Clears the value of `widthDp`. Subsequent reads from it will return its default value.
-  mutating func clearWidthDp() {self._widthDp = nil}
-
-  var heightDp: SwiftProtobuf.Google_Protobuf_FloatValue {
-    get {_heightDp ?? SwiftProtobuf.Google_Protobuf_FloatValue()}
-    set {_heightDp = newValue}
-  }
-  /// Returns true if `heightDp` has been explicitly set.
-  var hasHeightDp: Bool {self._heightDp != nil}
-  /// Clears the value of `heightDp`. Subsequent reads from it will return its default value.
-  mutating func clearHeightDp() {self._heightDp = nil}
-
-  var paddingTopDiffDp: SwiftProtobuf.Google_Protobuf_FloatValue {
-    get {_paddingTopDiffDp ?? SwiftProtobuf.Google_Protobuf_FloatValue()}
-    set {_paddingTopDiffDp = newValue}
-  }
-  /// Returns true if `paddingTopDiffDp` has been explicitly set.
-  var hasPaddingTopDiffDp: Bool {self._paddingTopDiffDp != nil}
-  /// Clears the value of `paddingTopDiffDp`. Subsequent reads from it will return its default value.
-  mutating func clearPaddingTopDiffDp() {self._paddingTopDiffDp = nil}
-
-  var paddingBottomDiffDp: SwiftProtobuf.Google_Protobuf_FloatValue {
-    get {_paddingBottomDiffDp ?? SwiftProtobuf.Google_Protobuf_FloatValue()}
-    set {_paddingBottomDiffDp = newValue}
-  }
-  /// Returns true if `paddingBottomDiffDp` has been explicitly set.
-  var hasPaddingBottomDiffDp: Bool {self._paddingBottomDiffDp != nil}
-  /// Clears the value of `paddingBottomDiffDp`. Subsequent reads from it will return its default value.
-  mutating func clearPaddingBottomDiffDp() {self._paddingBottomDiffDp = nil}
-
-  var paddingLeftDiffDp: SwiftProtobuf.Google_Protobuf_FloatValue {
-    get {_paddingLeftDiffDp ?? SwiftProtobuf.Google_Protobuf_FloatValue()}
-    set {_paddingLeftDiffDp = newValue}
-  }
-  /// Returns true if `paddingLeftDiffDp` has been explicitly set.
-  var hasPaddingLeftDiffDp: Bool {self._paddingLeftDiffDp != nil}
-  /// Clears the value of `paddingLeftDiffDp`. Subsequent reads from it will return its default value.
-  mutating func clearPaddingLeftDiffDp() {self._paddingLeftDiffDp = nil}
-
-  var paddingRightDiffDp: SwiftProtobuf.Google_Protobuf_FloatValue {
-    get {_paddingRightDiffDp ?? SwiftProtobuf.Google_Protobuf_FloatValue()}
-    set {_paddingRightDiffDp = newValue}
-  }
-  /// Returns true if `paddingRightDiffDp` has been explicitly set.
-  var hasPaddingRightDiffDp: Bool {self._paddingRightDiffDp != nil}
-  /// Clears the value of `paddingRightDiffDp`. Subsequent reads from it will return its default value.
-  mutating func clearPaddingRightDiffDp() {self._paddingRightDiffDp = nil}
-
   var text: Clienttools_IosTextProps {
     get {_text ?? Clienttools_IosTextProps()}
     set {_text = newValue}
@@ -337,12 +283,6 @@ struct Clienttools_IosViewProps: Sendable {
   fileprivate var _translateYDp: SwiftProtobuf.Google_Protobuf_FloatValue? = nil
   fileprivate var _scaleX: SwiftProtobuf.Google_Protobuf_FloatValue? = nil
   fileprivate var _scaleY: SwiftProtobuf.Google_Protobuf_FloatValue? = nil
-  fileprivate var _widthDp: SwiftProtobuf.Google_Protobuf_FloatValue? = nil
-  fileprivate var _heightDp: SwiftProtobuf.Google_Protobuf_FloatValue? = nil
-  fileprivate var _paddingTopDiffDp: SwiftProtobuf.Google_Protobuf_FloatValue? = nil
-  fileprivate var _paddingBottomDiffDp: SwiftProtobuf.Google_Protobuf_FloatValue? = nil
-  fileprivate var _paddingLeftDiffDp: SwiftProtobuf.Google_Protobuf_FloatValue? = nil
-  fileprivate var _paddingRightDiffDp: SwiftProtobuf.Google_Protobuf_FloatValue? = nil
   fileprivate var _text: Clienttools_IosTextProps? = nil
 }
 
@@ -608,7 +548,7 @@ extension Clienttools_IosTextProps: SwiftProtobuf.Message, SwiftProtobuf._Messag
 
 extension Clienttools_IosViewProps: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   static let protoMessageName: String = _protobuf_package + ".IosViewProps"
-  static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{3}translate_x_dp\0\u{3}translate_y_dp\0\u{3}scale_x\0\u{3}scale_y\0\u{3}width_dp\0\u{3}height_dp\0\u{3}padding_top_diff_dp\0\u{3}padding_bottom_diff_dp\0\u{3}padding_left_diff_dp\0\u{3}padding_right_diff_dp\0\u{1}text\0")
+  static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{3}translate_x_dp\0\u{3}translate_y_dp\0\u{3}scale_x\0\u{3}scale_y\0\u{2}\u{7}text\0")
 
   mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -620,12 +560,6 @@ extension Clienttools_IosViewProps: SwiftProtobuf.Message, SwiftProtobuf._Messag
       case 2: try { try decoder.decodeSingularMessageField(value: &self._translateYDp) }()
       case 3: try { try decoder.decodeSingularMessageField(value: &self._scaleX) }()
       case 4: try { try decoder.decodeSingularMessageField(value: &self._scaleY) }()
-      case 5: try { try decoder.decodeSingularMessageField(value: &self._widthDp) }()
-      case 6: try { try decoder.decodeSingularMessageField(value: &self._heightDp) }()
-      case 7: try { try decoder.decodeSingularMessageField(value: &self._paddingTopDiffDp) }()
-      case 8: try { try decoder.decodeSingularMessageField(value: &self._paddingBottomDiffDp) }()
-      case 9: try { try decoder.decodeSingularMessageField(value: &self._paddingLeftDiffDp) }()
-      case 10: try { try decoder.decodeSingularMessageField(value: &self._paddingRightDiffDp) }()
       case 11: try { try decoder.decodeSingularMessageField(value: &self._text) }()
       default: break
       }
@@ -649,24 +583,6 @@ extension Clienttools_IosViewProps: SwiftProtobuf.Message, SwiftProtobuf._Messag
     try { if let v = self._scaleY {
       try visitor.visitSingularMessageField(value: v, fieldNumber: 4)
     } }()
-    try { if let v = self._widthDp {
-      try visitor.visitSingularMessageField(value: v, fieldNumber: 5)
-    } }()
-    try { if let v = self._heightDp {
-      try visitor.visitSingularMessageField(value: v, fieldNumber: 6)
-    } }()
-    try { if let v = self._paddingTopDiffDp {
-      try visitor.visitSingularMessageField(value: v, fieldNumber: 7)
-    } }()
-    try { if let v = self._paddingBottomDiffDp {
-      try visitor.visitSingularMessageField(value: v, fieldNumber: 8)
-    } }()
-    try { if let v = self._paddingLeftDiffDp {
-      try visitor.visitSingularMessageField(value: v, fieldNumber: 9)
-    } }()
-    try { if let v = self._paddingRightDiffDp {
-      try visitor.visitSingularMessageField(value: v, fieldNumber: 10)
-    } }()
     try { if let v = self._text {
       try visitor.visitSingularMessageField(value: v, fieldNumber: 11)
     } }()
@@ -678,12 +594,6 @@ extension Clienttools_IosViewProps: SwiftProtobuf.Message, SwiftProtobuf._Messag
     if lhs._translateYDp != rhs._translateYDp {return false}
     if lhs._scaleX != rhs._scaleX {return false}
     if lhs._scaleY != rhs._scaleY {return false}
-    if lhs._widthDp != rhs._widthDp {return false}
-    if lhs._heightDp != rhs._heightDp {return false}
-    if lhs._paddingTopDiffDp != rhs._paddingTopDiffDp {return false}
-    if lhs._paddingBottomDiffDp != rhs._paddingBottomDiffDp {return false}
-    if lhs._paddingLeftDiffDp != rhs._paddingLeftDiffDp {return false}
-    if lhs._paddingRightDiffDp != rhs._paddingRightDiffDp {return false}
     if lhs._text != rhs._text {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true

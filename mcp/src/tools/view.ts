@@ -122,12 +122,6 @@ export function registerViewTools(server: McpServer): void {
     translateYDp: z.number().optional().describe("Y 轴位移绝对值（dp），屏幕空间，不受 scale 影响"),
     scaleX: z.number().optional().describe("X 轴缩放绝对值，1.0 为原始大小"),
     scaleY: z.number().optional().describe("Y 轴缩放绝对值，1.0 为原始大小"),
-    widthDp: z.number().optional().describe("宽度绝对值（dp）"),
-    heightDp: z.number().optional().describe("高度绝对值（dp）"),
-    paddingTopDiffDp: z.number().optional(),
-    paddingBottomDiffDp: z.number().optional(),
-    paddingLeftDiffDp: z.number().optional(),
-    paddingRightDiffDp: z.number().optional(),
     text: IosTextPropsZod.optional(),
   }).describe("iOS View 属性");
 
@@ -148,12 +142,6 @@ export function registerViewTools(server: McpServer): void {
           ...(props.translateYDp !== undefined && { translateYDp: props.translateYDp }),
           ...(props.scaleX !== undefined && { scaleX: props.scaleX }),
           ...(props.scaleY !== undefined && { scaleY: props.scaleY }),
-          ...(props.widthDp !== undefined && { widthDp: props.widthDp }),
-          ...(props.heightDp !== undefined && { heightDp: props.heightDp }),
-          ...(props.paddingTopDiffDp !== undefined && { paddingTopDiffDp: props.paddingTopDiffDp }),
-          ...(props.paddingBottomDiffDp !== undefined && { paddingBottomDiffDp: props.paddingBottomDiffDp }),
-          ...(props.paddingLeftDiffDp !== undefined && { paddingLeftDiffDp: props.paddingLeftDiffDp }),
-          ...(props.paddingRightDiffDp !== undefined && { paddingRightDiffDp: props.paddingRightDiffDp }),
           ...(textProps && { text: textProps }),
         };
         const req = create(ModifyViewIosRequestSchema, { id, props: iosProps });
