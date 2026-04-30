@@ -45,8 +45,9 @@ message ModifyViewIosRequest {
 }
 
 message IosTextProps {
-  optional float letter_spacing_em = 1;
-  optional float line_spacing_extra_dp = 2;
+  optional string content = 1;           // 替换文案内容
+  optional float letter_spacing_em = 2;
+  optional float line_spacing_extra_dp = 3;
 }
 ```
 
@@ -176,7 +177,7 @@ node.scaleY = Float(sqrt(t.b * t.b + t.d * t.d))
 - `scaleX`, `scaleY`（缩放绝对值，1.0 原始大小）
 - `widthDp`, `heightDp`
 - `paddingTopDiffDp`, `paddingBottomDiffDp`, `paddingLeftDiffDp`, `paddingRightDiffDp`
-- `text`: `{ letterSpacingEm?, lineSpacingExtraDp? }`（传此字段则断言 view 为 UILabel）
+- `text`: `{ content?, letterSpacingEm?, lineSpacingExtraDp? }`（传此字段则断言 view 为 UILabel）
 
 ### endpoint 映射
 
