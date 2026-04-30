@@ -25,6 +25,35 @@ message ModifyViewRequest {
   ViewProps props = 2;
 }
 
+message IosTextProps {
+  google.protobuf.StringValue content = 1;
+  google.protobuf.FloatValue letter_spacing_em = 2;
+  google.protobuf.FloatValue line_spacing_extra_dp = 3;
+}
+
+message IosViewProps {
+  google.protobuf.FloatValue translate_x_dp = 1;
+  google.protobuf.FloatValue translate_y_dp = 2;
+  google.protobuf.FloatValue scale_x = 3;
+  google.protobuf.FloatValue scale_y = 4;
+  google.protobuf.FloatValue width_dp = 5;
+  google.protobuf.FloatValue height_dp = 6;
+  google.protobuf.FloatValue padding_top_diff_dp = 7;
+  google.protobuf.FloatValue padding_bottom_diff_dp = 8;
+  google.protobuf.FloatValue padding_left_diff_dp = 9;
+  google.protobuf.FloatValue padding_right_diff_dp = 10;
+  IosTextProps text = 11;
+}
+
+message ModifyViewIosRequest {
+  string id = 1;
+  IosViewProps props = 2;
+}
+
+message ModifyResponse {
+  string message = 1;
+}
+
 message ClickRequest { string id = 1; }
 message ClickResult  { string id = 1; }
 

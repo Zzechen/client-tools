@@ -18,7 +18,7 @@ message Empty {}
 message PageResponse     { ResponseMeta meta = 1; PageInfo data = 2; }
 message NodeResponse     { ResponseMeta meta = 1; Node data = 2; }
 message NodeListResponse { ResponseMeta meta = 1; NodeList data = 2; }
-message ModifyResponse   { ResponseMeta meta = 1; }
+message ModifyResponse   { ResponseMeta meta = 1; string message = 2; }
 message ClickResponse    { ResponseMeta meta = 1; ClickResult data = 2; }
 message ScrollResponse   { ResponseMeta meta = 1; ScrollResult data = 2; }
 message SimpleResponse   { ResponseMeta meta = 1; }
