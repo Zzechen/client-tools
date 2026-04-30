@@ -26,6 +26,10 @@ class ViewQueryService {
         node.screenY = vn.screenY
         node.widthDp = vn.widthDp
         node.heightDp = vn.heightDp
+        node.translateX = vn.translateX
+        node.translateY = vn.translateY
+        node.scaleX = vn.scaleX
+        node.scaleY = vn.scaleY
 
         var nodeAttrs = Clienttools_NodeAttrs()
         switch vn.attrs {
@@ -77,7 +81,8 @@ class ViewQueryService {
         guard let window = UIApplication.shared.connectedScenes
             .compactMap({ $0 as? UIWindowScene })
             .flatMap({ $0.windows })
-            .first(where: { $0.isKeyWindow }) else { return nil }
+            .filter({ $0.tag != OverlayManager.overlayTag && !$0.isHidden })
+            .min(by: { $0.windowLevel < $1.windowLevel }) else { return nil }
         return findView(in: window, byId: id, path: "")
     }
 

@@ -12,10 +12,13 @@ class ViewTraverser {
             let viewId = ViewHashGenerator.generateId(for: subview, path: childPath)
 
             let origin = subview.convert(CGPoint.zero, to: nil)
-            if viewId == "login_btn_close" {
-                print("[CT-DEBUG] View login_btn_close: frame=\(subview.frame) transform=\(subview.transform) convert(.zero,nil)=\(origin) superview.frame=\(subview.superview?.frame ?? .zero)")
-            }
             let visibilityCode: Int = subview.isHidden ? 8 : (subview.alpha == 0 ? 4 : 0)
+
+            let t = subview.transform
+            let tx = Float(t.tx)
+            let ty = Float(t.ty)
+            let sx = Float(sqrt(t.a * t.a + t.c * t.c))
+            let sy = Float(sqrt(t.b * t.b + t.d * t.d))
 
             let node = ViewNode(
                 id: viewId,
@@ -26,7 +29,11 @@ class ViewTraverser {
                 heightDp: Float(subview.bounds.height),
                 visibility: visibilityCode,
                 isEnabled: subview.isUserInteractionEnabled,
-                attrs: StyleQuerier.query(subview)
+                attrs: StyleQuerier.query(subview),
+                translateX: tx,
+                translateY: ty,
+                scaleX: sx == 0 ? 1 : sx,
+                scaleY: sy == 0 ? 1 : sy
             )
 
             nodes.append(node)
