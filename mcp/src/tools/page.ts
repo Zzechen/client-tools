@@ -17,14 +17,14 @@ function errResult(e: unknown) {
 }
 
 export function registerPageTools(server: McpServer): void {
-  server.tool("get_current_page", "查询当前 Android 页面名称", {}, async () => {
+  server.tool("get_current_page", "查询当前页面名称（Android/iOS 通用）", {}, async () => {
     try {
       const res = await sdkGet("/api/page/current", PageResponseSchema);
       return { content: [{ type: "text" as const, text: JSON.stringify({ pageName: res.data?.pageName, timestamp: res.data?.timestamp }) }] };
     } catch (e) { return errResult(e); }
   });
 
-  server.tool("click_view", "点击指定 id 的 Android View", { id: z.string() }, async ({ id }) => {
+  server.tool("click_view", "点击指定 id 的 View（Android/iOS 通用）", { id: z.string().describe("View 的 id（Android resource id 不含包名前缀，iOS 为 accessibilityIdentifier）") }, async ({ id }) => {
     try {
       const req = create(ClickRequestSchema, { id });
       const res = await sdkPost("/api/click", ClickRequestSchema, req, ClickResponseSchema);
@@ -34,9 +34,9 @@ export function registerPageTools(server: McpServer): void {
 
   server.tool(
     "scroll_view",
-    "滚动指定 id 的 Android View，单位 dp",
+    "滚动指定 id 的 View，单位 dp（Android/iOS 通用）",
     {
-      id: z.string(),
+      id: z.string().describe("View 的 id（Android resource id 不含包名前缀，iOS 为 accessibilityIdentifier）"),
       dx: z.number().describe("横向滚动量，dp，正值向左滚"),
       dy: z.number().describe("竖向滚动量，dp，正值向上滚"),
     },
