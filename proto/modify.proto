@@ -4,57 +4,79 @@ option java_package = "com.clienttools.sdk.proto";
 option java_multiple_files = true;
 import "google/protobuf/wrappers.proto";
 
-message ViewProps {
-  google.protobuf.FloatValue margin_top_diff_dp = 1;
-  google.protobuf.FloatValue margin_bottom_diff_dp = 2;
-  google.protobuf.FloatValue margin_left_diff_dp = 3;
-  google.protobuf.FloatValue margin_right_diff_dp = 4;
-  google.protobuf.FloatValue padding_top_diff_dp = 5;
-  google.protobuf.FloatValue padding_bottom_diff_dp = 6;
-  google.protobuf.FloatValue padding_left_diff_dp = 7;
-  google.protobuf.FloatValue padding_right_diff_dp = 8;
-  google.protobuf.StringValue width_dp = 9;
-  google.protobuf.StringValue height_dp = 10;
-  google.protobuf.FloatValue letter_spacing_em = 11;
-  google.protobuf.FloatValue line_spacing_extra_dp = 12;
-  google.protobuf.BoolValue include_font_padding = 13;
+message AndroidMarginProps {
+  google.protobuf.FloatValue top_diff_dp    = 1;
+  google.protobuf.FloatValue bottom_diff_dp = 2;
+  google.protobuf.FloatValue left_diff_dp   = 3;
+  google.protobuf.FloatValue right_diff_dp  = 4;
 }
 
-message ModifyViewRequest {
-  string id = 1;
-  ViewProps props = 2;
+message AndroidPaddingProps {
+  google.protobuf.FloatValue top_diff_dp    = 1;
+  google.protobuf.FloatValue bottom_diff_dp = 2;
+  google.protobuf.FloatValue left_diff_dp   = 3;
+  google.protobuf.FloatValue right_diff_dp  = 4;
+}
+
+message AndroidSizeProps {
+  oneof width {
+    float width_dp           = 1;
+    bool  width_wrap_content = 2;
+  }
+  oneof height {
+    float height_dp           = 3;
+    bool  height_wrap_content = 4;
+  }
+}
+
+message AndroidTextProps {
+  google.protobuf.FloatValue letter_spacing_em     = 1;
+  google.protobuf.FloatValue line_spacing_extra_dp = 2;
+  google.protobuf.BoolValue  include_font_padding  = 3;
+}
+
+message AndroidViewProps {
+  AndroidMarginProps  margin  = 1;
+  AndroidPaddingProps padding = 2;
+  AndroidSizeProps    size    = 3;
+  AndroidTextProps    text    = 4;
+}
+
+message ModifyViewAndroidRequest {
+  string           id    = 1;
+  AndroidViewProps props = 2;
 }
 
 message IosTextProps {
-  google.protobuf.StringValue content = 1;
-  google.protobuf.FloatValue letter_spacing_em = 2;
-  google.protobuf.FloatValue line_spacing_extra_dp = 3;
+  google.protobuf.StringValue content               = 1;
+  google.protobuf.FloatValue  letter_spacing_em     = 2;
+  google.protobuf.FloatValue  line_spacing_extra_dp = 3;
 }
 
 message IosViewProps {
   google.protobuf.FloatValue translate_x_dp = 1;
   google.protobuf.FloatValue translate_y_dp = 2;
-  google.protobuf.FloatValue scale_x = 3;
-  google.protobuf.FloatValue scale_y = 4;
-  optional IosTextProps text = 11;
+  google.protobuf.FloatValue scale_x        = 3;
+  google.protobuf.FloatValue scale_y        = 4;
+  optional IosTextProps      text           = 11;
 }
 
 message ModifyViewIosRequest {
-  string id = 1;
+  string       id    = 1;
   IosViewProps props = 2;
 }
 
-message ClickRequest { string id = 1; }
-message ClickResult  { string id = 1; }
+message ClickRequest  { string id = 1; }
+message ClickResult   { string id = 1; }
 
 message ScrollRequest {
   string id = 1;
-  float dx = 2;
-  float dy = 3;
+  float  dx = 2;
+  float  dy = 3;
 }
 
 message ScrollResult {
   string id = 1;
-  float dx = 2;
-  float dy = 3;
+  float  dx = 2;
+  float  dy = 3;
 }

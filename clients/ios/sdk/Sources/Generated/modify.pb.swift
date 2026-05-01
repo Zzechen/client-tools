@@ -20,100 +20,170 @@ fileprivate struct _GeneratedWithProtocGenSwiftVersion: SwiftProtobuf.ProtobufAP
   typealias Version = _2
 }
 
-struct Clienttools_ViewProps: Sendable {
+struct Clienttools_AndroidMarginProps: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
 
-  var marginTopDiffDp: SwiftProtobuf.Google_Protobuf_FloatValue {
-    get {_marginTopDiffDp ?? SwiftProtobuf.Google_Protobuf_FloatValue()}
-    set {_marginTopDiffDp = newValue}
+  var topDiffDp: SwiftProtobuf.Google_Protobuf_FloatValue {
+    get {_topDiffDp ?? SwiftProtobuf.Google_Protobuf_FloatValue()}
+    set {_topDiffDp = newValue}
   }
-  /// Returns true if `marginTopDiffDp` has been explicitly set.
-  var hasMarginTopDiffDp: Bool {self._marginTopDiffDp != nil}
-  /// Clears the value of `marginTopDiffDp`. Subsequent reads from it will return its default value.
-  mutating func clearMarginTopDiffDp() {self._marginTopDiffDp = nil}
+  /// Returns true if `topDiffDp` has been explicitly set.
+  var hasTopDiffDp: Bool {self._topDiffDp != nil}
+  /// Clears the value of `topDiffDp`. Subsequent reads from it will return its default value.
+  mutating func clearTopDiffDp() {self._topDiffDp = nil}
 
-  var marginBottomDiffDp: SwiftProtobuf.Google_Protobuf_FloatValue {
-    get {_marginBottomDiffDp ?? SwiftProtobuf.Google_Protobuf_FloatValue()}
-    set {_marginBottomDiffDp = newValue}
+  var bottomDiffDp: SwiftProtobuf.Google_Protobuf_FloatValue {
+    get {_bottomDiffDp ?? SwiftProtobuf.Google_Protobuf_FloatValue()}
+    set {_bottomDiffDp = newValue}
   }
-  /// Returns true if `marginBottomDiffDp` has been explicitly set.
-  var hasMarginBottomDiffDp: Bool {self._marginBottomDiffDp != nil}
-  /// Clears the value of `marginBottomDiffDp`. Subsequent reads from it will return its default value.
-  mutating func clearMarginBottomDiffDp() {self._marginBottomDiffDp = nil}
+  /// Returns true if `bottomDiffDp` has been explicitly set.
+  var hasBottomDiffDp: Bool {self._bottomDiffDp != nil}
+  /// Clears the value of `bottomDiffDp`. Subsequent reads from it will return its default value.
+  mutating func clearBottomDiffDp() {self._bottomDiffDp = nil}
 
-  var marginLeftDiffDp: SwiftProtobuf.Google_Protobuf_FloatValue {
-    get {_marginLeftDiffDp ?? SwiftProtobuf.Google_Protobuf_FloatValue()}
-    set {_marginLeftDiffDp = newValue}
+  var leftDiffDp: SwiftProtobuf.Google_Protobuf_FloatValue {
+    get {_leftDiffDp ?? SwiftProtobuf.Google_Protobuf_FloatValue()}
+    set {_leftDiffDp = newValue}
   }
-  /// Returns true if `marginLeftDiffDp` has been explicitly set.
-  var hasMarginLeftDiffDp: Bool {self._marginLeftDiffDp != nil}
-  /// Clears the value of `marginLeftDiffDp`. Subsequent reads from it will return its default value.
-  mutating func clearMarginLeftDiffDp() {self._marginLeftDiffDp = nil}
+  /// Returns true if `leftDiffDp` has been explicitly set.
+  var hasLeftDiffDp: Bool {self._leftDiffDp != nil}
+  /// Clears the value of `leftDiffDp`. Subsequent reads from it will return its default value.
+  mutating func clearLeftDiffDp() {self._leftDiffDp = nil}
 
-  var marginRightDiffDp: SwiftProtobuf.Google_Protobuf_FloatValue {
-    get {_marginRightDiffDp ?? SwiftProtobuf.Google_Protobuf_FloatValue()}
-    set {_marginRightDiffDp = newValue}
+  var rightDiffDp: SwiftProtobuf.Google_Protobuf_FloatValue {
+    get {_rightDiffDp ?? SwiftProtobuf.Google_Protobuf_FloatValue()}
+    set {_rightDiffDp = newValue}
   }
-  /// Returns true if `marginRightDiffDp` has been explicitly set.
-  var hasMarginRightDiffDp: Bool {self._marginRightDiffDp != nil}
-  /// Clears the value of `marginRightDiffDp`. Subsequent reads from it will return its default value.
-  mutating func clearMarginRightDiffDp() {self._marginRightDiffDp = nil}
+  /// Returns true if `rightDiffDp` has been explicitly set.
+  var hasRightDiffDp: Bool {self._rightDiffDp != nil}
+  /// Clears the value of `rightDiffDp`. Subsequent reads from it will return its default value.
+  mutating func clearRightDiffDp() {self._rightDiffDp = nil}
 
-  var paddingTopDiffDp: SwiftProtobuf.Google_Protobuf_FloatValue {
-    get {_paddingTopDiffDp ?? SwiftProtobuf.Google_Protobuf_FloatValue()}
-    set {_paddingTopDiffDp = newValue}
-  }
-  /// Returns true if `paddingTopDiffDp` has been explicitly set.
-  var hasPaddingTopDiffDp: Bool {self._paddingTopDiffDp != nil}
-  /// Clears the value of `paddingTopDiffDp`. Subsequent reads from it will return its default value.
-  mutating func clearPaddingTopDiffDp() {self._paddingTopDiffDp = nil}
+  var unknownFields = SwiftProtobuf.UnknownStorage()
 
-  var paddingBottomDiffDp: SwiftProtobuf.Google_Protobuf_FloatValue {
-    get {_paddingBottomDiffDp ?? SwiftProtobuf.Google_Protobuf_FloatValue()}
-    set {_paddingBottomDiffDp = newValue}
-  }
-  /// Returns true if `paddingBottomDiffDp` has been explicitly set.
-  var hasPaddingBottomDiffDp: Bool {self._paddingBottomDiffDp != nil}
-  /// Clears the value of `paddingBottomDiffDp`. Subsequent reads from it will return its default value.
-  mutating func clearPaddingBottomDiffDp() {self._paddingBottomDiffDp = nil}
+  init() {}
 
-  var paddingLeftDiffDp: SwiftProtobuf.Google_Protobuf_FloatValue {
-    get {_paddingLeftDiffDp ?? SwiftProtobuf.Google_Protobuf_FloatValue()}
-    set {_paddingLeftDiffDp = newValue}
-  }
-  /// Returns true if `paddingLeftDiffDp` has been explicitly set.
-  var hasPaddingLeftDiffDp: Bool {self._paddingLeftDiffDp != nil}
-  /// Clears the value of `paddingLeftDiffDp`. Subsequent reads from it will return its default value.
-  mutating func clearPaddingLeftDiffDp() {self._paddingLeftDiffDp = nil}
+  fileprivate var _topDiffDp: SwiftProtobuf.Google_Protobuf_FloatValue? = nil
+  fileprivate var _bottomDiffDp: SwiftProtobuf.Google_Protobuf_FloatValue? = nil
+  fileprivate var _leftDiffDp: SwiftProtobuf.Google_Protobuf_FloatValue? = nil
+  fileprivate var _rightDiffDp: SwiftProtobuf.Google_Protobuf_FloatValue? = nil
+}
 
-  var paddingRightDiffDp: SwiftProtobuf.Google_Protobuf_FloatValue {
-    get {_paddingRightDiffDp ?? SwiftProtobuf.Google_Protobuf_FloatValue()}
-    set {_paddingRightDiffDp = newValue}
-  }
-  /// Returns true if `paddingRightDiffDp` has been explicitly set.
-  var hasPaddingRightDiffDp: Bool {self._paddingRightDiffDp != nil}
-  /// Clears the value of `paddingRightDiffDp`. Subsequent reads from it will return its default value.
-  mutating func clearPaddingRightDiffDp() {self._paddingRightDiffDp = nil}
+struct Clienttools_AndroidPaddingProps: Sendable {
+  // SwiftProtobuf.Message conformance is added in an extension below. See the
+  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+  // methods supported on all messages.
 
-  var widthDp: SwiftProtobuf.Google_Protobuf_StringValue {
-    get {_widthDp ?? SwiftProtobuf.Google_Protobuf_StringValue()}
-    set {_widthDp = newValue}
+  var topDiffDp: SwiftProtobuf.Google_Protobuf_FloatValue {
+    get {_topDiffDp ?? SwiftProtobuf.Google_Protobuf_FloatValue()}
+    set {_topDiffDp = newValue}
   }
-  /// Returns true if `widthDp` has been explicitly set.
-  var hasWidthDp: Bool {self._widthDp != nil}
-  /// Clears the value of `widthDp`. Subsequent reads from it will return its default value.
-  mutating func clearWidthDp() {self._widthDp = nil}
+  /// Returns true if `topDiffDp` has been explicitly set.
+  var hasTopDiffDp: Bool {self._topDiffDp != nil}
+  /// Clears the value of `topDiffDp`. Subsequent reads from it will return its default value.
+  mutating func clearTopDiffDp() {self._topDiffDp = nil}
 
-  var heightDp: SwiftProtobuf.Google_Protobuf_StringValue {
-    get {_heightDp ?? SwiftProtobuf.Google_Protobuf_StringValue()}
-    set {_heightDp = newValue}
+  var bottomDiffDp: SwiftProtobuf.Google_Protobuf_FloatValue {
+    get {_bottomDiffDp ?? SwiftProtobuf.Google_Protobuf_FloatValue()}
+    set {_bottomDiffDp = newValue}
   }
-  /// Returns true if `heightDp` has been explicitly set.
-  var hasHeightDp: Bool {self._heightDp != nil}
-  /// Clears the value of `heightDp`. Subsequent reads from it will return its default value.
-  mutating func clearHeightDp() {self._heightDp = nil}
+  /// Returns true if `bottomDiffDp` has been explicitly set.
+  var hasBottomDiffDp: Bool {self._bottomDiffDp != nil}
+  /// Clears the value of `bottomDiffDp`. Subsequent reads from it will return its default value.
+  mutating func clearBottomDiffDp() {self._bottomDiffDp = nil}
+
+  var leftDiffDp: SwiftProtobuf.Google_Protobuf_FloatValue {
+    get {_leftDiffDp ?? SwiftProtobuf.Google_Protobuf_FloatValue()}
+    set {_leftDiffDp = newValue}
+  }
+  /// Returns true if `leftDiffDp` has been explicitly set.
+  var hasLeftDiffDp: Bool {self._leftDiffDp != nil}
+  /// Clears the value of `leftDiffDp`. Subsequent reads from it will return its default value.
+  mutating func clearLeftDiffDp() {self._leftDiffDp = nil}
+
+  var rightDiffDp: SwiftProtobuf.Google_Protobuf_FloatValue {
+    get {_rightDiffDp ?? SwiftProtobuf.Google_Protobuf_FloatValue()}
+    set {_rightDiffDp = newValue}
+  }
+  /// Returns true if `rightDiffDp` has been explicitly set.
+  var hasRightDiffDp: Bool {self._rightDiffDp != nil}
+  /// Clears the value of `rightDiffDp`. Subsequent reads from it will return its default value.
+  mutating func clearRightDiffDp() {self._rightDiffDp = nil}
+
+  var unknownFields = SwiftProtobuf.UnknownStorage()
+
+  init() {}
+
+  fileprivate var _topDiffDp: SwiftProtobuf.Google_Protobuf_FloatValue? = nil
+  fileprivate var _bottomDiffDp: SwiftProtobuf.Google_Protobuf_FloatValue? = nil
+  fileprivate var _leftDiffDp: SwiftProtobuf.Google_Protobuf_FloatValue? = nil
+  fileprivate var _rightDiffDp: SwiftProtobuf.Google_Protobuf_FloatValue? = nil
+}
+
+struct Clienttools_AndroidSizeProps: Sendable {
+  // SwiftProtobuf.Message conformance is added in an extension below. See the
+  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+  // methods supported on all messages.
+
+  var width: Clienttools_AndroidSizeProps.OneOf_Width? = nil
+
+  var widthDp: Float {
+    get {
+      if case .widthDp(let v)? = width {return v}
+      return 0
+    }
+    set {width = .widthDp(newValue)}
+  }
+
+  var widthWrapContent: Bool {
+    get {
+      if case .widthWrapContent(let v)? = width {return v}
+      return false
+    }
+    set {width = .widthWrapContent(newValue)}
+  }
+
+  var height: Clienttools_AndroidSizeProps.OneOf_Height? = nil
+
+  var heightDp: Float {
+    get {
+      if case .heightDp(let v)? = height {return v}
+      return 0
+    }
+    set {height = .heightDp(newValue)}
+  }
+
+  var heightWrapContent: Bool {
+    get {
+      if case .heightWrapContent(let v)? = height {return v}
+      return false
+    }
+    set {height = .heightWrapContent(newValue)}
+  }
+
+  var unknownFields = SwiftProtobuf.UnknownStorage()
+
+  enum OneOf_Width: Equatable, Sendable {
+    case widthDp(Float)
+    case widthWrapContent(Bool)
+
+  }
+
+  enum OneOf_Height: Equatable, Sendable {
+    case heightDp(Float)
+    case heightWrapContent(Bool)
+
+  }
+
+  init() {}
+}
+
+struct Clienttools_AndroidTextProps: Sendable {
+  // SwiftProtobuf.Message conformance is added in an extension below. See the
+  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+  // methods supported on all messages.
 
   var letterSpacingEm: SwiftProtobuf.Google_Protobuf_FloatValue {
     get {_letterSpacingEm ?? SwiftProtobuf.Google_Protobuf_FloatValue()}
@@ -146,30 +216,71 @@ struct Clienttools_ViewProps: Sendable {
 
   init() {}
 
-  fileprivate var _marginTopDiffDp: SwiftProtobuf.Google_Protobuf_FloatValue? = nil
-  fileprivate var _marginBottomDiffDp: SwiftProtobuf.Google_Protobuf_FloatValue? = nil
-  fileprivate var _marginLeftDiffDp: SwiftProtobuf.Google_Protobuf_FloatValue? = nil
-  fileprivate var _marginRightDiffDp: SwiftProtobuf.Google_Protobuf_FloatValue? = nil
-  fileprivate var _paddingTopDiffDp: SwiftProtobuf.Google_Protobuf_FloatValue? = nil
-  fileprivate var _paddingBottomDiffDp: SwiftProtobuf.Google_Protobuf_FloatValue? = nil
-  fileprivate var _paddingLeftDiffDp: SwiftProtobuf.Google_Protobuf_FloatValue? = nil
-  fileprivate var _paddingRightDiffDp: SwiftProtobuf.Google_Protobuf_FloatValue? = nil
-  fileprivate var _widthDp: SwiftProtobuf.Google_Protobuf_StringValue? = nil
-  fileprivate var _heightDp: SwiftProtobuf.Google_Protobuf_StringValue? = nil
   fileprivate var _letterSpacingEm: SwiftProtobuf.Google_Protobuf_FloatValue? = nil
   fileprivate var _lineSpacingExtraDp: SwiftProtobuf.Google_Protobuf_FloatValue? = nil
   fileprivate var _includeFontPadding: SwiftProtobuf.Google_Protobuf_BoolValue? = nil
 }
 
-struct Clienttools_ModifyViewRequest: Sendable {
+struct Clienttools_AndroidViewProps: Sendable {
+  // SwiftProtobuf.Message conformance is added in an extension below. See the
+  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+  // methods supported on all messages.
+
+  var margin: Clienttools_AndroidMarginProps {
+    get {_margin ?? Clienttools_AndroidMarginProps()}
+    set {_margin = newValue}
+  }
+  /// Returns true if `margin` has been explicitly set.
+  var hasMargin: Bool {self._margin != nil}
+  /// Clears the value of `margin`. Subsequent reads from it will return its default value.
+  mutating func clearMargin() {self._margin = nil}
+
+  var padding: Clienttools_AndroidPaddingProps {
+    get {_padding ?? Clienttools_AndroidPaddingProps()}
+    set {_padding = newValue}
+  }
+  /// Returns true if `padding` has been explicitly set.
+  var hasPadding: Bool {self._padding != nil}
+  /// Clears the value of `padding`. Subsequent reads from it will return its default value.
+  mutating func clearPadding() {self._padding = nil}
+
+  var size: Clienttools_AndroidSizeProps {
+    get {_size ?? Clienttools_AndroidSizeProps()}
+    set {_size = newValue}
+  }
+  /// Returns true if `size` has been explicitly set.
+  var hasSize: Bool {self._size != nil}
+  /// Clears the value of `size`. Subsequent reads from it will return its default value.
+  mutating func clearSize() {self._size = nil}
+
+  var text: Clienttools_AndroidTextProps {
+    get {_text ?? Clienttools_AndroidTextProps()}
+    set {_text = newValue}
+  }
+  /// Returns true if `text` has been explicitly set.
+  var hasText: Bool {self._text != nil}
+  /// Clears the value of `text`. Subsequent reads from it will return its default value.
+  mutating func clearText() {self._text = nil}
+
+  var unknownFields = SwiftProtobuf.UnknownStorage()
+
+  init() {}
+
+  fileprivate var _margin: Clienttools_AndroidMarginProps? = nil
+  fileprivate var _padding: Clienttools_AndroidPaddingProps? = nil
+  fileprivate var _size: Clienttools_AndroidSizeProps? = nil
+  fileprivate var _text: Clienttools_AndroidTextProps? = nil
+}
+
+struct Clienttools_ModifyViewAndroidRequest: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
 
   var id: String = String()
 
-  var props: Clienttools_ViewProps {
-    get {_props ?? Clienttools_ViewProps()}
+  var props: Clienttools_AndroidViewProps {
+    get {_props ?? Clienttools_AndroidViewProps()}
     set {_props = newValue}
   }
   /// Returns true if `props` has been explicitly set.
@@ -181,7 +292,7 @@ struct Clienttools_ModifyViewRequest: Sendable {
 
   init() {}
 
-  fileprivate var _props: Clienttools_ViewProps? = nil
+  fileprivate var _props: Clienttools_AndroidViewProps? = nil
 }
 
 struct Clienttools_IosTextProps: Sendable {
@@ -369,9 +480,9 @@ struct Clienttools_ScrollResult: Sendable {
 
 fileprivate let _protobuf_package = "clienttools"
 
-extension Clienttools_ViewProps: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
-  static let protoMessageName: String = _protobuf_package + ".ViewProps"
-  static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{3}margin_top_diff_dp\0\u{3}margin_bottom_diff_dp\0\u{3}margin_left_diff_dp\0\u{3}margin_right_diff_dp\0\u{3}padding_top_diff_dp\0\u{3}padding_bottom_diff_dp\0\u{3}padding_left_diff_dp\0\u{3}padding_right_diff_dp\0\u{3}width_dp\0\u{3}height_dp\0\u{3}letter_spacing_em\0\u{3}line_spacing_extra_dp\0\u{3}include_font_padding\0")
+extension Clienttools_AndroidMarginProps: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  static let protoMessageName: String = _protobuf_package + ".AndroidMarginProps"
+  static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{3}top_diff_dp\0\u{3}bottom_diff_dp\0\u{3}left_diff_dp\0\u{3}right_diff_dp\0")
 
   mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -379,19 +490,10 @@ extension Clienttools_ViewProps: SwiftProtobuf.Message, SwiftProtobuf._MessageIm
       // allocates stack space for every case branch when no optimizations are
       // enabled. https://github.com/apple/swift-protobuf/issues/1034
       switch fieldNumber {
-      case 1: try { try decoder.decodeSingularMessageField(value: &self._marginTopDiffDp) }()
-      case 2: try { try decoder.decodeSingularMessageField(value: &self._marginBottomDiffDp) }()
-      case 3: try { try decoder.decodeSingularMessageField(value: &self._marginLeftDiffDp) }()
-      case 4: try { try decoder.decodeSingularMessageField(value: &self._marginRightDiffDp) }()
-      case 5: try { try decoder.decodeSingularMessageField(value: &self._paddingTopDiffDp) }()
-      case 6: try { try decoder.decodeSingularMessageField(value: &self._paddingBottomDiffDp) }()
-      case 7: try { try decoder.decodeSingularMessageField(value: &self._paddingLeftDiffDp) }()
-      case 8: try { try decoder.decodeSingularMessageField(value: &self._paddingRightDiffDp) }()
-      case 9: try { try decoder.decodeSingularMessageField(value: &self._widthDp) }()
-      case 10: try { try decoder.decodeSingularMessageField(value: &self._heightDp) }()
-      case 11: try { try decoder.decodeSingularMessageField(value: &self._letterSpacingEm) }()
-      case 12: try { try decoder.decodeSingularMessageField(value: &self._lineSpacingExtraDp) }()
-      case 13: try { try decoder.decodeSingularMessageField(value: &self._includeFontPadding) }()
+      case 1: try { try decoder.decodeSingularMessageField(value: &self._topDiffDp) }()
+      case 2: try { try decoder.decodeSingularMessageField(value: &self._bottomDiffDp) }()
+      case 3: try { try decoder.decodeSingularMessageField(value: &self._leftDiffDp) }()
+      case 4: try { try decoder.decodeSingularMessageField(value: &self._rightDiffDp) }()
       default: break
       }
     }
@@ -402,59 +504,201 @@ extension Clienttools_ViewProps: SwiftProtobuf.Message, SwiftProtobuf._MessageIm
     // allocates stack space for every if/case branch local when no optimizations
     // are enabled. https://github.com/apple/swift-protobuf/issues/1034 and
     // https://github.com/apple/swift-protobuf/issues/1182
-    try { if let v = self._marginTopDiffDp {
+    try { if let v = self._topDiffDp {
       try visitor.visitSingularMessageField(value: v, fieldNumber: 1)
     } }()
-    try { if let v = self._marginBottomDiffDp {
+    try { if let v = self._bottomDiffDp {
       try visitor.visitSingularMessageField(value: v, fieldNumber: 2)
     } }()
-    try { if let v = self._marginLeftDiffDp {
+    try { if let v = self._leftDiffDp {
       try visitor.visitSingularMessageField(value: v, fieldNumber: 3)
     } }()
-    try { if let v = self._marginRightDiffDp {
+    try { if let v = self._rightDiffDp {
       try visitor.visitSingularMessageField(value: v, fieldNumber: 4)
-    } }()
-    try { if let v = self._paddingTopDiffDp {
-      try visitor.visitSingularMessageField(value: v, fieldNumber: 5)
-    } }()
-    try { if let v = self._paddingBottomDiffDp {
-      try visitor.visitSingularMessageField(value: v, fieldNumber: 6)
-    } }()
-    try { if let v = self._paddingLeftDiffDp {
-      try visitor.visitSingularMessageField(value: v, fieldNumber: 7)
-    } }()
-    try { if let v = self._paddingRightDiffDp {
-      try visitor.visitSingularMessageField(value: v, fieldNumber: 8)
-    } }()
-    try { if let v = self._widthDp {
-      try visitor.visitSingularMessageField(value: v, fieldNumber: 9)
-    } }()
-    try { if let v = self._heightDp {
-      try visitor.visitSingularMessageField(value: v, fieldNumber: 10)
-    } }()
-    try { if let v = self._letterSpacingEm {
-      try visitor.visitSingularMessageField(value: v, fieldNumber: 11)
-    } }()
-    try { if let v = self._lineSpacingExtraDp {
-      try visitor.visitSingularMessageField(value: v, fieldNumber: 12)
-    } }()
-    try { if let v = self._includeFontPadding {
-      try visitor.visitSingularMessageField(value: v, fieldNumber: 13)
     } }()
     try unknownFields.traverse(visitor: &visitor)
   }
 
-  static func ==(lhs: Clienttools_ViewProps, rhs: Clienttools_ViewProps) -> Bool {
-    if lhs._marginTopDiffDp != rhs._marginTopDiffDp {return false}
-    if lhs._marginBottomDiffDp != rhs._marginBottomDiffDp {return false}
-    if lhs._marginLeftDiffDp != rhs._marginLeftDiffDp {return false}
-    if lhs._marginRightDiffDp != rhs._marginRightDiffDp {return false}
-    if lhs._paddingTopDiffDp != rhs._paddingTopDiffDp {return false}
-    if lhs._paddingBottomDiffDp != rhs._paddingBottomDiffDp {return false}
-    if lhs._paddingLeftDiffDp != rhs._paddingLeftDiffDp {return false}
-    if lhs._paddingRightDiffDp != rhs._paddingRightDiffDp {return false}
-    if lhs._widthDp != rhs._widthDp {return false}
-    if lhs._heightDp != rhs._heightDp {return false}
+  static func ==(lhs: Clienttools_AndroidMarginProps, rhs: Clienttools_AndroidMarginProps) -> Bool {
+    if lhs._topDiffDp != rhs._topDiffDp {return false}
+    if lhs._bottomDiffDp != rhs._bottomDiffDp {return false}
+    if lhs._leftDiffDp != rhs._leftDiffDp {return false}
+    if lhs._rightDiffDp != rhs._rightDiffDp {return false}
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+extension Clienttools_AndroidPaddingProps: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  static let protoMessageName: String = _protobuf_package + ".AndroidPaddingProps"
+  static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{3}top_diff_dp\0\u{3}bottom_diff_dp\0\u{3}left_diff_dp\0\u{3}right_diff_dp\0")
+
+  mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 1: try { try decoder.decodeSingularMessageField(value: &self._topDiffDp) }()
+      case 2: try { try decoder.decodeSingularMessageField(value: &self._bottomDiffDp) }()
+      case 3: try { try decoder.decodeSingularMessageField(value: &self._leftDiffDp) }()
+      case 4: try { try decoder.decodeSingularMessageField(value: &self._rightDiffDp) }()
+      default: break
+      }
+    }
+  }
+
+  func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    // The use of inline closures is to circumvent an issue where the compiler
+    // allocates stack space for every if/case branch local when no optimizations
+    // are enabled. https://github.com/apple/swift-protobuf/issues/1034 and
+    // https://github.com/apple/swift-protobuf/issues/1182
+    try { if let v = self._topDiffDp {
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 1)
+    } }()
+    try { if let v = self._bottomDiffDp {
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 2)
+    } }()
+    try { if let v = self._leftDiffDp {
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 3)
+    } }()
+    try { if let v = self._rightDiffDp {
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 4)
+    } }()
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  static func ==(lhs: Clienttools_AndroidPaddingProps, rhs: Clienttools_AndroidPaddingProps) -> Bool {
+    if lhs._topDiffDp != rhs._topDiffDp {return false}
+    if lhs._bottomDiffDp != rhs._bottomDiffDp {return false}
+    if lhs._leftDiffDp != rhs._leftDiffDp {return false}
+    if lhs._rightDiffDp != rhs._rightDiffDp {return false}
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+extension Clienttools_AndroidSizeProps: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  static let protoMessageName: String = _protobuf_package + ".AndroidSizeProps"
+  static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{3}width_dp\0\u{3}width_wrap_content\0\u{3}height_dp\0\u{3}height_wrap_content\0")
+
+  mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 1: try {
+        var v: Float?
+        try decoder.decodeSingularFloatField(value: &v)
+        if let v = v {
+          if self.width != nil {try decoder.handleConflictingOneOf()}
+          self.width = .widthDp(v)
+        }
+      }()
+      case 2: try {
+        var v: Bool?
+        try decoder.decodeSingularBoolField(value: &v)
+        if let v = v {
+          if self.width != nil {try decoder.handleConflictingOneOf()}
+          self.width = .widthWrapContent(v)
+        }
+      }()
+      case 3: try {
+        var v: Float?
+        try decoder.decodeSingularFloatField(value: &v)
+        if let v = v {
+          if self.height != nil {try decoder.handleConflictingOneOf()}
+          self.height = .heightDp(v)
+        }
+      }()
+      case 4: try {
+        var v: Bool?
+        try decoder.decodeSingularBoolField(value: &v)
+        if let v = v {
+          if self.height != nil {try decoder.handleConflictingOneOf()}
+          self.height = .heightWrapContent(v)
+        }
+      }()
+      default: break
+      }
+    }
+  }
+
+  func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    // The use of inline closures is to circumvent an issue where the compiler
+    // allocates stack space for every if/case branch local when no optimizations
+    // are enabled. https://github.com/apple/swift-protobuf/issues/1034 and
+    // https://github.com/apple/swift-protobuf/issues/1182
+    switch self.width {
+    case .widthDp?: try {
+      guard case .widthDp(let v)? = self.width else { preconditionFailure() }
+      try visitor.visitSingularFloatField(value: v, fieldNumber: 1)
+    }()
+    case .widthWrapContent?: try {
+      guard case .widthWrapContent(let v)? = self.width else { preconditionFailure() }
+      try visitor.visitSingularBoolField(value: v, fieldNumber: 2)
+    }()
+    case nil: break
+    }
+    switch self.height {
+    case .heightDp?: try {
+      guard case .heightDp(let v)? = self.height else { preconditionFailure() }
+      try visitor.visitSingularFloatField(value: v, fieldNumber: 3)
+    }()
+    case .heightWrapContent?: try {
+      guard case .heightWrapContent(let v)? = self.height else { preconditionFailure() }
+      try visitor.visitSingularBoolField(value: v, fieldNumber: 4)
+    }()
+    case nil: break
+    }
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  static func ==(lhs: Clienttools_AndroidSizeProps, rhs: Clienttools_AndroidSizeProps) -> Bool {
+    if lhs.width != rhs.width {return false}
+    if lhs.height != rhs.height {return false}
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+extension Clienttools_AndroidTextProps: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  static let protoMessageName: String = _protobuf_package + ".AndroidTextProps"
+  static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{3}letter_spacing_em\0\u{3}line_spacing_extra_dp\0\u{3}include_font_padding\0")
+
+  mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 1: try { try decoder.decodeSingularMessageField(value: &self._letterSpacingEm) }()
+      case 2: try { try decoder.decodeSingularMessageField(value: &self._lineSpacingExtraDp) }()
+      case 3: try { try decoder.decodeSingularMessageField(value: &self._includeFontPadding) }()
+      default: break
+      }
+    }
+  }
+
+  func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    // The use of inline closures is to circumvent an issue where the compiler
+    // allocates stack space for every if/case branch local when no optimizations
+    // are enabled. https://github.com/apple/swift-protobuf/issues/1034 and
+    // https://github.com/apple/swift-protobuf/issues/1182
+    try { if let v = self._letterSpacingEm {
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 1)
+    } }()
+    try { if let v = self._lineSpacingExtraDp {
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 2)
+    } }()
+    try { if let v = self._includeFontPadding {
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 3)
+    } }()
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  static func ==(lhs: Clienttools_AndroidTextProps, rhs: Clienttools_AndroidTextProps) -> Bool {
     if lhs._letterSpacingEm != rhs._letterSpacingEm {return false}
     if lhs._lineSpacingExtraDp != rhs._lineSpacingExtraDp {return false}
     if lhs._includeFontPadding != rhs._includeFontPadding {return false}
@@ -463,8 +707,57 @@ extension Clienttools_ViewProps: SwiftProtobuf.Message, SwiftProtobuf._MessageIm
   }
 }
 
-extension Clienttools_ModifyViewRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
-  static let protoMessageName: String = _protobuf_package + ".ModifyViewRequest"
+extension Clienttools_AndroidViewProps: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  static let protoMessageName: String = _protobuf_package + ".AndroidViewProps"
+  static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}margin\0\u{1}padding\0\u{1}size\0\u{1}text\0")
+
+  mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 1: try { try decoder.decodeSingularMessageField(value: &self._margin) }()
+      case 2: try { try decoder.decodeSingularMessageField(value: &self._padding) }()
+      case 3: try { try decoder.decodeSingularMessageField(value: &self._size) }()
+      case 4: try { try decoder.decodeSingularMessageField(value: &self._text) }()
+      default: break
+      }
+    }
+  }
+
+  func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    // The use of inline closures is to circumvent an issue where the compiler
+    // allocates stack space for every if/case branch local when no optimizations
+    // are enabled. https://github.com/apple/swift-protobuf/issues/1034 and
+    // https://github.com/apple/swift-protobuf/issues/1182
+    try { if let v = self._margin {
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 1)
+    } }()
+    try { if let v = self._padding {
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 2)
+    } }()
+    try { if let v = self._size {
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 3)
+    } }()
+    try { if let v = self._text {
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 4)
+    } }()
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  static func ==(lhs: Clienttools_AndroidViewProps, rhs: Clienttools_AndroidViewProps) -> Bool {
+    if lhs._margin != rhs._margin {return false}
+    if lhs._padding != rhs._padding {return false}
+    if lhs._size != rhs._size {return false}
+    if lhs._text != rhs._text {return false}
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+extension Clienttools_ModifyViewAndroidRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  static let protoMessageName: String = _protobuf_package + ".ModifyViewAndroidRequest"
   static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}id\0\u{1}props\0")
 
   mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
@@ -494,7 +787,7 @@ extension Clienttools_ModifyViewRequest: SwiftProtobuf.Message, SwiftProtobuf._M
     try unknownFields.traverse(visitor: &visitor)
   }
 
-  static func ==(lhs: Clienttools_ModifyViewRequest, rhs: Clienttools_ModifyViewRequest) -> Bool {
+  static func ==(lhs: Clienttools_ModifyViewAndroidRequest, rhs: Clienttools_ModifyViewAndroidRequest) -> Bool {
     if lhs.id != rhs.id {return false}
     if lhs._props != rhs._props {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}

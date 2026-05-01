@@ -11,106 +11,198 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file modify.proto.
  */
 export const file_modify: GenFile = /*@__PURE__*/
-  fileDesc("Cgxtb2RpZnkucHJvdG8SC2NsaWVudHRvb2xzIvIFCglWaWV3UHJvcHMSNwoSbWFyZ2luX3RvcF9kaWZmX2RwGAEgASgLMhsuZ29vZ2xlLnByb3RvYnVmLkZsb2F0VmFsdWUSOgoVbWFyZ2luX2JvdHRvbV9kaWZmX2RwGAIgASgLMhsuZ29vZ2xlLnByb3RvYnVmLkZsb2F0VmFsdWUSOAoTbWFyZ2luX2xlZnRfZGlmZl9kcBgDIAEoCzIbLmdvb2dsZS5wcm90b2J1Zi5GbG9hdFZhbHVlEjkKFG1hcmdpbl9yaWdodF9kaWZmX2RwGAQgASgLMhsuZ29vZ2xlLnByb3RvYnVmLkZsb2F0VmFsdWUSOAoTcGFkZGluZ190b3BfZGlmZl9kcBgFIAEoCzIbLmdvb2dsZS5wcm90b2J1Zi5GbG9hdFZhbHVlEjsKFnBhZGRpbmdfYm90dG9tX2RpZmZfZHAYBiABKAsyGy5nb29nbGUucHJvdG9idWYuRmxvYXRWYWx1ZRI5ChRwYWRkaW5nX2xlZnRfZGlmZl9kcBgHIAEoCzIbLmdvb2dsZS5wcm90b2J1Zi5GbG9hdFZhbHVlEjoKFXBhZGRpbmdfcmlnaHRfZGlmZl9kcBgIIAEoCzIbLmdvb2dsZS5wcm90b2J1Zi5GbG9hdFZhbHVlEi4KCHdpZHRoX2RwGAkgASgLMhwuZ29vZ2xlLnByb3RvYnVmLlN0cmluZ1ZhbHVlEi8KCWhlaWdodF9kcBgKIAEoCzIcLmdvb2dsZS5wcm90b2J1Zi5TdHJpbmdWYWx1ZRI2ChFsZXR0ZXJfc3BhY2luZ19lbRgLIAEoCzIbLmdvb2dsZS5wcm90b2J1Zi5GbG9hdFZhbHVlEjoKFWxpbmVfc3BhY2luZ19leHRyYV9kcBgMIAEoCzIbLmdvb2dsZS5wcm90b2J1Zi5GbG9hdFZhbHVlEjgKFGluY2x1ZGVfZm9udF9wYWRkaW5nGA0gASgLMhouZ29vZ2xlLnByb3RvYnVmLkJvb2xWYWx1ZSJGChFNb2RpZnlWaWV3UmVxdWVzdBIKCgJpZBgBIAEoCRIlCgVwcm9wcxgCIAEoCzIWLmNsaWVudHRvb2xzLlZpZXdQcm9wcyKxAQoMSW9zVGV4dFByb3BzEi0KB2NvbnRlbnQYASABKAsyHC5nb29nbGUucHJvdG9idWYuU3RyaW5nVmFsdWUSNgoRbGV0dGVyX3NwYWNpbmdfZW0YAiABKAsyGy5nb29nbGUucHJvdG9idWYuRmxvYXRWYWx1ZRI6ChVsaW5lX3NwYWNpbmdfZXh0cmFfZHAYAyABKAsyGy5nb29nbGUucHJvdG9idWYuRmxvYXRWYWx1ZSKLAgoMSW9zVmlld1Byb3BzEjMKDnRyYW5zbGF0ZV94X2RwGAEgASgLMhsuZ29vZ2xlLnByb3RvYnVmLkZsb2F0VmFsdWUSMwoOdHJhbnNsYXRlX3lfZHAYAiABKAsyGy5nb29nbGUucHJvdG9idWYuRmxvYXRWYWx1ZRIsCgdzY2FsZV94GAMgASgLMhsuZ29vZ2xlLnByb3RvYnVmLkZsb2F0VmFsdWUSLAoHc2NhbGVfeRgEIAEoCzIbLmdvb2dsZS5wcm90b2J1Zi5GbG9hdFZhbHVlEiwKBHRleHQYCyABKAsyGS5jbGllbnR0b29scy5Jb3NUZXh0UHJvcHNIAIgBAUIHCgVfdGV4dCJMChRNb2RpZnlWaWV3SW9zUmVxdWVzdBIKCgJpZBgBIAEoCRIoCgVwcm9wcxgCIAEoCzIZLmNsaWVudHRvb2xzLklvc1ZpZXdQcm9wcyIaCgxDbGlja1JlcXVlc3QSCgoCaWQYASABKAkiGQoLQ2xpY2tSZXN1bHQSCgoCaWQYASABKAkiMwoNU2Nyb2xsUmVxdWVzdBIKCgJpZBgBIAEoCRIKCgJkeBgCIAEoAhIKCgJkeRgDIAEoAiIyCgxTY3JvbGxSZXN1bHQSCgoCaWQYASABKAkSCgoCZHgYAiABKAISCgoCZHkYAyABKAJCHQoZY29tLmNsaWVudHRvb2xzLnNkay5wcm90b1ABYgZwcm90bzM", [file_google_protobuf_wrappers]);
+  fileDesc("Cgxtb2RpZnkucHJvdG8SC2NsaWVudHRvb2xzIuIBChJBbmRyb2lkTWFyZ2luUHJvcHMSMAoLdG9wX2RpZmZfZHAYASABKAsyGy5nb29nbGUucHJvdG9idWYuRmxvYXRWYWx1ZRIzCg5ib3R0b21fZGlmZl9kcBgCIAEoCzIbLmdvb2dsZS5wcm90b2J1Zi5GbG9hdFZhbHVlEjEKDGxlZnRfZGlmZl9kcBgDIAEoCzIbLmdvb2dsZS5wcm90b2J1Zi5GbG9hdFZhbHVlEjIKDXJpZ2h0X2RpZmZfZHAYBCABKAsyGy5nb29nbGUucHJvdG9idWYuRmxvYXRWYWx1ZSLjAQoTQW5kcm9pZFBhZGRpbmdQcm9wcxIwCgt0b3BfZGlmZl9kcBgBIAEoCzIbLmdvb2dsZS5wcm90b2J1Zi5GbG9hdFZhbHVlEjMKDmJvdHRvbV9kaWZmX2RwGAIgASgLMhsuZ29vZ2xlLnByb3RvYnVmLkZsb2F0VmFsdWUSMQoMbGVmdF9kaWZmX2RwGAMgASgLMhsuZ29vZ2xlLnByb3RvYnVmLkZsb2F0VmFsdWUSMgoNcmlnaHRfZGlmZl9kcBgEIAEoCzIbLmdvb2dsZS5wcm90b2J1Zi5GbG9hdFZhbHVlIosBChBBbmRyb2lkU2l6ZVByb3BzEhIKCHdpZHRoX2RwGAEgASgCSAASHAoSd2lkdGhfd3JhcF9jb250ZW50GAIgASgISAASEwoJaGVpZ2h0X2RwGAMgASgCSAESHQoTaGVpZ2h0X3dyYXBfY29udGVudBgEIAEoCEgBQgcKBXdpZHRoQggKBmhlaWdodCLAAQoQQW5kcm9pZFRleHRQcm9wcxI2ChFsZXR0ZXJfc3BhY2luZ19lbRgBIAEoCzIbLmdvb2dsZS5wcm90b2J1Zi5GbG9hdFZhbHVlEjoKFWxpbmVfc3BhY2luZ19leHRyYV9kcBgCIAEoCzIbLmdvb2dsZS5wcm90b2J1Zi5GbG9hdFZhbHVlEjgKFGluY2x1ZGVfZm9udF9wYWRkaW5nGAMgASgLMhouZ29vZ2xlLnByb3RvYnVmLkJvb2xWYWx1ZSLQAQoQQW5kcm9pZFZpZXdQcm9wcxIvCgZtYXJnaW4YASABKAsyHy5jbGllbnR0b29scy5BbmRyb2lkTWFyZ2luUHJvcHMSMQoHcGFkZGluZxgCIAEoCzIgLmNsaWVudHRvb2xzLkFuZHJvaWRQYWRkaW5nUHJvcHMSKwoEc2l6ZRgDIAEoCzIdLmNsaWVudHRvb2xzLkFuZHJvaWRTaXplUHJvcHMSKwoEdGV4dBgEIAEoCzIdLmNsaWVudHRvb2xzLkFuZHJvaWRUZXh0UHJvcHMiVAoYTW9kaWZ5Vmlld0FuZHJvaWRSZXF1ZXN0EgoKAmlkGAEgASgJEiwKBXByb3BzGAIgASgLMh0uY2xpZW50dG9vbHMuQW5kcm9pZFZpZXdQcm9wcyKxAQoMSW9zVGV4dFByb3BzEi0KB2NvbnRlbnQYASABKAsyHC5nb29nbGUucHJvdG9idWYuU3RyaW5nVmFsdWUSNgoRbGV0dGVyX3NwYWNpbmdfZW0YAiABKAsyGy5nb29nbGUucHJvdG9idWYuRmxvYXRWYWx1ZRI6ChVsaW5lX3NwYWNpbmdfZXh0cmFfZHAYAyABKAsyGy5nb29nbGUucHJvdG9idWYuRmxvYXRWYWx1ZSKLAgoMSW9zVmlld1Byb3BzEjMKDnRyYW5zbGF0ZV94X2RwGAEgASgLMhsuZ29vZ2xlLnByb3RvYnVmLkZsb2F0VmFsdWUSMwoOdHJhbnNsYXRlX3lfZHAYAiABKAsyGy5nb29nbGUucHJvdG9idWYuRmxvYXRWYWx1ZRIsCgdzY2FsZV94GAMgASgLMhsuZ29vZ2xlLnByb3RvYnVmLkZsb2F0VmFsdWUSLAoHc2NhbGVfeRgEIAEoCzIbLmdvb2dsZS5wcm90b2J1Zi5GbG9hdFZhbHVlEiwKBHRleHQYCyABKAsyGS5jbGllbnR0b29scy5Jb3NUZXh0UHJvcHNIAIgBAUIHCgVfdGV4dCJMChRNb2RpZnlWaWV3SW9zUmVxdWVzdBIKCgJpZBgBIAEoCRIoCgVwcm9wcxgCIAEoCzIZLmNsaWVudHRvb2xzLklvc1ZpZXdQcm9wcyIaCgxDbGlja1JlcXVlc3QSCgoCaWQYASABKAkiGQoLQ2xpY2tSZXN1bHQSCgoCaWQYASABKAkiMwoNU2Nyb2xsUmVxdWVzdBIKCgJpZBgBIAEoCRIKCgJkeBgCIAEoAhIKCgJkeRgDIAEoAiIyCgxTY3JvbGxSZXN1bHQSCgoCaWQYASABKAkSCgoCZHgYAiABKAISCgoCZHkYAyABKAJCHQoZY29tLmNsaWVudHRvb2xzLnNkay5wcm90b1ABYgZwcm90bzM", [file_google_protobuf_wrappers]);
 
 /**
- * @generated from message clienttools.ViewProps
+ * @generated from message clienttools.AndroidMarginProps
  */
-export type ViewProps = Message<"clienttools.ViewProps"> & {
+export type AndroidMarginProps = Message<"clienttools.AndroidMarginProps"> & {
   /**
-   * @generated from field: google.protobuf.FloatValue margin_top_diff_dp = 1;
+   * @generated from field: google.protobuf.FloatValue top_diff_dp = 1;
    */
-  marginTopDiffDp?: number | undefined;
+  topDiffDp?: number | undefined;
 
   /**
-   * @generated from field: google.protobuf.FloatValue margin_bottom_diff_dp = 2;
+   * @generated from field: google.protobuf.FloatValue bottom_diff_dp = 2;
    */
-  marginBottomDiffDp?: number | undefined;
+  bottomDiffDp?: number | undefined;
 
   /**
-   * @generated from field: google.protobuf.FloatValue margin_left_diff_dp = 3;
+   * @generated from field: google.protobuf.FloatValue left_diff_dp = 3;
    */
-  marginLeftDiffDp?: number | undefined;
+  leftDiffDp?: number | undefined;
 
   /**
-   * @generated from field: google.protobuf.FloatValue margin_right_diff_dp = 4;
+   * @generated from field: google.protobuf.FloatValue right_diff_dp = 4;
    */
-  marginRightDiffDp?: number | undefined;
+  rightDiffDp?: number | undefined;
+};
+
+/**
+ * Describes the message clienttools.AndroidMarginProps.
+ * Use `create(AndroidMarginPropsSchema)` to create a new message.
+ */
+export const AndroidMarginPropsSchema: GenMessage<AndroidMarginProps> = /*@__PURE__*/
+  messageDesc(file_modify, 0);
+
+/**
+ * @generated from message clienttools.AndroidPaddingProps
+ */
+export type AndroidPaddingProps = Message<"clienttools.AndroidPaddingProps"> & {
+  /**
+   * @generated from field: google.protobuf.FloatValue top_diff_dp = 1;
+   */
+  topDiffDp?: number | undefined;
 
   /**
-   * @generated from field: google.protobuf.FloatValue padding_top_diff_dp = 5;
+   * @generated from field: google.protobuf.FloatValue bottom_diff_dp = 2;
    */
-  paddingTopDiffDp?: number | undefined;
+  bottomDiffDp?: number | undefined;
 
   /**
-   * @generated from field: google.protobuf.FloatValue padding_bottom_diff_dp = 6;
+   * @generated from field: google.protobuf.FloatValue left_diff_dp = 3;
    */
-  paddingBottomDiffDp?: number | undefined;
+  leftDiffDp?: number | undefined;
 
   /**
-   * @generated from field: google.protobuf.FloatValue padding_left_diff_dp = 7;
+   * @generated from field: google.protobuf.FloatValue right_diff_dp = 4;
    */
-  paddingLeftDiffDp?: number | undefined;
+  rightDiffDp?: number | undefined;
+};
+
+/**
+ * Describes the message clienttools.AndroidPaddingProps.
+ * Use `create(AndroidPaddingPropsSchema)` to create a new message.
+ */
+export const AndroidPaddingPropsSchema: GenMessage<AndroidPaddingProps> = /*@__PURE__*/
+  messageDesc(file_modify, 1);
+
+/**
+ * @generated from message clienttools.AndroidSizeProps
+ */
+export type AndroidSizeProps = Message<"clienttools.AndroidSizeProps"> & {
+  /**
+   * @generated from oneof clienttools.AndroidSizeProps.width
+   */
+  width: {
+    /**
+     * @generated from field: float width_dp = 1;
+     */
+    value: number;
+    case: "widthDp";
+  } | {
+    /**
+     * @generated from field: bool width_wrap_content = 2;
+     */
+    value: boolean;
+    case: "widthWrapContent";
+  } | { case: undefined; value?: undefined };
 
   /**
-   * @generated from field: google.protobuf.FloatValue padding_right_diff_dp = 8;
+   * @generated from oneof clienttools.AndroidSizeProps.height
    */
-  paddingRightDiffDp?: number | undefined;
+  height: {
+    /**
+     * @generated from field: float height_dp = 3;
+     */
+    value: number;
+    case: "heightDp";
+  } | {
+    /**
+     * @generated from field: bool height_wrap_content = 4;
+     */
+    value: boolean;
+    case: "heightWrapContent";
+  } | { case: undefined; value?: undefined };
+};
 
-  /**
-   * @generated from field: google.protobuf.StringValue width_dp = 9;
-   */
-  widthDp?: string | undefined;
+/**
+ * Describes the message clienttools.AndroidSizeProps.
+ * Use `create(AndroidSizePropsSchema)` to create a new message.
+ */
+export const AndroidSizePropsSchema: GenMessage<AndroidSizeProps> = /*@__PURE__*/
+  messageDesc(file_modify, 2);
 
+/**
+ * @generated from message clienttools.AndroidTextProps
+ */
+export type AndroidTextProps = Message<"clienttools.AndroidTextProps"> & {
   /**
-   * @generated from field: google.protobuf.StringValue height_dp = 10;
-   */
-  heightDp?: string | undefined;
-
-  /**
-   * @generated from field: google.protobuf.FloatValue letter_spacing_em = 11;
+   * @generated from field: google.protobuf.FloatValue letter_spacing_em = 1;
    */
   letterSpacingEm?: number | undefined;
 
   /**
-   * @generated from field: google.protobuf.FloatValue line_spacing_extra_dp = 12;
+   * @generated from field: google.protobuf.FloatValue line_spacing_extra_dp = 2;
    */
   lineSpacingExtraDp?: number | undefined;
 
   /**
-   * @generated from field: google.protobuf.BoolValue include_font_padding = 13;
+   * @generated from field: google.protobuf.BoolValue include_font_padding = 3;
    */
   includeFontPadding?: boolean | undefined;
 };
 
 /**
- * Describes the message clienttools.ViewProps.
- * Use `create(ViewPropsSchema)` to create a new message.
+ * Describes the message clienttools.AndroidTextProps.
+ * Use `create(AndroidTextPropsSchema)` to create a new message.
  */
-export const ViewPropsSchema: GenMessage<ViewProps> = /*@__PURE__*/
-  messageDesc(file_modify, 0);
+export const AndroidTextPropsSchema: GenMessage<AndroidTextProps> = /*@__PURE__*/
+  messageDesc(file_modify, 3);
 
 /**
- * @generated from message clienttools.ModifyViewRequest
+ * @generated from message clienttools.AndroidViewProps
  */
-export type ModifyViewRequest = Message<"clienttools.ModifyViewRequest"> & {
+export type AndroidViewProps = Message<"clienttools.AndroidViewProps"> & {
+  /**
+   * @generated from field: clienttools.AndroidMarginProps margin = 1;
+   */
+  margin?: AndroidMarginProps | undefined;
+
+  /**
+   * @generated from field: clienttools.AndroidPaddingProps padding = 2;
+   */
+  padding?: AndroidPaddingProps | undefined;
+
+  /**
+   * @generated from field: clienttools.AndroidSizeProps size = 3;
+   */
+  size?: AndroidSizeProps | undefined;
+
+  /**
+   * @generated from field: clienttools.AndroidTextProps text = 4;
+   */
+  text?: AndroidTextProps | undefined;
+};
+
+/**
+ * Describes the message clienttools.AndroidViewProps.
+ * Use `create(AndroidViewPropsSchema)` to create a new message.
+ */
+export const AndroidViewPropsSchema: GenMessage<AndroidViewProps> = /*@__PURE__*/
+  messageDesc(file_modify, 4);
+
+/**
+ * @generated from message clienttools.ModifyViewAndroidRequest
+ */
+export type ModifyViewAndroidRequest = Message<"clienttools.ModifyViewAndroidRequest"> & {
   /**
    * @generated from field: string id = 1;
    */
   id: string;
 
   /**
-   * @generated from field: clienttools.ViewProps props = 2;
+   * @generated from field: clienttools.AndroidViewProps props = 2;
    */
-  props?: ViewProps | undefined;
+  props?: AndroidViewProps | undefined;
 };
 
 /**
- * Describes the message clienttools.ModifyViewRequest.
- * Use `create(ModifyViewRequestSchema)` to create a new message.
+ * Describes the message clienttools.ModifyViewAndroidRequest.
+ * Use `create(ModifyViewAndroidRequestSchema)` to create a new message.
  */
-export const ModifyViewRequestSchema: GenMessage<ModifyViewRequest> = /*@__PURE__*/
-  messageDesc(file_modify, 1);
+export const ModifyViewAndroidRequestSchema: GenMessage<ModifyViewAndroidRequest> = /*@__PURE__*/
+  messageDesc(file_modify, 5);
 
 /**
  * @generated from message clienttools.IosTextProps
@@ -137,7 +229,7 @@ export type IosTextProps = Message<"clienttools.IosTextProps"> & {
  * Use `create(IosTextPropsSchema)` to create a new message.
  */
 export const IosTextPropsSchema: GenMessage<IosTextProps> = /*@__PURE__*/
-  messageDesc(file_modify, 2);
+  messageDesc(file_modify, 6);
 
 /**
  * @generated from message clienttools.IosViewProps
@@ -174,7 +266,7 @@ export type IosViewProps = Message<"clienttools.IosViewProps"> & {
  * Use `create(IosViewPropsSchema)` to create a new message.
  */
 export const IosViewPropsSchema: GenMessage<IosViewProps> = /*@__PURE__*/
-  messageDesc(file_modify, 3);
+  messageDesc(file_modify, 7);
 
 /**
  * @generated from message clienttools.ModifyViewIosRequest
@@ -196,7 +288,7 @@ export type ModifyViewIosRequest = Message<"clienttools.ModifyViewIosRequest"> &
  * Use `create(ModifyViewIosRequestSchema)` to create a new message.
  */
 export const ModifyViewIosRequestSchema: GenMessage<ModifyViewIosRequest> = /*@__PURE__*/
-  messageDesc(file_modify, 4);
+  messageDesc(file_modify, 8);
 
 /**
  * @generated from message clienttools.ClickRequest
@@ -213,7 +305,7 @@ export type ClickRequest = Message<"clienttools.ClickRequest"> & {
  * Use `create(ClickRequestSchema)` to create a new message.
  */
 export const ClickRequestSchema: GenMessage<ClickRequest> = /*@__PURE__*/
-  messageDesc(file_modify, 5);
+  messageDesc(file_modify, 9);
 
 /**
  * @generated from message clienttools.ClickResult
@@ -230,7 +322,7 @@ export type ClickResult = Message<"clienttools.ClickResult"> & {
  * Use `create(ClickResultSchema)` to create a new message.
  */
 export const ClickResultSchema: GenMessage<ClickResult> = /*@__PURE__*/
-  messageDesc(file_modify, 6);
+  messageDesc(file_modify, 10);
 
 /**
  * @generated from message clienttools.ScrollRequest
@@ -257,7 +349,7 @@ export type ScrollRequest = Message<"clienttools.ScrollRequest"> & {
  * Use `create(ScrollRequestSchema)` to create a new message.
  */
 export const ScrollRequestSchema: GenMessage<ScrollRequest> = /*@__PURE__*/
-  messageDesc(file_modify, 7);
+  messageDesc(file_modify, 11);
 
 /**
  * @generated from message clienttools.ScrollResult
@@ -284,5 +376,5 @@ export type ScrollResult = Message<"clienttools.ScrollResult"> & {
  * Use `create(ScrollResultSchema)` to create a new message.
  */
 export const ScrollResultSchema: GenMessage<ScrollResult> = /*@__PURE__*/
-  messageDesc(file_modify, 8);
+  messageDesc(file_modify, 12);
 
