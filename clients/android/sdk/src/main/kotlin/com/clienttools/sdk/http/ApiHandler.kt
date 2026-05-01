@@ -13,6 +13,7 @@ import com.clienttools.sdk.inspector.DomQueryService
 import com.clienttools.sdk.inspector.WebViewState
 import com.clienttools.sdk.listener.PageChangeListener
 import com.clienttools.sdk.proto.*
+import com.clienttools.sdk.runtime.AndroidViewModifier
 import com.clienttools.sdk.runtime.ViewModifier
 import com.clienttools.sdk.runtime.ViewQueryService
 import com.google.protobuf.ByteString
@@ -84,14 +85,18 @@ object ApiHandler {
         }
     }
 
-    fun handleModify(bodyBytes: ByteArray): NanoHTTPD.Response {
+    fun handleModifyAndroid(bodyBytes: ByteArray): NanoHTTPD.Response {
         return try {
-            val req = ModifyViewRequest.parseFrom(bodyBytes)
-            ViewModifier.apply(req.id, req.props)
-            val resp = ModifyResponse.newBuilder().setMeta(ProtoHelper.okMeta(ctx())).build()
-            okResponse(resp.toByteArray())
+            val req = ModifyViewAndroidRequest.parseFrom(bodyBytes)
+            val (ok, msg) = AndroidViewModifier.apply(req.id, req.props)
+            if (ok) {
+                val resp = ModifyResponse.newBuilder().setMeta(ProtoHelper.okMeta(ctx())).build()
+                okResponse(resp.toByteArray())
+            } else {
+                errResponse(NanoHTTPD.Response.Status.NOT_FOUND, msg)
+            }
         } catch (e: Exception) {
-            Log.e("ApiHandler", "handleModify", e)
+            Log.e("ApiHandler", "handleModifyAndroid", e)
             errResponse(NanoHTTPD.Response.Status.INTERNAL_ERROR, e.message ?: "error")
         }
     }
