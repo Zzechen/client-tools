@@ -4,58 +4,6 @@ class ViewModifyService {
 
     private let viewQueryService = ViewQueryService()
 
-    // Android 路径：保留现有实现（margin 通过约束修改）
-    func modifyProto(id: String, props: Clienttools_ViewProps) -> (Bool, String) {
-        guard let view = viewQueryService.findView(byId: id) else { return (false, "View not found: \(id)") }
-        let sema = DispatchSemaphore(value: 0)
-        DispatchQueue.main.async {
-            let hasPadding = props.hasPaddingTopDiffDp || props.hasPaddingBottomDiffDp ||
-                             props.hasPaddingLeftDiffDp || props.hasPaddingRightDiffDp
-            if hasPadding {
-                let insets = UIEdgeInsets(
-                    top: CGFloat(props.paddingTopDiffDp.value),
-                    left: CGFloat(props.paddingLeftDiffDp.value),
-                    bottom: CGFloat(props.paddingBottomDiffDp.value),
-                    right: CGFloat(props.paddingRightDiffDp.value)
-                )
-                PaddingModifier.modifyPadding(view, insets: insets)
-            }
-            let widthStr = props.hasWidthDp ? props.widthDp.value : nil
-            let heightStr = props.hasHeightDp ? props.heightDp.value : nil
-            FrameModifier.modifyFrame(view, widthDp: widthStr, heightDp: heightStr)
-            if let label = view as? UILabel {
-                if props.hasLetterSpacingEm {
-                    let em = CGFloat(props.letterSpacingEm.value)
-                    let fontSize = label.font.pointSize
-                    if var attrs = label.attributedText?.mutableCopy() as? NSMutableAttributedString {
-                        attrs.addAttribute(.kern, value: em * fontSize, range: NSRange(location: 0, length: attrs.length))
-                        label.attributedText = attrs
-                    } else {
-                        label.attributedText = NSAttributedString(string: label.text ?? "", attributes: [
-                            .font: label.font as Any,
-                            .foregroundColor: label.textColor as Any,
-                            .kern: em * fontSize
-                        ])
-                    }
-                }
-                if props.hasLineSpacingExtraDp {
-                    let extra = CGFloat(props.lineSpacingExtraDp.value)
-                    let style = NSMutableParagraphStyle()
-                    style.lineSpacing = extra
-                    let base = label.attributedText?.mutableCopy() as? NSMutableAttributedString
-                        ?? NSMutableAttributedString(string: label.text ?? "", attributes: [.font: label.font as Any, .foregroundColor: label.textColor as Any])
-                    base.addAttribute(.paragraphStyle, value: style, range: NSRange(location: 0, length: base.length))
-                    label.attributedText = base
-                }
-            }
-            view.setNeedsLayout()
-            view.layoutIfNeeded()
-            sema.signal()
-        }
-        sema.wait()
-        return (true, "")
-    }
-
     // iOS 路径：transform + 尺寸约束 + padding + 文字属性
     func modifyIosProto(id: String, props: Clienttools_IosViewProps) -> (Bool, String) {
         guard let view = viewQueryService.findView(byId: id) else { return (false, "View not found: \(id)") }
