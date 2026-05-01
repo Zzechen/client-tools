@@ -60,12 +60,14 @@ class ViewQueryService {
     }
 
     func captureView(id: String) -> Data? {
-        guard let view = findView(byId: id) else { return nil }
-        if view.bounds.width == 0 || view.bounds.height == 0 { return nil }
-
         var result: Data?
         let sema = DispatchSemaphore(value: 0)
         DispatchQueue.main.async {
+            guard let view = self.findView(byId: id),
+                  view.bounds.width > 0, view.bounds.height > 0 else {
+                sema.signal()
+                return
+            }
             let renderer = UIGraphicsImageRenderer(bounds: view.bounds)
             let image = renderer.image { ctx in
                 view.layer.render(in: ctx.cgContext)
