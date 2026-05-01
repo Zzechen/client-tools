@@ -10,7 +10,7 @@ import {
   ModifyResponseSchema,
   CaptureResponseSchema,
 } from "../generated/api_pb.js";
-import { ModifyViewRequestSchema, ModifyViewIosRequestSchema } from "../generated/modify_pb.js";
+import { ModifyViewAndroidRequestSchema, ModifyViewIosRequestSchema } from "../generated/modify_pb.js";
 
 function errResult(e: unknown) {
   return {
@@ -66,46 +66,72 @@ export function registerViewTools(server: McpServer): void {
   );
 
   // ===== modify_view_android =====
-  const AndroidViewPropsZod = z.object({
-    marginTopDiffDp: z.number().optional(),
-    marginBottomDiffDp: z.number().optional(),
-    marginLeftDiffDp: z.number().optional(),
-    marginRightDiffDp: z.number().optional(),
-    paddingTopDiffDp: z.number().optional(),
-    paddingBottomDiffDp: z.number().optional(),
-    paddingLeftDiffDp: z.number().optional(),
-    paddingRightDiffDp: z.number().optional(),
-    widthDp: z.union([z.number(), z.literal("wrap_content")]).optional(),
-    heightDp: z.union([z.number(), z.literal("wrap_content")]).optional(),
-    letterSpacingEm: z.number().optional(),
+  const AndroidMarginPropsZod = z.object({
+    topDiffDp:    z.number().optional(),
+    bottomDiffDp: z.number().optional(),
+    leftDiffDp:   z.number().optional(),
+    rightDiffDp:  z.number().optional(),
+  }).describe("margin 增量调整（dp）");
+
+  const AndroidPaddingPropsZod = z.object({
+    topDiffDp:    z.number().optional(),
+    bottomDiffDp: z.number().optional(),
+    leftDiffDp:   z.number().optional(),
+    rightDiffDp:  z.number().optional(),
+  }).describe("padding 增量调整（dp）");
+
+  const AndroidSizePropsZod = z.object({
+    width:  z.union([z.number(), z.literal("wrap_content")]).optional(),
+    height: z.union([z.number(), z.literal("wrap_content")]).optional(),
+  }).describe("尺寸设置（dp 数值或 wrap_content）");
+
+  const AndroidTextPropsZod = z.object({
+    letterSpacingEm:    z.number().optional(),
     lineSpacingExtraDp: z.number().optional(),
     includeFontPadding: z.boolean().optional(),
-  }).describe("Android View 布局属性，margin/padding 为差值（dp），width/height 为绝对值（dp）或 \"wrap_content\"");
+  }).describe("文字属性（传此对象则断言 view 为 TextView 或其子类，否则整个请求失败）");
 
   server.tool(
     "modify_view_android",
-    "修改 Android View 的布局属性（margin/padding/size），单位 dp；TextView 额外支持 letterSpacingEm、lineSpacingExtraDp、includeFontPadding",
-    { id: z.string().describe("Android View 的 resource id"), props: AndroidViewPropsZod },
-    async ({ id, props }) => {
+    "修改 Android View 的布局属性。参数按功能分组：margin/padding 为增量（dp），size 为绝对值；传 text 组则断言 view 为 TextView 子类，否则整体拒绝",
+    {
+      id:      z.string().describe("Android View 的 resource id（不含 @id/ 前缀）"),
+      margin:  AndroidMarginPropsZod.optional(),
+      padding: AndroidPaddingPropsZod.optional(),
+      size:    AndroidSizePropsZod.optional(),
+      text:    AndroidTextPropsZod.optional(),
+    },
+    async ({ id, margin, padding, size, text }) => {
       try {
-        const viewProps = {
-          ...(props.marginTopDiffDp !== undefined && { marginTopDiffDp: props.marginTopDiffDp }),
-          ...(props.marginBottomDiffDp !== undefined && { marginBottomDiffDp: props.marginBottomDiffDp }),
-          ...(props.marginLeftDiffDp !== undefined && { marginLeftDiffDp: props.marginLeftDiffDp }),
-          ...(props.marginRightDiffDp !== undefined && { marginRightDiffDp: props.marginRightDiffDp }),
-          ...(props.paddingTopDiffDp !== undefined && { paddingTopDiffDp: props.paddingTopDiffDp }),
-          ...(props.paddingBottomDiffDp !== undefined && { paddingBottomDiffDp: props.paddingBottomDiffDp }),
-          ...(props.paddingLeftDiffDp !== undefined && { paddingLeftDiffDp: props.paddingLeftDiffDp }),
-          ...(props.paddingRightDiffDp !== undefined && { paddingRightDiffDp: props.paddingRightDiffDp }),
-          ...(props.widthDp !== undefined && { widthDp: String(props.widthDp) }),
-          ...(props.heightDp !== undefined && { heightDp: String(props.heightDp) }),
-          ...(props.letterSpacingEm !== undefined && { letterSpacingEm: props.letterSpacingEm }),
-          ...(props.lineSpacingExtraDp !== undefined && { lineSpacingExtraDp: props.lineSpacingExtraDp }),
-          ...(props.includeFontPadding !== undefined && { includeFontPadding: props.includeFontPadding }),
+        const androidProps = {
+          ...(margin && { margin: {
+            ...(margin.topDiffDp    !== undefined && { topDiffDp:    margin.topDiffDp }),
+            ...(margin.bottomDiffDp !== undefined && { bottomDiffDp: margin.bottomDiffDp }),
+            ...(margin.leftDiffDp   !== undefined && { leftDiffDp:   margin.leftDiffDp }),
+            ...(margin.rightDiffDp  !== undefined && { rightDiffDp:  margin.rightDiffDp }),
+          }}),
+          ...(padding && { padding: {
+            ...(padding.topDiffDp    !== undefined && { topDiffDp:    padding.topDiffDp }),
+            ...(padding.bottomDiffDp !== undefined && { bottomDiffDp: padding.bottomDiffDp }),
+            ...(padding.leftDiffDp   !== undefined && { leftDiffDp:   padding.leftDiffDp }),
+            ...(padding.rightDiffDp  !== undefined && { rightDiffDp:  padding.rightDiffDp }),
+          }}),
+          ...(size && { size: {
+            ...(size.width  !== undefined && (typeof size.width  === "number"
+              ? { widthDp:  size.width  } : { widthWrapContent:  true })),
+            ...(size.height !== undefined && (typeof size.height === "number"
+              ? { heightDp: size.height } : { heightWrapContent: true })),
+          }}),
+          ...(text && { text: {
+            ...(text.letterSpacingEm    !== undefined && { letterSpacingEm:    text.letterSpacingEm }),
+            ...(text.lineSpacingExtraDp !== undefined && { lineSpacingExtraDp: text.lineSpacingExtraDp }),
+            ...(text.includeFontPadding !== undefined && { includeFontPadding: text.includeFontPadding }),
+          }}),
         };
-        const req = create(ModifyViewRequestSchema, { id, props: viewProps });
-        await sdkPost("/api/modify", ModifyViewRequestSchema, req, ModifyResponseSchema);
-        return { content: [{ type: "text" as const, text: "ok" }] };
+        const req = create(ModifyViewAndroidRequestSchema, { id, props: androidProps });
+        const res = await sdkPost("/api/modify/android", ModifyViewAndroidRequestSchema, req, ModifyResponseSchema);
+        const msg = res.message ? res.message : "ok";
+        return { content: [{ type: "text" as const, text: msg }] };
       } catch (e) { return errResult(e); }
     }
   );
