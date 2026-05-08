@@ -361,11 +361,8 @@ object ApiHandler {
 
     suspend fun handleDomAll(webView: android.webkit.WebView?): NanoHTTPD.Response {
         if (webView == null) return errResponse(NanoHTTPD.Response.Status.INTERNAL_ERROR, "webview not ready")
-        val vm = ClientToolsSDK.getTop()?.viewModel
-        val offsetX = vm?.webView?.value?.offsetX ?: 0f
-        val offsetY = vm?.webView?.value?.offsetY ?: 0f
         return try {
-            val nodes = DomQueryService(timeoutMs = 3000L).queryAll(webView, offsetX, offsetY)
+            val nodes = DomQueryService(timeoutMs = 3000L).queryAll(webView)
             val domNodes = nodes.map { n ->
                 DomNode.newBuilder()
                     .setId(n.id).setTag(n.tagName).setText(n.text)
@@ -385,11 +382,8 @@ object ApiHandler {
 
     suspend fun handleDomById(webView: android.webkit.WebView?, id: String): NanoHTTPD.Response {
         if (webView == null) return errResponse(NanoHTTPD.Response.Status.INTERNAL_ERROR, "webview not ready")
-        val vm = ClientToolsSDK.getTop()?.viewModel
-        val offsetX = vm?.webView?.value?.offsetX ?: 0f
-        val offsetY = vm?.webView?.value?.offsetY ?: 0f
         return try {
-            val n = DomQueryService(timeoutMs = 3000L).queryById(webView, id, offsetX, offsetY)
+            val n = DomQueryService(timeoutMs = 3000L).queryById(webView, id)
                 ?: return errResponse(NanoHTTPD.Response.Status.NOT_FOUND, "dom node not found")
             val domNode = DomNode.newBuilder()
                 .setId(n.id).setTag(n.tagName).setText(n.text)

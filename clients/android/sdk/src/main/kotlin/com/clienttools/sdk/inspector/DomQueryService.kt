@@ -53,21 +53,14 @@ class DomQueryService(
         })()
     """.trimIndent()
 
-    suspend fun queryAll(
-        webView: WebView,
-        webViewOffsetXDp: Float,
-        webViewOffsetYDp: Float
-    ): List<DomNodeInfo> {
+    suspend fun queryAll(webView: WebView): List<DomNodeInfo> {
         val density = webView.context.resources.displayMetrics.density
-        val offsetXPx = (webViewOffsetXDp * density).toInt()
-        val offsetYPx = (webViewOffsetYDp * density).toInt()
-
         val loc = IntArray(2)
         webView.getLocationOnScreen(loc)
-        val webViewLeft = loc[0]
-        val webViewTop = loc[1]
-        val scrollX = webView.scrollX
-        val scrollY = webView.scrollY
+        val webViewLeftDp = loc[0] / density
+        val webViewTopDp = loc[1] / density
+        val scrollXDp = webView.scrollX / density
+        val scrollYDp = webView.scrollY / density
 
         return try {
             val rawJson = withTimeout(timeoutMs) {
@@ -79,7 +72,7 @@ class DomQueryService(
                     }
                 }
             }
-            parseNodesJson(rawJson, webViewLeft, webViewTop, scrollX, scrollY, offsetXPx, offsetYPx)
+            parseNodesJson(rawJson, webViewLeftDp, webViewTopDp, scrollXDp, scrollYDp)
         } catch (e: TimeoutCancellationException) {
             Log.w(TAG, "queryAll timeout")
             throw e
@@ -89,22 +82,14 @@ class DomQueryService(
         }
     }
 
-    suspend fun queryById(
-        webView: WebView,
-        id: String,
-        webViewOffsetXDp: Float,
-        webViewOffsetYDp: Float
-    ): DomNodeInfo? {
+    suspend fun queryById(webView: WebView, id: String): DomNodeInfo? {
         val density = webView.context.resources.displayMetrics.density
-        val offsetXPx = (webViewOffsetXDp * density).toInt()
-        val offsetYPx = (webViewOffsetYDp * density).toInt()
-
         val loc = IntArray(2)
         webView.getLocationOnScreen(loc)
-        val webViewLeft = loc[0]
-        val webViewTop = loc[1]
-        val scrollX = webView.scrollX
-        val scrollY = webView.scrollY
+        val webViewLeftDp = loc[0] / density
+        val webViewTopDp = loc[1] / density
+        val scrollXDp = webView.scrollX / density
+        val scrollYDp = webView.scrollY / density
 
         return try {
             val rawJson = withTimeout(timeoutMs) {
@@ -116,7 +101,7 @@ class DomQueryService(
                     }
                 }
             }
-            parseNodeJson(rawJson, webViewLeft, webViewTop, scrollX, scrollY, offsetXPx, offsetYPx)
+            parseNodeJson(rawJson, webViewLeftDp, webViewTopDp, scrollXDp, scrollYDp)
         } catch (e: TimeoutCancellationException) {
             Log.w(TAG, "queryById timeout")
             throw e
@@ -128,9 +113,8 @@ class DomQueryService(
 
     internal fun parseNodesJson(
         raw: String?,
-        webViewLeft: Int, webViewTop: Int,
-        webViewScrollX: Int, webViewScrollY: Int,
-        offsetXPx: Int, offsetYPx: Int
+        webViewLeftDp: Float, webViewTopDp: Float,
+        webViewScrollXDp: Float, webViewScrollYDp: Float
     ): List<DomNodeInfo> {
         if (raw == null || raw == "null") return emptyList()
         return try {
@@ -138,7 +122,7 @@ class DomQueryService(
             val arr = JSONArray(unescaped)
             (0 until arr.length()).map { i ->
                 val obj = arr.getJSONObject(i)
-                parseNode(obj, webViewLeft, webViewTop, webViewScrollX, webViewScrollY, offsetXPx, offsetYPx)
+                parseNode(obj, webViewLeftDp, webViewTopDp, webViewScrollXDp, webViewScrollYDp)
             }
         } catch (e: Exception) {
             Log.w(TAG, "parseNodesJson failed: ${e.message}")
@@ -148,15 +132,14 @@ class DomQueryService(
 
     internal fun parseNodeJson(
         raw: String?,
-        webViewLeft: Int, webViewTop: Int,
-        webViewScrollX: Int, webViewScrollY: Int,
-        offsetXPx: Int, offsetYPx: Int
+        webViewLeftDp: Float, webViewTopDp: Float,
+        webViewScrollXDp: Float, webViewScrollYDp: Float
     ): DomNodeInfo? {
         if (raw == null || raw == "null") return null
         return try {
             val unescaped = unescapeJsString(raw)
             val obj = JSONObject(unescaped)
-            parseNode(obj, webViewLeft, webViewTop, webViewScrollX, webViewScrollY, offsetXPx, offsetYPx)
+            parseNode(obj, webViewLeftDp, webViewTopDp, webViewScrollXDp, webViewScrollYDp)
         } catch (e: Exception) {
             Log.w(TAG, "parseNodeJson failed: ${e.message}")
             null
@@ -165,17 +148,16 @@ class DomQueryService(
 
     private fun parseNode(
         obj: JSONObject,
-        webViewLeft: Int, webViewTop: Int,
-        webViewScrollX: Int, webViewScrollY: Int,
-        offsetXPx: Int, offsetYPx: Int
+        webViewLeftDp: Float, webViewTopDp: Float,
+        webViewScrollXDp: Float, webViewScrollYDp: Float
     ): DomNodeInfo {
         val elemX = obj.optInt("x", 0)
         val elemY = obj.optInt("y", 0)
         return DomNodeInfo(
             id = obj.optString("id", ""),
             tagName = obj.optString("tagName", ""),
-            x = webViewLeft + webViewScrollX + elemX + offsetXPx,
-            y = webViewTop + webViewScrollY + elemY + offsetYPx,
+            x = (webViewLeftDp + webViewScrollXDp + elemX).toInt(),
+            y = (webViewTopDp + webViewScrollYDp + elemY).toInt(),
             width = obj.optInt("width", 0),
             height = obj.optInt("height", 0),
             text = obj.optString("text", "")
