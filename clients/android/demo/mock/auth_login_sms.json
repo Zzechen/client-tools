@@ -1,0 +1,7 @@
+{
+  "url": "auth/login/sms",
+  "method": "POST",
+  "status": 200,
+  "headers": { "Content-Type": "application/json" },
+  "body": "{\"code\":0,\"message\":\"ok\",\"data\":{\"token\":\"tok_sms_abc123\",\"user\":{\"id\":\"u001\",\"name\":\"Alice\",\"phone\":\"138****8888\",\"email\":\"alice@example.com\",\"avatar_url\":\"\"}}}"
+}

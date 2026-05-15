@@ -1,0 +1,7 @@
+{
+  "url": "auth/sms/send",
+  "method": "POST",
+  "status": 200,
+  "headers": { "Content-Type": "application/json" },
+  "body": "{\"code\":0,\"message\":\"ok\"}"
+}
