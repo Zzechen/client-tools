@@ -53,10 +53,20 @@ export function registerMockTools(server: McpServer): void {
     async () => {
       try {
         const res = await sdkGet("/mock/rules", MockRuleListResponseSchema);
+        const rules = (res.data?.rules ?? []).map(r => ({
+          id: r.id,
+          url: r.url,
+          method: r.method,
+          delayMs: Number(r.delayMs),
+          error: r.error,
+          status: r.status,
+          headers: r.headers,
+          body: r.body,
+        }));
         return {
           content: [{
             type: "text" as const,
-            text: JSON.stringify(res.data?.rules ?? []),
+            text: JSON.stringify(rules),
           }],
         };
       } catch (e) { return errResult(e); }
