@@ -12,9 +12,24 @@ class HomeViewController: UIViewController {
         return tv
     }()
 
-    private let pages: [(title: String, subtitle: String, icon: String, vcClass: String)] = [
-        ("Login Demo", "手机号验证码登录", "📱", "LoginViewController"),
-        ("VerifyCode Demo", "验证码输入页", "🔐", "VerifyCodeViewController"),
+    private lazy var pages: [(title: String, subtitle: String, icon: String, action: () -> Void)] = [
+        ("Login Demo", "三种登录方式：验证码/密码/邮箱", "📱", { [weak self] in
+            self?.navigationController?.pushViewController(LoginViewController(), animated: true)
+        }),
+        ("VerifyCode Demo", "验证码输入页", "🔐", { [weak self] in
+            self?.navigationController?.pushViewController(VerifyCodeViewController(), animated: true)
+        }),
+        ("User Info (Demo)", "用户信息展示页", "👤", { [weak self] in
+            let demoUser = UserInfo(
+                id: "demo",
+                name: "Demo User",
+                phone: "138****8000",
+                email: "demo@pulse.app",
+                avatar_url: ""
+            )
+            let vc = UserInfoViewController(user: demoUser, token: "demo_token_12345")
+            self?.navigationController?.pushViewController(vc, animated: true)
+        }),
     ]
 
     override func viewDidLoad() {
@@ -22,7 +37,6 @@ class HomeViewController: UIViewController {
         title = "ClientTools Demo"
         navigationController?.navigationBar.prefersLargeTitles = true
         view.accessibilityIdentifier = "home_nav_bar"
-
         view.addSubview(tableView)
         tableView.snp.makeConstraints { make in
             make.edges.equalToSuperview()
@@ -40,22 +54,12 @@ extension HomeViewController: UITableViewDelegate, UITableViewDataSource {
         let cell = tableView.dequeueReusableCell(withIdentifier: HomeCell.identifier, for: indexPath) as! HomeCell
         let page = pages[indexPath.row]
         cell.configure(title: page.title, subtitle: page.subtitle, icon: page.icon)
-        let identifier = page.vcClass.lowercased().replacingOccurrences(of: "viewcontroller", with: "")
-        cell.accessibilityIdentifier = "home_cell_\(identifier)"
+        cell.accessibilityIdentifier = "home_cell_\(indexPath.row)"
         return cell
     }
 
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         tableView.deselectRow(at: indexPath, animated: true)
-        let page = pages[indexPath.row]
-        let vcClass = page.vcClass
-        guard let vc = instantiateViewController(className: vcClass) else { return }
-        navigationController?.pushViewController(vc, animated: true)
-    }
-
-    private func instantiateViewController(className: String) -> UIViewController? {
-        guard let nameSpace = Bundle.main.infoDictionary?["CFBundleExecutable"] as? String,
-              let clazz = NSClassFromString("\(nameSpace).\(className)") else { return nil }
-        return (clazz as? UIViewController.Type)?.init()
+        pages[indexPath.row].action()
     }
 }
