@@ -427,9 +427,31 @@ struct Clienttools_ClickRequest: Sendable {
 
   var id: String = String()
 
+  /// dp，相对 view 中心，正右/正下，空 = 0
+  var centerOffsetX: SwiftProtobuf.Google_Protobuf_FloatValue {
+    get {_centerOffsetX ?? SwiftProtobuf.Google_Protobuf_FloatValue()}
+    set {_centerOffsetX = newValue}
+  }
+  /// Returns true if `centerOffsetX` has been explicitly set.
+  var hasCenterOffsetX: Bool {self._centerOffsetX != nil}
+  /// Clears the value of `centerOffsetX`. Subsequent reads from it will return its default value.
+  mutating func clearCenterOffsetX() {self._centerOffsetX = nil}
+
+  var centerOffsetY: SwiftProtobuf.Google_Protobuf_FloatValue {
+    get {_centerOffsetY ?? SwiftProtobuf.Google_Protobuf_FloatValue()}
+    set {_centerOffsetY = newValue}
+  }
+  /// Returns true if `centerOffsetY` has been explicitly set.
+  var hasCenterOffsetY: Bool {self._centerOffsetY != nil}
+  /// Clears the value of `centerOffsetY`. Subsequent reads from it will return its default value.
+  mutating func clearCenterOffsetY() {self._centerOffsetY = nil}
+
   var unknownFields = SwiftProtobuf.UnknownStorage()
 
   init() {}
+
+  fileprivate var _centerOffsetX: SwiftProtobuf.Google_Protobuf_FloatValue? = nil
+  fileprivate var _centerOffsetY: SwiftProtobuf.Google_Protobuf_FloatValue? = nil
 }
 
 struct Clienttools_ClickResult: Sendable {
@@ -934,7 +956,7 @@ extension Clienttools_ModifyViewIosRequest: SwiftProtobuf.Message, SwiftProtobuf
 
 extension Clienttools_ClickRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   static let protoMessageName: String = _protobuf_package + ".ClickRequest"
-  static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}id\0")
+  static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}id\0\u{3}center_offset_x\0\u{3}center_offset_y\0")
 
   mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -943,20 +965,34 @@ extension Clienttools_ClickRequest: SwiftProtobuf.Message, SwiftProtobuf._Messag
       // enabled. https://github.com/apple/swift-protobuf/issues/1034
       switch fieldNumber {
       case 1: try { try decoder.decodeSingularStringField(value: &self.id) }()
+      case 2: try { try decoder.decodeSingularMessageField(value: &self._centerOffsetX) }()
+      case 3: try { try decoder.decodeSingularMessageField(value: &self._centerOffsetY) }()
       default: break
       }
     }
   }
 
   func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    // The use of inline closures is to circumvent an issue where the compiler
+    // allocates stack space for every if/case branch local when no optimizations
+    // are enabled. https://github.com/apple/swift-protobuf/issues/1034 and
+    // https://github.com/apple/swift-protobuf/issues/1182
     if !self.id.isEmpty {
       try visitor.visitSingularStringField(value: self.id, fieldNumber: 1)
     }
+    try { if let v = self._centerOffsetX {
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 2)
+    } }()
+    try { if let v = self._centerOffsetY {
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 3)
+    } }()
     try unknownFields.traverse(visitor: &visitor)
   }
 
   static func ==(lhs: Clienttools_ClickRequest, rhs: Clienttools_ClickRequest) -> Bool {
     if lhs.id != rhs.id {return false}
+    if lhs._centerOffsetX != rhs._centerOffsetX {return false}
+    if lhs._centerOffsetY != rhs._centerOffsetY {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }

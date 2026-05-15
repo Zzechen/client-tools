@@ -72,7 +72,11 @@ message ModifyViewIosRequest {
   IosViewProps props = 2;
 }
 
-message ClickRequest  { string id = 1; }
+message ClickRequest {
+  string                     id               = 1;
+  google.protobuf.FloatValue center_offset_x  = 2;  // dp，相对 view 中心，正右/正下，空 = 0
+  google.protobuf.FloatValue center_offset_y  = 3;
+}
 message ClickResult   { string id = 1; }
 
 message ScrollRequest {
