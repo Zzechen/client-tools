@@ -24,13 +24,26 @@ export function registerPageTools(server: McpServer): void {
     } catch (e) { return errResult(e); }
   });
 
-  server.tool("click_view", "点击指定 id 的 View（Android/iOS 通用）", { id: z.string().describe("View 的 id（Android resource id 不含包名前缀，iOS 为 accessibilityIdentifier）") }, async ({ id }) => {
-    try {
-      const req = create(ClickRequestSchema, { id });
-      const res = await sdkPost("/api/click", ClickRequestSchema, req, ClickResponseSchema);
-      return { content: [{ type: "text" as const, text: JSON.stringify({ id: res.data?.id }) }] };
-    } catch (e) { return errResult(e); }
-  });
+  server.tool(
+    "click_view",
+    "点击指定 id 的 View（Android/iOS 通用）。默认点击 view 中心，可通过 centerOffsetX/Y 偏移触点",
+    {
+      id: z.string().describe("View 的 id（Android resource id 不含包名前缀，iOS 为 accessibilityIdentifier）"),
+      centerOffsetX: z.number().optional().describe("触点相对 view 中心的横向偏移 dp，正右，默认 0"),
+      centerOffsetY: z.number().optional().describe("触点相对 view 中心的纵向偏移 dp，正下，默认 0"),
+    },
+    async ({ id, centerOffsetX, centerOffsetY }) => {
+      try {
+        const req = create(ClickRequestSchema, {
+          id,
+          ...(centerOffsetX !== undefined && { centerOffsetX }),
+          ...(centerOffsetY !== undefined && { centerOffsetY }),
+        });
+        const res = await sdkPost("/api/click", ClickRequestSchema, req, ClickResponseSchema);
+        return { content: [{ type: "text" as const, text: JSON.stringify({ id: res.data?.id }) }] };
+      } catch (e) { return errResult(e); }
+    }
+  );
 
   server.tool(
     "scroll_view",
