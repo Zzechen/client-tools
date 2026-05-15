@@ -52,4 +52,10 @@ public class ClientToolsSDK {
     public func recordPageChange(_ pageName: String) {
         pageTracker?.recordPageChange(pageName)
     }
+
+    public func makeMockSession() -> URLSession {
+        let config = URLSessionConfiguration.ephemeral
+        config.protocolClasses = [MockURLProtocol.self]
+        return URLSession(configuration: config)
+    }
 }
