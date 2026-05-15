@@ -32,6 +32,7 @@ dependencies {
     implementation(libs.androidx.core)
     implementation("androidx.recyclerview:recyclerview:1.3.2")
     implementation("androidx.constraintlayout:constraintlayout:2.1.4")
+    implementation("com.squareup.okhttp3:okhttp:4.12.0")
 
     testImplementation(kotlin("test"))
     androidTestImplementation(libs.androidx.test.espresso)
