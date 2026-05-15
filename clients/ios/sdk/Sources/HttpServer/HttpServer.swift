@@ -255,7 +255,12 @@ class HttpServer {
             sendError(code: 404, message: "View not found", httpCode: 404, connection: connection); return
         }
         DispatchQueue.main.async {
-            if let control = view as? UIControl {
+            if let cell = view as? UITableViewCell,
+               let tableView = cell.superview as? UITableView ?? cell.superview?.superview as? UITableView,
+               let indexPath = tableView.indexPath(for: cell) {
+                tableView.selectRow(at: indexPath, animated: false, scrollPosition: .none)
+                tableView.delegate?.tableView?(tableView, didSelectRowAt: indexPath)
+            } else if let control = view as? UIControl {
                 control.sendActions(for: .touchUpInside)
             }
         }

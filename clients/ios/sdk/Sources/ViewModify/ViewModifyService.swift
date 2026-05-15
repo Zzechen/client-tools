@@ -8,11 +8,11 @@ class ViewModifyService {
     func modifyIosProto(id: String, props: Clienttools_IosViewProps) -> (Bool, String) {
         guard let view = viewQueryService.findView(byId: id) else { return (false, "View not found: \(id)") }
 
-        // 类型断言：有 text 字段则要求必须是 UILabel
+        // 类型断言：有 text 字段则要求必须是 UILabel 或 UITextField
         if props.hasText {
-            guard view is UILabel else {
+            guard view is UILabel || view is UITextField else {
                 let typeName = type(of: view)
-                return (false, "text props requires UILabel, but view '\(id)' is \(typeName)")
+                return (false, "text props requires UILabel or UITextField, but view '\(id)' is \(typeName)")
             }
         }
 
@@ -21,9 +21,11 @@ class ViewModifyService {
             // 1. transform
             Self.applyTransform(to: view, props: props)
 
-            // 2. 文字属性（已断言是 UILabel）
+            // 2. 文字属性（已断言是 UILabel 或 UITextField）
             if props.hasText, let label = view as? UILabel {
                 Self.applyTextProps(to: label, text: props.text)
+            } else if props.hasText, let textField = view as? UITextField, props.text.hasContent {
+                textField.text = props.text.content.value
             }
 
             view.setNeedsLayout()
