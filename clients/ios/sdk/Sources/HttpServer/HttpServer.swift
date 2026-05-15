@@ -191,11 +191,11 @@ class HttpServer {
             inspectorHandler.handleHide(bodyData, connection: connection)
         case ("POST", "/inspector/adjust"):
             inspectorHandler.handleAdjust(bodyData, connection: connection)
-        case ("POST", "/mock/add"):
+        case ("POST", "/mock/rules"):
             handleMockAdd(bodyData, connection: connection)
         case ("GET", "/mock/rules"):
             handleMockList(connection: connection)
-        case ("POST", "/mock/clear"):
+        case ("DELETE", "/mock/rules"):
             handleMockClear(connection: connection)
         default:
             if method == "GET" && path.hasPrefix("/api/capture/") {
@@ -207,8 +207,8 @@ class HttpServer {
             } else if method == "GET" && path.hasPrefix("/dom/") {
                 let domId = String(path.dropFirst("/dom/".count))
                 handleDomById(domId, connection: connection)
-            } else if method == "DELETE" && path.hasPrefix("/mock/rule/") {
-                let ruleId = String(path.dropFirst("/mock/rule/".count))
+            } else if method == "DELETE" && path.hasPrefix("/mock/rules/") {
+                let ruleId = String(path.dropFirst("/mock/rules/".count))
                 handleMockDelete(ruleId, connection: connection)
             } else {
                 sendError(code: 404, message: "Not found", httpCode: 404, connection: connection)
