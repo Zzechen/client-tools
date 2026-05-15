@@ -15,7 +15,20 @@ class MainActivity : AppCompatActivity() {
     private val pages by lazy {
         listOf(
             Page("Login Screen") { startActivity(Intent(this, LoginActivity::class.java)) },
-            Page("Verify Code") { startActivity(Intent(this, VerifyCodeActivity::class.java)) }
+            Page("Verify Code") { startActivity(Intent(this, VerifyCodeActivity::class.java)) },
+            Page("User Info (Demo)") {
+                val demoUser = com.clienttools.demo.model.UserInfo(
+                    id = "demo",
+                    name = "Demo User",
+                    phone = "138****8000",
+                    email = "demo@pulse.app",
+                    avatar_url = ""
+                )
+                startActivity(Intent(this, UserInfoActivity::class.java).apply {
+                    putExtra(UserInfoActivity.KEY_USER, demoUser)
+                    putExtra(UserInfoActivity.KEY_TOKEN, "demo_token_12345")
+                })
+            }
         )
     }
 

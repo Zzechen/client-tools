@@ -28,6 +28,10 @@
             android:name="com.clienttools.demo.VerifyCodeActivity"
             android:exported="false" />
 
+        <activity
+            android:name="com.clienttools.demo.UserInfoActivity"
+            android:exported="false" />
+
     </application>
     
 </manifest>
