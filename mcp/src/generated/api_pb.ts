@@ -10,13 +10,15 @@ import type { Node, NodeList } from "./node_pb.js";
 import { file_node } from "./node_pb.js";
 import type { ClickResult, ScrollResult } from "./modify_pb.js";
 import { file_modify } from "./modify_pb.js";
+import type { MockRule, MockRuleList } from "./mock_pb.js";
+import { file_mock } from "./mock_pb.js";
 import type { Message } from "@bufbuild/protobuf";
 
 /**
  * Describes the file api.proto.
  */
 export const file_api: GenFile = /*@__PURE__*/
-  fileDesc("CglhcGkucHJvdG8SC2NsaWVudHRvb2xzImsKDFJlc3BvbnNlTWV0YRIMCgRjb2RlGAEgASgFEg8KB21lc3NhZ2UYAiABKAkSEwoLc2RrX3ZlcnNpb24YAyABKAUSJwoGZGV2aWNlGAQgASgLMhcuY2xpZW50dG9vbHMuRGV2aWNlSW5mbyIHCgVFbXB0eSJcCgxQYWdlUmVzcG9uc2USJwoEbWV0YRgBIAEoCzIZLmNsaWVudHRvb2xzLlJlc3BvbnNlTWV0YRIjCgRkYXRhGAIgASgLMhUuY2xpZW50dG9vbHMuUGFnZUluZm8iWAoMTm9kZVJlc3BvbnNlEicKBG1ldGEYASABKAsyGS5jbGllbnR0b29scy5SZXNwb25zZU1ldGESHwoEZGF0YRgCIAEoCzIRLmNsaWVudHRvb2xzLk5vZGUiYAoQTm9kZUxpc3RSZXNwb25zZRInCgRtZXRhGAEgASgLMhkuY2xpZW50dG9vbHMuUmVzcG9uc2VNZXRhEiMKBGRhdGEYAiABKAsyFS5jbGllbnR0b29scy5Ob2RlTGlzdCJKCg5Nb2RpZnlSZXNwb25zZRInCgRtZXRhGAEgASgLMhkuY2xpZW50dG9vbHMuUmVzcG9uc2VNZXRhEg8KB21lc3NhZ2UYAiABKAkiYAoNQ2xpY2tSZXNwb25zZRInCgRtZXRhGAEgASgLMhkuY2xpZW50dG9vbHMuUmVzcG9uc2VNZXRhEiYKBGRhdGEYAiABKAsyGC5jbGllbnR0b29scy5DbGlja1Jlc3VsdCJiCg5TY3JvbGxSZXNwb25zZRInCgRtZXRhGAEgASgLMhkuY2xpZW50dG9vbHMuUmVzcG9uc2VNZXRhEicKBGRhdGEYAiABKAsyGS5jbGllbnR0b29scy5TY3JvbGxSZXN1bHQiOQoOU2ltcGxlUmVzcG9uc2USJwoEbWV0YRgBIAEoCzIZLmNsaWVudHRvb2xzLlJlc3BvbnNlTWV0YSI/Cg9QdXNoSHRtbFJlcXVlc3QSCwoDdGFnGAEgASgJEhEKCXRpbWVzdGFtcBgCIAEoCRIMCgRodG1sGAMgASgMIkMKDlB1c2hIdG1sUmVzdWx0EgsKA3RhZxgBIAEoCRIRCgl0aW1lc3RhbXAYAiABKAkSEQoJZmlsZV9wYXRoGAMgASgJImYKEFB1c2hIdG1sUmVzcG9uc2USJwoEbWV0YRgBIAEoCzIZLmNsaWVudHRvb2xzLlJlc3BvbnNlTWV0YRIpCgRkYXRhGAIgASgLMhsuY2xpZW50dG9vbHMuUHVzaEh0bWxSZXN1bHQiNAoSV2Vidmlld1Nob3dSZXF1ZXN0EgsKA3RhZxgBIAEoCRIRCgl0aW1lc3RhbXAYAiABKAkiSwoUV2Vidmlld0FkanVzdFJlcXVlc3QSEAoIb2Zmc2V0X3gYASABKAISEAoIb2Zmc2V0X3kYAiABKAISDwoHb3BhY2l0eRgDIAEoAiJNCg9DYXB0dXJlUmVzcG9uc2USJwoEbWV0YRgBIAEoCzIZLmNsaWVudHRvb2xzLlJlc3BvbnNlTWV0YRIRCglpbWFnZV9wbmcYAiABKAxCHQoZY29tLmNsaWVudHRvb2xzLnNkay5wcm90b1ABYgZwcm90bzM", [file_page, file_node, file_modify]);
+  fileDesc("CglhcGkucHJvdG8SC2NsaWVudHRvb2xzImsKDFJlc3BvbnNlTWV0YRIMCgRjb2RlGAEgASgFEg8KB21lc3NhZ2UYAiABKAkSEwoLc2RrX3ZlcnNpb24YAyABKAUSJwoGZGV2aWNlGAQgASgLMhcuY2xpZW50dG9vbHMuRGV2aWNlSW5mbyIHCgVFbXB0eSJcCgxQYWdlUmVzcG9uc2USJwoEbWV0YRgBIAEoCzIZLmNsaWVudHRvb2xzLlJlc3BvbnNlTWV0YRIjCgRkYXRhGAIgASgLMhUuY2xpZW50dG9vbHMuUGFnZUluZm8iWAoMTm9kZVJlc3BvbnNlEicKBG1ldGEYASABKAsyGS5jbGllbnR0b29scy5SZXNwb25zZU1ldGESHwoEZGF0YRgCIAEoCzIRLmNsaWVudHRvb2xzLk5vZGUiYAoQTm9kZUxpc3RSZXNwb25zZRInCgRtZXRhGAEgASgLMhkuY2xpZW50dG9vbHMuUmVzcG9uc2VNZXRhEiMKBGRhdGEYAiABKAsyFS5jbGllbnR0b29scy5Ob2RlTGlzdCJKCg5Nb2RpZnlSZXNwb25zZRInCgRtZXRhGAEgASgLMhkuY2xpZW50dG9vbHMuUmVzcG9uc2VNZXRhEg8KB21lc3NhZ2UYAiABKAkiYAoNQ2xpY2tSZXNwb25zZRInCgRtZXRhGAEgASgLMhkuY2xpZW50dG9vbHMuUmVzcG9uc2VNZXRhEiYKBGRhdGEYAiABKAsyGC5jbGllbnR0b29scy5DbGlja1Jlc3VsdCJiCg5TY3JvbGxSZXNwb25zZRInCgRtZXRhGAEgASgLMhkuY2xpZW50dG9vbHMuUmVzcG9uc2VNZXRhEicKBGRhdGEYAiABKAsyGS5jbGllbnR0b29scy5TY3JvbGxSZXN1bHQiOQoOU2ltcGxlUmVzcG9uc2USJwoEbWV0YRgBIAEoCzIZLmNsaWVudHRvb2xzLlJlc3BvbnNlTWV0YSI/Cg9QdXNoSHRtbFJlcXVlc3QSCwoDdGFnGAEgASgJEhEKCXRpbWVzdGFtcBgCIAEoCRIMCgRodG1sGAMgASgMIkMKDlB1c2hIdG1sUmVzdWx0EgsKA3RhZxgBIAEoCRIRCgl0aW1lc3RhbXAYAiABKAkSEQoJZmlsZV9wYXRoGAMgASgJImYKEFB1c2hIdG1sUmVzcG9uc2USJwoEbWV0YRgBIAEoCzIZLmNsaWVudHRvb2xzLlJlc3BvbnNlTWV0YRIpCgRkYXRhGAIgASgLMhsuY2xpZW50dG9vbHMuUHVzaEh0bWxSZXN1bHQiNAoSV2Vidmlld1Nob3dSZXF1ZXN0EgsKA3RhZxgBIAEoCRIRCgl0aW1lc3RhbXAYAiABKAkiSwoUV2Vidmlld0FkanVzdFJlcXVlc3QSEAoIb2Zmc2V0X3gYASABKAISEAoIb2Zmc2V0X3kYAiABKAISDwoHb3BhY2l0eRgDIAEoAiJNCg9DYXB0dXJlUmVzcG9uc2USJwoEbWV0YRgBIAEoCzIZLmNsaWVudHRvb2xzLlJlc3BvbnNlTWV0YRIRCglpbWFnZV9wbmcYAiABKAwiYAoQTW9ja1J1bGVSZXNwb25zZRInCgRtZXRhGAEgASgLMhkuY2xpZW50dG9vbHMuUmVzcG9uc2VNZXRhEiMKBGRhdGEYAiABKAsyFS5jbGllbnR0b29scy5Nb2NrUnVsZSJoChRNb2NrUnVsZUxpc3RSZXNwb25zZRInCgRtZXRhGAEgASgLMhkuY2xpZW50dG9vbHMuUmVzcG9uc2VNZXRhEicKBGRhdGEYAiABKAsyGS5jbGllbnR0b29scy5Nb2NrUnVsZUxpc3QiWAoWQ2xlYXJNb2NrUnVsZXNSZXNwb25zZRInCgRtZXRhGAEgASgLMhkuY2xpZW50dG9vbHMuUmVzcG9uc2VNZXRhEhUKDWNsZWFyZWRfY291bnQYAiABKAVCHQoZY29tLmNsaWVudHRvb2xzLnNkay5wcm90b1ABYgZwcm90bzM", [file_page, file_node, file_modify, file_mock]);
 
 /**
  * @generated from message clienttools.ResponseMeta
@@ -358,4 +360,70 @@ export type CaptureResponse = Message<"clienttools.CaptureResponse"> & {
  */
 export const CaptureResponseSchema: GenMessage<CaptureResponse> = /*@__PURE__*/
   messageDesc(file_api, 14);
+
+/**
+ * @generated from message clienttools.MockRuleResponse
+ */
+export type MockRuleResponse = Message<"clienttools.MockRuleResponse"> & {
+  /**
+   * @generated from field: clienttools.ResponseMeta meta = 1;
+   */
+  meta?: ResponseMeta | undefined;
+
+  /**
+   * @generated from field: clienttools.MockRule data = 2;
+   */
+  data?: MockRule | undefined;
+};
+
+/**
+ * Describes the message clienttools.MockRuleResponse.
+ * Use `create(MockRuleResponseSchema)` to create a new message.
+ */
+export const MockRuleResponseSchema: GenMessage<MockRuleResponse> = /*@__PURE__*/
+  messageDesc(file_api, 15);
+
+/**
+ * @generated from message clienttools.MockRuleListResponse
+ */
+export type MockRuleListResponse = Message<"clienttools.MockRuleListResponse"> & {
+  /**
+   * @generated from field: clienttools.ResponseMeta meta = 1;
+   */
+  meta?: ResponseMeta | undefined;
+
+  /**
+   * @generated from field: clienttools.MockRuleList data = 2;
+   */
+  data?: MockRuleList | undefined;
+};
+
+/**
+ * Describes the message clienttools.MockRuleListResponse.
+ * Use `create(MockRuleListResponseSchema)` to create a new message.
+ */
+export const MockRuleListResponseSchema: GenMessage<MockRuleListResponse> = /*@__PURE__*/
+  messageDesc(file_api, 16);
+
+/**
+ * @generated from message clienttools.ClearMockRulesResponse
+ */
+export type ClearMockRulesResponse = Message<"clienttools.ClearMockRulesResponse"> & {
+  /**
+   * @generated from field: clienttools.ResponseMeta meta = 1;
+   */
+  meta?: ResponseMeta | undefined;
+
+  /**
+   * @generated from field: int32 cleared_count = 2;
+   */
+  clearedCount: number;
+};
+
+/**
+ * Describes the message clienttools.ClearMockRulesResponse.
+ * Use `create(ClearMockRulesResponseSchema)` to create a new message.
+ */
+export const ClearMockRulesResponseSchema: GenMessage<ClearMockRulesResponse> = /*@__PURE__*/
+  messageDesc(file_api, 17);
 

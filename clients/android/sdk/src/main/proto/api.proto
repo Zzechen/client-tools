@@ -5,6 +5,7 @@ option java_multiple_files = true;
 import "page.proto";
 import "node.proto";
 import "modify.proto";
+import "mock.proto";
 
 message ResponseMeta {
   int32 code = 1;
@@ -31,3 +32,7 @@ message WebviewShowRequest   { string tag = 1; string timestamp = 2; }
 message WebviewAdjustRequest { float offset_x = 1; float offset_y = 2; float opacity = 3; }
 
 message CaptureResponse { ResponseMeta meta = 1; bytes image_png = 2; }
+
+message MockRuleResponse      { ResponseMeta meta = 1; MockRule data = 2; }
+message MockRuleListResponse  { ResponseMeta meta = 1; MockRuleList data = 2; }
+message ClearMockRulesResponse { ResponseMeta meta = 1; int32 cleared_count = 2; }
