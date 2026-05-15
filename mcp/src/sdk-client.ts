@@ -76,3 +76,22 @@ export async function sdkPost<Req extends DescMessage, Res extends DescMessage>(
   }
   return fromBinary(resSchema, buf);
 }
+
+export async function sdkDelete<Res extends DescMessage>(
+  path: string,
+  resSchema: Res
+): Promise<MessageShape<Res>> {
+  ensureAdbForward();
+  const res = await fetchWithTimeout(`${BASE_URL}${path}`, { method: "DELETE" }, DEFAULT_TIMEOUT_MS);
+  const buf = new Uint8Array(await res.arrayBuffer());
+  if (!res.ok) {
+    let errMsg = `HTTP ${res.status}`;
+    try {
+      const errResp = fromBinary(resSchema, buf);
+      const meta = (errResp as Record<string, unknown>).meta as { message?: string } | undefined;
+      if (meta?.message) errMsg = meta.message;
+    } catch { /* ignore */ }
+    throw new Error(errMsg);
+  }
+  return fromBinary(resSchema, buf);
+}
