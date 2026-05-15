@@ -5,7 +5,6 @@ AI Coding 客户端页面开发增强套件。让 AI 高质量完成「设计稿
 ## 核心特性
 
 - **跨平台共享数据结构**：Kotlin Multiplatform (KMP) 定义统一的协议数据类，编译为 Android `.aar` 和 iOS `.xcframework`
-- **设计稿自动化提取**：Playwright 渲染 HTML/CSS 设计稿，自动提取节点树结构和样式信息
 - **运行时视觉比对**：WebView 叠加设计参考，支持透明度调整和拖拽控制
 - **渐进式修正循环**：AI 局部调整 → 局部校对 → 全屏验收的迭代流程
 - **MCP 工具接口**：标准 HTTP 协议封装所有 SDK 能力，MCP Server 供 AI 调用
@@ -22,12 +21,9 @@ client-tools/
 │   ├── ios/sdk/                 # iOS SDK 实现（Swift）
 │   └── ios/demo/                # iOS 接入示例
 ├── mcp/                         # MCP Server（HTTP 接口 + 工具定义）
-├── skill/preprocess/            # 设计稿预处理脚本（Playwright）
 ├── tests/                       # 所有测试（按功能模块细分）
-│   └── preprocess/              # 预处理工具测试
 ├── docs/                        # 文档目录
 │   ├── requirements-list.md     # 原始需求列表
-│   ├── 2026-04-17-preprocess/   # 模块 1：设计稿预处理（已完成）
 │   └── 2026-04-17-shared-kmp/   # 模块 2：KMP 共享模块（已完成）
 ├── CLAUDE.md                    # Claude Code 项目指南
 ├── tech-plan.md                 # 整体技术规划文档
@@ -35,45 +31,6 @@ client-tools/
 ```
 
 ## 已完成模块
-
-### 模块 1：设计稿预处理工具 ✅
-
-**目标**：将 HTML/CSS 设计稿渲染后提取所有节点结构化信息。
-
-**技术栈**：Python 3.10+、Playwright、asyncio
-
-**关键特性**：
-- Playwright 无头 Chromium 渲染设计稿
-- 自动提取节点树：id、type（TEXT/IMAGE/LIST/CONTAINER）、屏幕坐标、尺寸
-- 提取样式信息：TEXT 节点的字体、颜色、字重；IMAGE 的缩放模式；LIST 的 item 间距；CONTAINER 的内边距
-- 锚点相对坐标：以指定节点的上/下边缘为基准，计算所有其他节点的 dx/dy
-- JSON 结构化输出
-
-**执行**：
-```bash
-# 列举设计稿中的所有节点（供 AI 选择锚点）
-skill/preprocess/.venv/bin/python skill/preprocess/preprocess.py \
-  --input design.html \
-  --viewport 375 \
-  --list-only
-
-# 完整处理（指定锚点）
-skill/preprocess/.venv/bin/python skill/preprocess/preprocess.py \
-  --input design.html \
-  --viewport 375 \
-  --anchor-id text_1 \
-  --anchor-edge top \
-  --output design.json
-```
-
-**测试**：14 个单元 + 集成测试全部通过
-```bash
-skill/preprocess/.venv/bin/pytest tests/preprocess/ -q
-```
-
-**文档**：[设计稿预处理 Spec & Plan](docs/2026-04-17-preprocess/)
-
----
 
 ### 模块 2：KMP 共享数据结构 ✅
 
@@ -172,8 +129,7 @@ curl http://localhost:8080/api/events
 ### 环境要求
 
 - **Java 17+**（Gradle 和 Android 编译）
-- **Python 3.10+**（设计稿预处理）
-- **Node.js 16+**（MCP Server，后续）
+- **Node.js 18+**（MCP Server）
 
 ### 设置
 
@@ -183,15 +139,7 @@ curl http://localhost:8080/api/events
    cd client-tools
    ```
 
-2. **配置 Python 环境**（preprocess 工具）
-   ```bash
-   cd skill/preprocess
-   python3 -m venv .venv
-   .venv/bin/pip install -r requirements.txt
-   .venv/bin/playwright install chromium
-   ```
-
-3. **验证 Gradle 工程**（KMP 模块）
+2. **验证 Gradle 工程**（KMP 模块）
    ```bash
    cd packages
    ./gradlew :shared:tasks --quiet
@@ -200,9 +148,6 @@ curl http://localhost:8080/api/events
 ### 运行测试
 
 ```bash
-# 预处理工具测试
-skill/preprocess/.venv/bin/pytest tests/preprocess/ -q
-
 # KMP 模块测试
 cd packages && ./gradlew :shared:jvmTest
 ```
@@ -227,7 +172,6 @@ cd packages && ./gradlew :shared:jvmTest
 - [CLAUDE.md](CLAUDE.md) — Claude Code 开发指南（开发者必读）
 - [tech-plan.md](tech-plan.md) — 完整技术规划（架构 + 协议设计 + 集成流程）
 - [docs/requirements-list.md](docs/requirements-list.md) — 原始需求列表
-- [docs/2026-04-17-preprocess/](docs/2026-04-17-preprocess/) — 模块 1 规格与实施计划
 - [docs/2026-04-17-shared-kmp/](docs/2026-04-17-shared-kmp/) — 模块 2 规格与实施计划
 
 ---

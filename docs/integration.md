@@ -92,7 +92,6 @@ end
 
 - Node.js 18+
 - adb（Android Debug Bridge）
-- Python 3.11+（`extract_view_layout` 工具依赖）
 
 ### 安装步骤
 
@@ -101,12 +100,7 @@ end
 cd <repo>/mcp
 npm install && npm run build
 
-# 2. 初始化 preprocess 脚本环境（extract_view_layout 工具依赖）
-cd <repo>/mcp/scripts/preprocess
-python3 -m venv .venv
-.venv/bin/pip install -r requirements.txt
-
-# 3. adb forward（每次连接设备后执行）
+# 2. adb forward（每次连接设备后执行）
 adb forward tcp:8080 tcp:8080
 ```
 
@@ -131,7 +125,6 @@ adb forward tcp:8080 tcp:8080
 
 连接设备后，在 Claude Code 中调用：
 - `get_current_page` — 返回当前 Activity/页面名，确认链路正常
-- `extract_view_layout` — 传入一个 HTML 文件路径和 viewport，确认节点数据返回正常
 
 ---
 

@@ -38,7 +38,5 @@ echo "  Config: $MCP_JSON"
 # client-tools skills 软链
 echo ""
 echo "==> Linking client-tools skills..."
-ln -sf "$PROJECT_ROOT/skill/client-tools-preprocess" "$HOME/.claude/skills/client-tools-preprocess"
-ln -sf "$PROJECT_ROOT/skill/client-tools-implement" "$HOME/.claude/skills/client-tools-implement"
 ln -sf "$PROJECT_ROOT/skill/client-tools-inspect" "$HOME/.claude/skills/client-tools-inspect"
 echo "[OK] client-tools skills linked"
