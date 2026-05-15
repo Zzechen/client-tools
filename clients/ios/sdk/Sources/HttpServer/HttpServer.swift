@@ -254,15 +254,58 @@ class HttpServer {
         guard let view = viewQueryService.findView(byId: req.id) else {
             sendError(code: 404, message: "View not found", httpCode: 404, connection: connection); return
         }
+
+        var clickError: String? = nil
+        let sema = DispatchSemaphore(value: 0)
         DispatchQueue.main.async {
-            if let cell = view as? UITableViewCell,
-               let tableView = cell.superview as? UITableView ?? cell.superview?.superview as? UITableView,
+            guard let window = view.window else {
+                clickError = "View has no window"
+                sema.signal(); return
+            }
+            // 触点坐标（window 坐标系），iOS 1pt = 1dp，无需 density 换算
+            let offsetX = req.hasCenterOffsetX ? CGFloat(req.centerOffsetX.value) : 0
+            let offsetY = req.hasCenterOffsetY ? CGFloat(req.centerOffsetY.value) : 0
+            let localPoint = CGPoint(x: view.bounds.midX + offsetX, y: view.bounds.midY + offsetY)
+            let pointInWindow = view.convert(localPoint, to: window)
+
+            let hitView = window.hitTest(pointInWindow, with: nil) ?? view
+
+            // 1. UIControl
+            if let control = hitView as? UIControl {
+                control.sendActions(for: .touchUpInside)
+                sema.signal(); return
+            }
+            // 2. UITableViewCell
+            if let cell = self.findSuperview(of: hitView, type: UITableViewCell.self),
+               let tableView = self.findSuperview(of: cell, type: UITableView.self),
                let indexPath = tableView.indexPath(for: cell) {
                 tableView.selectRow(at: indexPath, animated: false, scrollPosition: .none)
                 tableView.delegate?.tableView?(tableView, didSelectRowAt: indexPath)
-            } else if let control = view as? UIControl {
-                control.sendActions(for: .touchUpInside)
+                sema.signal(); return
             }
+            // 3. UICollectionViewCell
+            if let cell = self.findSuperview(of: hitView, type: UICollectionViewCell.self),
+               let cv = self.findSuperview(of: cell, type: UICollectionView.self),
+               let indexPath = cv.indexPath(for: cell) {
+                cv.delegate?.collectionView?(cv, didSelectItemAt: indexPath)
+                sema.signal(); return
+            }
+            // 4. UITapGestureRecognizer（hitView 及其祖先链）
+            var current: UIView? = hitView
+            while let v = current {
+                if let tap = v.gestureRecognizers?.first(where: { $0 is UITapGestureRecognizer }) {
+                    tap.setValue(UIGestureRecognizer.State.ended.rawValue, forKey: "state")
+                    sema.signal(); return
+                }
+                current = v.superview
+            }
+            clickError = "No interactive handler found at point"
+            sema.signal()
+        }
+        sema.wait()
+
+        if let err = clickError {
+            sendError(code: 400, message: err, connection: connection); return
         }
         var result = Clienttools_ClickResult()
         result.id = req.id
@@ -270,6 +313,15 @@ class HttpServer {
         resp.meta = okMeta()
         resp.data = result
         sendProto(resp, connection: connection)
+    }
+
+    private func findSuperview<T: UIView>(of view: UIView, type: T.Type) -> T? {
+        var v: UIView? = view
+        while let current = v {
+            if let typed = current as? T { return typed }
+            v = current.superview
+        }
+        return nil
     }
 
     private func handleScroll(_ body: Data, connection: NWConnection) {
