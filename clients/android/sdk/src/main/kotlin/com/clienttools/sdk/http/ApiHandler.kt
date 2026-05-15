@@ -12,7 +12,10 @@ import com.clienttools.sdk.inspector.InspectorFileStore
 import com.clienttools.sdk.inspector.DomQueryService
 import com.clienttools.sdk.inspector.WebViewState
 import com.clienttools.sdk.listener.PageChangeListener
+import com.clienttools.sdk.mock.MockRuleEntry
+import com.clienttools.sdk.mock.MockRuleStore
 import com.clienttools.sdk.proto.*
+import java.util.UUID
 import com.clienttools.sdk.runtime.AndroidViewModifier
 import com.clienttools.sdk.runtime.ViewModifier
 import com.clienttools.sdk.runtime.ViewQueryService
@@ -395,6 +398,83 @@ object ApiHandler {
             errResponse(NanoHTTPD.Response.Status.INTERNAL_ERROR, "dom query timeout")
         } catch (e: Exception) {
             Log.e("ApiHandler", "handleDomById $id", e)
+            errResponse(NanoHTTPD.Response.Status.INTERNAL_ERROR, e.message ?: "error")
+        }
+    }
+
+    private fun MockRuleEntry.toProto(): MockRule = MockRule.newBuilder()
+        .setId(id)
+        .setUrl(url)
+        .setMethod(method)
+        .setDelayMs(delayMs)
+        .setError(error)
+        .setStatus(status)
+        .putAllHeaders(headers)
+        .setBody(body)
+        .build()
+
+    fun handleMockAdd(body: ByteArray): NanoHTTPD.Response {
+        return try {
+            val req = AddMockRuleRequest.parseFrom(body)
+            val entry = MockRuleEntry(
+                id = UUID.randomUUID().toString(),
+                url = req.url,
+                method = req.method.uppercase().ifEmpty { "GET" },
+                delayMs = req.delayMs,
+                error = req.error,
+                status = if (req.status == 0) 200 else req.status,
+                headers = req.headersMap,
+                body = req.body
+            )
+            MockRuleStore.add(entry)
+            val resp = MockRuleResponse.newBuilder()
+                .setMeta(ProtoHelper.okMeta(ctx()))
+                .setData(entry.toProto())
+                .build()
+            okResponse(resp.toByteArray())
+        } catch (e: Exception) {
+            Log.e("ApiHandler", "handleMockAdd", e)
+            errResponse(NanoHTTPD.Response.Status.INTERNAL_ERROR, e.message ?: "error")
+        }
+    }
+
+    fun handleMockList(): NanoHTTPD.Response {
+        return try {
+            val protoRules = MockRuleStore.list().map { it.toProto() }
+            val resp = MockRuleListResponse.newBuilder()
+                .setMeta(ProtoHelper.okMeta(ctx()))
+                .setData(MockRuleList.newBuilder().addAllRules(protoRules).build())
+                .build()
+            okResponse(resp.toByteArray())
+        } catch (e: Exception) {
+            Log.e("ApiHandler", "handleMockList", e)
+            errResponse(NanoHTTPD.Response.Status.INTERNAL_ERROR, e.message ?: "error")
+        }
+    }
+
+    fun handleMockDelete(id: String): NanoHTTPD.Response {
+        return try {
+            MockRuleStore.delete(id)
+            val resp = SimpleResponse.newBuilder()
+                .setMeta(ProtoHelper.okMeta(ctx()))
+                .build()
+            okResponse(resp.toByteArray())
+        } catch (e: Exception) {
+            Log.e("ApiHandler", "handleMockDelete", e)
+            errResponse(NanoHTTPD.Response.Status.INTERNAL_ERROR, e.message ?: "error")
+        }
+    }
+
+    fun handleMockClear(): NanoHTTPD.Response {
+        return try {
+            val count = MockRuleStore.clear()
+            val resp = ClearMockRulesResponse.newBuilder()
+                .setMeta(ProtoHelper.okMeta(ctx()))
+                .setClearedCount(count)
+                .build()
+            okResponse(resp.toByteArray())
+        } catch (e: Exception) {
+            Log.e("ApiHandler", "handleMockClear", e)
             errResponse(NanoHTTPD.Response.Status.INTERNAL_ERROR, e.message ?: "error")
         }
     }

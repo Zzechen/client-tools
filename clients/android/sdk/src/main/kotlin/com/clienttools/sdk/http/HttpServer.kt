@@ -91,6 +91,20 @@ class HttpServer(
                     }
                 }
 
+                method == Method.POST && uri == "/mock/rules" ->
+                    ApiHandler.handleMockAdd(readBodyBytes(session))
+
+                method == Method.GET && uri == "/mock/rules" ->
+                    ApiHandler.handleMockList()
+
+                method == Method.DELETE && uri.startsWith("/mock/rules/") -> {
+                    val id = uri.removePrefix("/mock/rules/")
+                    ApiHandler.handleMockDelete(id)
+                }
+
+                method == Method.DELETE && uri == "/mock/rules" ->
+                    ApiHandler.handleMockClear()
+
                 else -> newFixedLengthResponse(Response.Status.NOT_FOUND, MIME_PLAINTEXT, "Not found")
             }
         } catch (e: Exception) {
