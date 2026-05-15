@@ -17,9 +17,9 @@ AI Coding 客户端页面开发增强套件，目标是让 AI 高质量完成「
   - `clients/ios/demo/` — iOS 接入示例
   - `clients/harmony/sdk/` — HarmonyOS SDK（骨架，待实现）
   - `clients/harmony/demo/` — HarmonyOS 接入示例（骨架）
-- `mcp/` — MCP Server，封装 SDK HTTP 接口供 AI 调用；`mcp/scripts/preprocess/` 含设计稿预处理脚本（Python/Playwright）
+- `mcp/` — MCP Server，封装 SDK HTTP 接口供 AI 调用
 - `skill/` — 仅含 `client-tools-inspect`（运行时视觉校正协议）
-- `tests/` — 所有测试，按功能子目录划分（如 `tests/preprocess/`）
+- `tests/` — 所有测试，按功能子目录划分
 - `docs/` — 文档
 - `settings.gradle.kts` — Gradle 多模块根配置（项目根）
 - `tech-plan.md` — 整体技术规划
@@ -46,9 +46,6 @@ AI Coding 客户端页面开发增强套件，目标是让 AI 高质量完成「
 ## 运行测试
 
 ```bash
-# Python（preprocess）
-mcp/scripts/preprocess/.venv/bin/pytest tests/preprocess/ -q
-
 # Android SDK（在 clients/android/ 目录下执行）
 cd clients/android && ./gradlew :sdk:assembleDebug
 ```
