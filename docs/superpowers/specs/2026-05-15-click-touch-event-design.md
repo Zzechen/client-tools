@@ -4,7 +4,7 @@
 
 **Goal:** 将双端 `click_view` 的实现从 listener 触发改为注入完整触摸事件，使点击行为与真实手指触屏等价，不依赖业务是否设置了 click listener。
 
-**Architecture:** Proto 层 `ClickRequest` 新增可选 `offset_x` / `offset_y`（相对 view 中心的 dp 偏移，空 = 中心），MCP tool 透传新参数；Android 改为向 decorView 注入 `MotionEvent(ACTION_DOWN + ACTION_UP)`，iOS 改为 hitTest 定位实际接收事件的 view 后按类型分发。
+**Architecture:** Proto 层 `ClickRequest` 新增可选 `center_offset_x` / `center_offset_y`（相对 view 中心的 dp 偏移，空 = 中心），MCP tool 透传新参数；Android 改为向 decorView 注入 `MotionEvent(ACTION_DOWN + ACTION_UP)`，iOS 改为 hitTest 定位实际接收事件的 view 后按类型分发。
 
 **Tech Stack:** Protobuf (google.protobuf.FloatValue)、Kotlin MotionEvent、Swift UIKit hitTest + UIGestureRecognizer state KVO hack
 
@@ -17,8 +17,8 @@
 ```protobuf
 message ClickRequest {
   string id                    = 1;
-  google.protobuf.FloatValue offset_x = 2;  // dp，相对 view 中心，正右/正下，空 = 0
-  google.protobuf.FloatValue offset_y = 3;
+  google.protobuf.FloatValue center_offset_x = 2;  // dp，相对 view 中心，正右/正下，空 = 0
+  google.protobuf.FloatValue center_offset_y = 3;
 }
 ```
 
@@ -39,12 +39,12 @@ import "google/protobuf/wrappers.proto";
 ```ts
 {
   id: z.string(),
-  offsetX: z.number().optional().describe("相对 view 中心的横向偏移 dp，正右，默认 0"),
-  offsetY: z.number().optional().describe("相对 view 中心的纵向偏移 dp，正下，默认 0"),
+  centerOffsetX: z.number().optional().describe("相对 view 中心的横向偏移 dp，正右，默认 0"),
+  centerOffsetY: z.number().optional().describe("相对 view 中心的纵向偏移 dp，正下，默认 0"),
 }
 ```
 
-构造 `ClickRequest` 时，若 offsetX/offsetY 存在则填入 `offset_x` / `offset_y` wrapper 字段。
+构造 `ClickRequest` 时，若 centerOffsetX/centerOffsetY 存在则填入 `center_offset_x` / `center_offset_y` wrapper 字段。
 
 ---
 
@@ -57,8 +57,8 @@ import "google/protobuf/wrappers.proto";
 val loc = IntArray(2)
 view.getLocationOnScreen(loc)
 val density = view.resources.displayMetrics.density
-val cx = loc[0] + view.width / 2f  + (offsetXDp ?: 0f) * density
-val cy = loc[1] + view.height / 2f + (offsetYDp ?: 0f) * density
+val cx = loc[0] + view.width / 2f  + (centerOffsetXDp ?: 0f) * density
+val cy = loc[1] + view.height / 2f + (centerOffsetYDp ?: 0f) * density
 ```
 
 **注入事件：**
@@ -73,7 +73,7 @@ down.recycle()
 up.recycle()
 ```
 
-`ApiHandler.handleClick` 从 proto 里读 `offset_x.value` / `offset_y.value` 传入。
+`ApiHandler.handleClick` 从 proto 里读 `center_offset_x.value` / `center_offset_y.value` 传入。
 
 ---
 
@@ -85,13 +85,13 @@ up.recycle()
 ```swift
 guard let window = view.window else { /* error */ }
 let viewCenter = view.convert(
-    CGPoint(x: view.bounds.midX + CGFloat(req.hasOffsetX ? req.offsetX.value : 0),
-            y: view.bounds.midY + CGFloat(req.hasOffsetY ? req.offsetY.value : 0)),
+    CGPoint(x: view.bounds.midX + CGFloat(req.hasCenterOffsetX ? req.centerOffsetX.value : 0),
+            y: view.bounds.midY + CGFloat(req.hasCenterOffsetY ? req.centerOffsetY.value : 0)),
     to: window
 )
 ```
 
-注意：proto `offset_x` 单位 dp = pt（iOS 上 1dp = 1pt），无需 density 换算。
+注意：proto `center_offset_x` 单位 dp = pt（iOS 上 1dp = 1pt），无需 density 换算。
 
 **hitTest 定位实际 view：**
 ```swift
