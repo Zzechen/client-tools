@@ -107,7 +107,9 @@ object ApiHandler {
     fun handleClick(bodyBytes: ByteArray): NanoHTTPD.Response {
         return try {
             val req = ClickRequest.parseFrom(bodyBytes)
-            val success = ViewModifier.click(req.id)
+            val offsetX = if (req.hasCenterOffsetX()) req.centerOffsetX.value else null
+            val offsetY = if (req.hasCenterOffsetY()) req.centerOffsetY.value else null
+            val success = ViewModifier.click(req.id, offsetX, offsetY)
             if (!success) return errResponse(NanoHTTPD.Response.Status.NOT_FOUND, "View not found")
             val result = ClickResult.newBuilder().setId(req.id).build()
             val resp = ClickResponse.newBuilder().setMeta(ProtoHelper.okMeta(ctx())).setData(result).build()
