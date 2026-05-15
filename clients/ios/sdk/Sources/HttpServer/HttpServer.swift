@@ -191,6 +191,12 @@ class HttpServer {
             inspectorHandler.handleHide(bodyData, connection: connection)
         case ("POST", "/inspector/adjust"):
             inspectorHandler.handleAdjust(bodyData, connection: connection)
+        case ("POST", "/mock/add"):
+            handleMockAdd(bodyData, connection: connection)
+        case ("GET", "/mock/rules"):
+            handleMockList(connection: connection)
+        case ("POST", "/mock/clear"):
+            handleMockClear(connection: connection)
         default:
             if method == "GET" && path.hasPrefix("/api/capture/") {
                 let nodeId = String(path.dropFirst("/api/capture/".count))
@@ -201,6 +207,9 @@ class HttpServer {
             } else if method == "GET" && path.hasPrefix("/dom/") {
                 let domId = String(path.dropFirst("/dom/".count))
                 handleDomById(domId, connection: connection)
+            } else if method == "DELETE" && path.hasPrefix("/mock/rule/") {
+                let ruleId = String(path.dropFirst("/mock/rule/".count))
+                handleMockDelete(ruleId, connection: connection)
             } else {
                 sendError(code: 404, message: "Not found", httpCode: 404, connection: connection)
             }
@@ -408,5 +417,60 @@ class HttpServer {
             resp.meta = self.okMeta(); resp.data = node
             self.sendProto(resp, connection: connection)
         }
+    }
+
+    private func handleMockAdd(_ body: Data, connection: NWConnection) {
+        guard let req = try? Clienttools_AddMockRuleRequest(serializedBytes: body) else {
+            sendError(code: 400, message: "Invalid request", connection: connection); return
+        }
+        let entry = MockRuleEntry(
+            id: UUID().uuidString,
+            url: req.url,
+            method: req.method.uppercased().isEmpty ? "GET" : req.method.uppercased(),
+            delayMs: req.delayMs,
+            error: req.error,
+            status: req.status == 0 ? 200 : req.status,
+            headers: req.headers,
+            body: req.body
+        )
+        MockRuleStore.shared.add(entry)
+        var rule = Clienttools_MockRule()
+        rule.id = entry.id; rule.url = entry.url; rule.method = entry.method
+        rule.delayMs = entry.delayMs; rule.error = entry.error; rule.status = entry.status
+        rule.headers = entry.headers; rule.body = entry.body
+        var resp = Clienttools_MockRuleResponse()
+        resp.meta = okMeta(); resp.data = rule
+        sendProto(resp, connection: connection)
+    }
+
+    private func handleMockList(connection: NWConnection) {
+        let entries = MockRuleStore.shared.list()
+        let rules: [Clienttools_MockRule] = entries.map { entry in
+            var r = Clienttools_MockRule()
+            r.id = entry.id; r.url = entry.url; r.method = entry.method
+            r.delayMs = entry.delayMs; r.error = entry.error; r.status = entry.status
+            r.headers = entry.headers; r.body = entry.body
+            return r
+        }
+        var ruleList = Clienttools_MockRuleList()
+        ruleList.rules = rules
+        var resp = Clienttools_MockRuleListResponse()
+        resp.meta = okMeta(); resp.data = ruleList
+        sendProto(resp, connection: connection)
+    }
+
+    private func handleMockDelete(_ id: String, connection: NWConnection) {
+        MockRuleStore.shared.delete(id: id)
+        var resp = Clienttools_SimpleResponse()
+        resp.meta = okMeta()
+        sendProto(resp, connection: connection)
+    }
+
+    private func handleMockClear(connection: NWConnection) {
+        let count = MockRuleStore.shared.clear()
+        var resp = Clienttools_ClearMockRulesResponse()
+        resp.meta = okMeta()
+        resp.clearedCount = Int32(count)
+        sendProto(resp, connection: connection)
     }
 }
