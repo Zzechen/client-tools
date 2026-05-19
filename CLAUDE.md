@@ -67,3 +67,11 @@ cd proto && buf generate
 
 - Spec 文件：`docs/YYYY-MM-DD-<topic>/spec.md`
 - Plan 文件：`docs/YYYY-MM-DD-<topic>/plan.md`
+
+## 文档同步约定
+
+修改以下代码时，必须同步更新对应文档：
+
+- 修改 `mcp/src/tools/` 下任何工具（新增/删除/改参数）→ 同步更新 `docs/mcp-tools.md`
+- 修改 Android/iOS HttpServer 路由（新增/删除/改接口）→ 同步更新 `docs/sdk-http-api.md`
+- 修改项目整体结构或新增模块 → 同步更新 `README.md`
