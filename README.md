@@ -1,187 +1,37 @@
-# Client Tools
+# client-tools
 
-AI Coding 客户端页面开发增强套件。让 AI 高质量完成「设计稿 → 安卓/iOS 运行时」的实现，并提供运行时视觉核对与循环修正能力。
+AI Coding 客户端页面开发增强套件，目标是让 AI 高质量完成「设计稿 → 运行时」的实现，并提供运行时视觉核对与循环修正能力。
 
-## 核心特性
-
-- **跨平台共享数据结构**：Kotlin Multiplatform (KMP) 定义统一的协议数据类，编译为 Android `.aar` 和 iOS `.xcframework`
-- **运行时视觉比对**：WebView 叠加设计参考，支持透明度调整和拖拽控制
-- **渐进式修正循环**：AI 局部调整 → 局部校对 → 全屏验收的迭代流程
-- **MCP 工具接口**：标准 HTTP 协议封装所有 SDK 能力，MCP Server 供 AI 调用
-
-## 项目结构
+## 架构
 
 ```
-client-tools/
-├── packages/                    # Gradle 多平台工程根目录
-│   ├── settings.gradle.kts      # 工程配置
-│   ├── shared/                  # KMP 共享模块（所有数据结构）
-│   ├── android/sdk/             # Android SDK 实现
-│   ├── android/demo/            # Android 接入示例
-│   ├── ios/sdk/                 # iOS SDK 实现（Swift）
-│   └── ios/demo/                # iOS 接入示例
-├── mcp/                         # MCP Server（HTTP 接口 + 工具定义）
-├── tests/                       # 所有测试（按功能模块细分）
-├── docs/                        # 文档目录
-│   ├── requirements-list.md     # 原始需求列表
-│   └── 2026-04-17-shared-kmp/   # 模块 2：KMP 共享模块（已完成）
-├── CLAUDE.md                    # Claude Code 项目指南
-├── tech-plan.md                 # 整体技术规划文档
-└── README.md                    # 本文件
+App (Android / iOS)
+  └── SDK（HTTP :8080）
+        └── MCP Server
+              └── AI (Claude)
 ```
 
-## 已完成模块
-
-### 模块 2：KMP 共享数据结构 ✅
-
-**目标**：定义 Android/iOS SDK 之间的数据结构唯一源。
-
-**技术栈**：Kotlin Multiplatform、kotlinx.serialization 1.7.3、Gradle 8.x
-
-**关键特性**：
-- 纯 `commonMain` Kotlin 代码，不依赖任何平台 API
-- 7 个 data class + 1 个 sealed class：
-  - `Node` / `NodeType` / `NodeAttrs`（4 个子类：TextAttrs、ImageAttrs、ListAttrs、ContainerAttrs）
-  - `DeviceInfo`（设备屏幕信息）
-  - `ApiResponse<T>`（通用 HTTP 响应包装）
-  - `ViewProps` / `ModifyViewRequest`（运行时修改请求）
-  - `PageChangedEvent`（页面切换事件）
-- 使用 `@SerialName` 支持 sealed class 多态序列化
-- 编译为：
-  - Android `.aar`（`compileDebugKotlinAndroid` 成功）
-  - iOS `.xcframework`（`compileKotlinIosArm64` 成功）
-
-**编译与测试**：
-```bash
-cd packages
-
-# 运行 JVM 测试（9 个序列化测试全部通过）
-./gradlew :shared:jvmTest
-
-# 编译 Android target
-./gradlew :shared:compileDebugKotlinAndroid
-
-# 编译 iOS target（首次约 3 分钟，自动下载 Kotlin/Native toolchain）
-./gradlew :shared:compileKotlinIosArm64
-```
-
-**文档**：[KMP 共享模块 Spec & Plan](docs/2026-04-17-shared-kmp/)
-
----
-
-### 模块 3：Android SDK + Demo 应用 ✅
-
-**目标**：实现 Android SDK，为运行时提供视图查询、属性修改、事件推送能力；Demo 应用展示完整功能。
-
-**技术栈**：Kotlin、Android API 26+、Nanohttpd、Jetpack Compose、kotlinx.serialization
-
-**关键特性**：
-- **HTTP Server**：Nanohttpd 轻量级服务（端口 8080），纯 REST API + SSE
-- **View 操作**：DecorView 树遍历、运行时属性修改（margin、padding、宽高）、结构化信息查询
-- **事件系统**：Activity 生命周期监听、SSE 页面切换事件推送
-- **自动初始化**：ContentProvider 无需业务代码显式调用
-- **Demo UI**：Jetpack Compose 列表首页 + 多个 XML 布局测试页
-
-**编译与运行**：
-```bash
-cd packages
-
-# 编译 SDK
-./gradlew :android:sdk:build
-
-# 编译 Demo
-./gradlew :android:demo:build
-
-# 运行测试
-./gradlew test
-```
-
-**REST API**：
-```bash
-# 查询视图信息
-curl http://localhost:8080/api/nodes/text_1
-
-# 修改视图属性
-curl -X POST http://localhost:8080/api/modify \
-  -H "Content-Type: application/json" \
-  -d '{"id":"text_1","props":{"marginTopDiffDp":10}}'
-
-# 订阅页面事件（SSE）
-curl http://localhost:8080/api/events
-```
-
-**文档**：[Android SDK Spec & Plan](docs/2026-04-18-android-sdk/)
-
----
-
-## 后续模块（规划中）
-
-- **模块 4**：iOS SDK 实现（packages/ios/sdk/）
-- **模块 5**：MCP Server（mcp/）
-- **模块 6**：AI Skill 集成工作流
-
-详见 [tech-plan.md](tech-plan.md)
-
----
-
-## 快速开始
-
-### 环境要求
-
-- **Java 17+**（Gradle 和 Android 编译）
-- **Node.js 18+**（MCP Server）
-
-### 设置
-
-1. **克隆并进入项目**
-   ```bash
-   git clone git@gitee.com:zzcm1259/client-tools.git
-   cd client-tools
-   ```
-
-2. **验证 Gradle 工程**（KMP 模块）
-   ```bash
-   cd packages
-   ./gradlew :shared:tasks --quiet
-   ```
-
-### 运行测试
-
-```bash
-# KMP 模块测试
-cd packages && ./gradlew :shared:jvmTest
-```
-
----
-
-## 技术约定
-
-- **Android 布局**：统一使用 XML（不用 Jetpack Compose）
-- **最低版本**：Android API 26（8.0）、iOS 14
-- **KMP 原则**：commonMain 中仅纯 Kotlin，不含平台 API
-- **数据序列化**：JSON 格式，通过 kotlinx.serialization
-- **测试组织**：所有测试放在 `tests/` 目录，按功能模块细分子目录
-- **Gradle 环境**：Java 17（在 `packages/gradle.properties` 中指定）
-
-详见 [CLAUDE.md](CLAUDE.md)
-
----
+App 内嵌 SDK，SDK 暴露 HTTP 接口；MCP Server 将接口封装为 MCP 工具，供 AI 直接调用。
 
 ## 文档导航
 
-- [CLAUDE.md](CLAUDE.md) — Claude Code 开发指南（开发者必读）
-- [tech-plan.md](tech-plan.md) — 完整技术规划（架构 + 协议设计 + 集成流程）
-- [docs/requirements-list.md](docs/requirements-list.md) — 原始需求列表
-- [docs/2026-04-17-shared-kmp/](docs/2026-04-17-shared-kmp/) — 模块 2 规格与实施计划
+| 文档 | 内容 |
+|------|------|
+| [MCP Tools](docs/mcp-tools.md) | 22 个 MCP 工具的参数与返回值，AI 调用参考 |
+| [SDK HTTP API](docs/sdk-http-api.md) | SDK HTTP 接口完整参考，含 Android/iOS 对比 |
+| [接入指南](docs/integration.md) | App 集成 SDK 的步骤 |
 
----
+## 目录结构
 
-## 协议与许可
-
-本项目遵循 MIT 许可证。详见 LICENSE 文件。
-
----
-
-## 联系与反馈
-
-如有问题或建议，欢迎提交 Issue 或 Pull Request 至 [Gitee](https://gitee.com/zzcm1259/client-tools)。
+```
+clients/
+  android/sdk/     — Android SDK（.aar）
+  android/demo/    — Android 接入示例
+  ios/sdk/         — iOS SDK（CocoaPod）
+  ios/demo/        — iOS 接入示例
+mcp/               — MCP Server（TypeScript）
+proto/             — Protocol Buffer 定义
+docs/              — 文档
+skill/             — client-tools-inspect 技能
+tests/             — 测试
+```
