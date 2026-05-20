@@ -15,12 +15,12 @@ import SwiftProtobuf
 // incompatible with the version of SwiftProtobuf to which you are linking.
 // Please ensure that you are building against the same version of the API
 // that was used to generate this file.
-fileprivate struct _GeneratedWithProtocGenSwiftVersion: SwiftProtobuf.ProtobufAPIVersionCheck {
+fileprivate nonisolated struct _GeneratedWithProtocGenSwiftVersion: SwiftProtobuf.ProtobufAPIVersionCheck {
   struct _2: SwiftProtobuf.ProtobufAPIVersion_2 {}
   typealias Version = _2
 }
 
-struct Clienttools_DeviceInfo: Sendable {
+nonisolated struct Clienttools_DeviceInfo: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -36,7 +36,7 @@ struct Clienttools_DeviceInfo: Sendable {
   init() {}
 }
 
-struct Clienttools_PageInfo: Sendable {
+nonisolated struct Clienttools_PageInfo: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -50,7 +50,7 @@ struct Clienttools_PageInfo: Sendable {
   init() {}
 }
 
-struct Clienttools_PageChangedEvent: Sendable {
+nonisolated struct Clienttools_PageChangedEvent: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -66,9 +66,9 @@ struct Clienttools_PageChangedEvent: Sendable {
 
 // MARK: - Code below here is support for the SwiftProtobuf runtime.
 
-fileprivate let _protobuf_package = "clienttools"
+fileprivate nonisolated let _protobuf_package = "clienttools"
 
-extension Clienttools_DeviceInfo: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension Clienttools_DeviceInfo: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   static let protoMessageName: String = _protobuf_package + ".DeviceInfo"
   static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{3}screen_width_dp\0\u{3}screen_height_dp\0\u{1}density\0")
 
@@ -108,7 +108,7 @@ extension Clienttools_DeviceInfo: SwiftProtobuf.Message, SwiftProtobuf._MessageI
   }
 }
 
-extension Clienttools_PageInfo: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension Clienttools_PageInfo: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   static let protoMessageName: String = _protobuf_package + ".PageInfo"
   static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{3}page_name\0\u{1}timestamp\0")
 
@@ -143,7 +143,7 @@ extension Clienttools_PageInfo: SwiftProtobuf.Message, SwiftProtobuf._MessageImp
   }
 }
 
-extension Clienttools_PageChangedEvent: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension Clienttools_PageChangedEvent: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   static let protoMessageName: String = _protobuf_package + ".PageChangedEvent"
   static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{3}page_name\0\u{1}timestamp\0")
 

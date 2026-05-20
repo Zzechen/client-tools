@@ -15,12 +15,12 @@ import SwiftProtobuf
 // incompatible with the version of SwiftProtobuf to which you are linking.
 // Please ensure that you are building against the same version of the API
 // that was used to generate this file.
-fileprivate struct _GeneratedWithProtocGenSwiftVersion: SwiftProtobuf.ProtobufAPIVersionCheck {
+fileprivate nonisolated struct _GeneratedWithProtocGenSwiftVersion: SwiftProtobuf.ProtobufAPIVersionCheck {
   struct _2: SwiftProtobuf.ProtobufAPIVersion_2 {}
   typealias Version = _2
 }
 
-struct Clienttools_MockRule: Sendable {
+nonisolated struct Clienttools_MockRule: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -46,7 +46,7 @@ struct Clienttools_MockRule: Sendable {
   init() {}
 }
 
-struct Clienttools_AddMockRuleRequest: Sendable {
+nonisolated struct Clienttools_AddMockRuleRequest: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -70,7 +70,7 @@ struct Clienttools_AddMockRuleRequest: Sendable {
   init() {}
 }
 
-struct Clienttools_MockRuleList: Sendable {
+nonisolated struct Clienttools_MockRuleList: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -84,9 +84,9 @@ struct Clienttools_MockRuleList: Sendable {
 
 // MARK: - Code below here is support for the SwiftProtobuf runtime.
 
-fileprivate let _protobuf_package = "clienttools"
+fileprivate nonisolated let _protobuf_package = "clienttools"
 
-extension Clienttools_MockRule: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension Clienttools_MockRule: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   static let protoMessageName: String = _protobuf_package + ".MockRule"
   static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}id\0\u{1}url\0\u{1}method\0\u{3}delay_ms\0\u{1}error\0\u{1}status\0\u{1}headers\0\u{1}body\0")
 
@@ -151,7 +151,7 @@ extension Clienttools_MockRule: SwiftProtobuf.Message, SwiftProtobuf._MessageImp
   }
 }
 
-extension Clienttools_AddMockRuleRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension Clienttools_AddMockRuleRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   static let protoMessageName: String = _protobuf_package + ".AddMockRuleRequest"
   static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}url\0\u{1}method\0\u{3}delay_ms\0\u{1}error\0\u{1}status\0\u{1}headers\0\u{1}body\0")
 
@@ -211,7 +211,7 @@ extension Clienttools_AddMockRuleRequest: SwiftProtobuf.Message, SwiftProtobuf._
   }
 }
 
-extension Clienttools_MockRuleList: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension Clienttools_MockRuleList: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   static let protoMessageName: String = _protobuf_package + ".MockRuleList"
   static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}rules\0")
 

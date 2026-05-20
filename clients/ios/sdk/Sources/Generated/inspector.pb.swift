@@ -20,13 +20,13 @@ import SwiftProtobuf
 // incompatible with the version of SwiftProtobuf to which you are linking.
 // Please ensure that you are building against the same version of the API
 // that was used to generate this file.
-fileprivate struct _GeneratedWithProtocGenSwiftVersion: SwiftProtobuf.ProtobufAPIVersionCheck {
+fileprivate nonisolated struct _GeneratedWithProtocGenSwiftVersion: SwiftProtobuf.ProtobufAPIVersionCheck {
   struct _2: SwiftProtobuf.ProtobufAPIVersion_2 {}
   typealias Version = _2
 }
 
 /// /webview/files
-struct Clienttools_FileItem: Sendable {
+nonisolated struct Clienttools_FileItem: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -44,7 +44,7 @@ struct Clienttools_FileItem: Sendable {
   init() {}
 }
 
-struct Clienttools_FileListResult: Sendable {
+nonisolated struct Clienttools_FileListResult: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -56,7 +56,7 @@ struct Clienttools_FileListResult: Sendable {
   init() {}
 }
 
-struct Clienttools_FileListResponse: Sendable {
+nonisolated struct Clienttools_FileListResponse: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -88,7 +88,7 @@ struct Clienttools_FileListResponse: Sendable {
 }
 
 /// /inspector/push-image
-struct Clienttools_PushImageRequest: Sendable {
+nonisolated struct Clienttools_PushImageRequest: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -106,7 +106,7 @@ struct Clienttools_PushImageRequest: Sendable {
   init() {}
 }
 
-struct Clienttools_PushImageResult: Sendable {
+nonisolated struct Clienttools_PushImageResult: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -124,7 +124,7 @@ struct Clienttools_PushImageResult: Sendable {
   init() {}
 }
 
-struct Clienttools_PushImageResponse: Sendable {
+nonisolated struct Clienttools_PushImageResponse: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -156,7 +156,7 @@ struct Clienttools_PushImageResponse: Sendable {
 }
 
 /// /inspector/show-image
-struct Clienttools_ShowImageRequest: Sendable {
+nonisolated struct Clienttools_ShowImageRequest: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -170,7 +170,7 @@ struct Clienttools_ShowImageRequest: Sendable {
   init() {}
 }
 
-struct Clienttools_ShowImageResult: Sendable {
+nonisolated struct Clienttools_ShowImageResult: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -190,7 +190,7 @@ struct Clienttools_ShowImageResult: Sendable {
   init() {}
 }
 
-struct Clienttools_ShowImageResponse: Sendable {
+nonisolated struct Clienttools_ShowImageResponse: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -222,7 +222,7 @@ struct Clienttools_ShowImageResponse: Sendable {
 }
 
 /// /inspector/images
-struct Clienttools_ImageItem: Sendable {
+nonisolated struct Clienttools_ImageItem: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -242,7 +242,7 @@ struct Clienttools_ImageItem: Sendable {
   init() {}
 }
 
-struct Clienttools_ImageListResult: Sendable {
+nonisolated struct Clienttools_ImageListResult: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -254,7 +254,7 @@ struct Clienttools_ImageListResult: Sendable {
   init() {}
 }
 
-struct Clienttools_ImageListResponse: Sendable {
+nonisolated struct Clienttools_ImageListResponse: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -286,7 +286,7 @@ struct Clienttools_ImageListResponse: Sendable {
 }
 
 /// /inspector/hide  (type: "image" | "webview" | "" 空=按当前 activeTab 判断)
-struct Clienttools_HideRequest: Sendable {
+nonisolated struct Clienttools_HideRequest: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -299,7 +299,7 @@ struct Clienttools_HideRequest: Sendable {
 }
 
 /// /inspector/adjust
-struct Clienttools_InspectorAdjustRequest: Sendable {
+nonisolated struct Clienttools_InspectorAdjustRequest: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -317,7 +317,7 @@ struct Clienttools_InspectorAdjustRequest: Sendable {
   init() {}
 }
 
-struct Clienttools_InspectorAdjustResult: Sendable {
+nonisolated struct Clienttools_InspectorAdjustResult: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -333,7 +333,7 @@ struct Clienttools_InspectorAdjustResult: Sendable {
   init() {}
 }
 
-struct Clienttools_InspectorAdjustResponse: Sendable {
+nonisolated struct Clienttools_InspectorAdjustResponse: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -365,7 +365,7 @@ struct Clienttools_InspectorAdjustResponse: Sendable {
 }
 
 /// /dom/all
-struct Clienttools_DomNode: Sendable {
+nonisolated struct Clienttools_DomNode: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -389,7 +389,7 @@ struct Clienttools_DomNode: Sendable {
   init() {}
 }
 
-struct Clienttools_DomNodeList: Sendable {
+nonisolated struct Clienttools_DomNodeList: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -401,7 +401,7 @@ struct Clienttools_DomNodeList: Sendable {
   init() {}
 }
 
-struct Clienttools_DomAllResponse: Sendable {
+nonisolated struct Clienttools_DomAllResponse: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -433,7 +433,7 @@ struct Clienttools_DomAllResponse: Sendable {
 }
 
 /// /dom/:id
-struct Clienttools_DomNodeResponse: Sendable {
+nonisolated struct Clienttools_DomNodeResponse: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -466,9 +466,9 @@ struct Clienttools_DomNodeResponse: Sendable {
 
 // MARK: - Code below here is support for the SwiftProtobuf runtime.
 
-fileprivate let _protobuf_package = "clienttools"
+fileprivate nonisolated let _protobuf_package = "clienttools"
 
-extension Clienttools_FileItem: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension Clienttools_FileItem: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   static let protoMessageName: String = _protobuf_package + ".FileItem"
   static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}tag\0\u{1}timestamp\0\u{3}file_path\0\u{3}is_current\0")
 
@@ -513,7 +513,7 @@ extension Clienttools_FileItem: SwiftProtobuf.Message, SwiftProtobuf._MessageImp
   }
 }
 
-extension Clienttools_FileListResult: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension Clienttools_FileListResult: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   static let protoMessageName: String = _protobuf_package + ".FileListResult"
   static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}files\0")
 
@@ -543,7 +543,7 @@ extension Clienttools_FileListResult: SwiftProtobuf.Message, SwiftProtobuf._Mess
   }
 }
 
-extension Clienttools_FileListResponse: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension Clienttools_FileListResponse: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   static let protoMessageName: String = _protobuf_package + ".FileListResponse"
   static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}meta\0\u{1}data\0")
 
@@ -582,7 +582,7 @@ extension Clienttools_FileListResponse: SwiftProtobuf.Message, SwiftProtobuf._Me
   }
 }
 
-extension Clienttools_PushImageRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension Clienttools_PushImageRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   static let protoMessageName: String = _protobuf_package + ".PushImageRequest"
   static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}tag\0\u{1}timestamp\0\u{1}image\0\u{1}ext\0")
 
@@ -627,7 +627,7 @@ extension Clienttools_PushImageRequest: SwiftProtobuf.Message, SwiftProtobuf._Me
   }
 }
 
-extension Clienttools_PushImageResult: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension Clienttools_PushImageResult: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   static let protoMessageName: String = _protobuf_package + ".PushImageResult"
   static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}tag\0\u{1}timestamp\0\u{3}file_path\0\u{3}file_size\0")
 
@@ -672,7 +672,7 @@ extension Clienttools_PushImageResult: SwiftProtobuf.Message, SwiftProtobuf._Mes
   }
 }
 
-extension Clienttools_PushImageResponse: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension Clienttools_PushImageResponse: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   static let protoMessageName: String = _protobuf_package + ".PushImageResponse"
   static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}meta\0\u{1}data\0")
 
@@ -711,7 +711,7 @@ extension Clienttools_PushImageResponse: SwiftProtobuf.Message, SwiftProtobuf._M
   }
 }
 
-extension Clienttools_ShowImageRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension Clienttools_ShowImageRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   static let protoMessageName: String = _protobuf_package + ".ShowImageRequest"
   static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}tag\0\u{1}timestamp\0")
 
@@ -746,7 +746,7 @@ extension Clienttools_ShowImageRequest: SwiftProtobuf.Message, SwiftProtobuf._Me
   }
 }
 
-extension Clienttools_ShowImageResult: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension Clienttools_ShowImageResult: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   static let protoMessageName: String = _protobuf_package + ".ShowImageResult"
   static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}tag\0\u{1}timestamp\0\u{1}opacity\0\u{3}offset_x\0\u{3}offset_y\0")
 
@@ -796,7 +796,7 @@ extension Clienttools_ShowImageResult: SwiftProtobuf.Message, SwiftProtobuf._Mes
   }
 }
 
-extension Clienttools_ShowImageResponse: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension Clienttools_ShowImageResponse: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   static let protoMessageName: String = _protobuf_package + ".ShowImageResponse"
   static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}meta\0\u{1}data\0")
 
@@ -835,7 +835,7 @@ extension Clienttools_ShowImageResponse: SwiftProtobuf.Message, SwiftProtobuf._M
   }
 }
 
-extension Clienttools_ImageItem: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension Clienttools_ImageItem: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   static let protoMessageName: String = _protobuf_package + ".ImageItem"
   static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}tag\0\u{1}timestamp\0\u{1}ext\0\u{1}size\0\u{3}is_current\0")
 
@@ -885,7 +885,7 @@ extension Clienttools_ImageItem: SwiftProtobuf.Message, SwiftProtobuf._MessageIm
   }
 }
 
-extension Clienttools_ImageListResult: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension Clienttools_ImageListResult: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   static let protoMessageName: String = _protobuf_package + ".ImageListResult"
   static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}images\0")
 
@@ -915,7 +915,7 @@ extension Clienttools_ImageListResult: SwiftProtobuf.Message, SwiftProtobuf._Mes
   }
 }
 
-extension Clienttools_ImageListResponse: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension Clienttools_ImageListResponse: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   static let protoMessageName: String = _protobuf_package + ".ImageListResponse"
   static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}meta\0\u{1}data\0")
 
@@ -954,7 +954,7 @@ extension Clienttools_ImageListResponse: SwiftProtobuf.Message, SwiftProtobuf._M
   }
 }
 
-extension Clienttools_HideRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension Clienttools_HideRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   static let protoMessageName: String = _protobuf_package + ".HideRequest"
   static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}type\0")
 
@@ -984,7 +984,7 @@ extension Clienttools_HideRequest: SwiftProtobuf.Message, SwiftProtobuf._Message
   }
 }
 
-extension Clienttools_InspectorAdjustRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension Clienttools_InspectorAdjustRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   static let protoMessageName: String = _protobuf_package + ".InspectorAdjustRequest"
   static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}type\0\u{3}offset_x\0\u{3}offset_y\0\u{1}opacity\0")
 
@@ -1029,7 +1029,7 @@ extension Clienttools_InspectorAdjustRequest: SwiftProtobuf.Message, SwiftProtob
   }
 }
 
-extension Clienttools_InspectorAdjustResult: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension Clienttools_InspectorAdjustResult: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   static let protoMessageName: String = _protobuf_package + ".InspectorAdjustResult"
   static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{3}offset_x\0\u{3}offset_y\0\u{1}opacity\0")
 
@@ -1069,7 +1069,7 @@ extension Clienttools_InspectorAdjustResult: SwiftProtobuf.Message, SwiftProtobu
   }
 }
 
-extension Clienttools_InspectorAdjustResponse: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension Clienttools_InspectorAdjustResponse: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   static let protoMessageName: String = _protobuf_package + ".InspectorAdjustResponse"
   static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}meta\0\u{1}data\0")
 
@@ -1108,7 +1108,7 @@ extension Clienttools_InspectorAdjustResponse: SwiftProtobuf.Message, SwiftProto
   }
 }
 
-extension Clienttools_DomNode: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension Clienttools_DomNode: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   static let protoMessageName: String = _protobuf_package + ".DomNode"
   static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}id\0\u{1}tag\0\u{1}text\0\u{1}x\0\u{1}y\0\u{1}width\0\u{1}height\0")
 
@@ -1168,7 +1168,7 @@ extension Clienttools_DomNode: SwiftProtobuf.Message, SwiftProtobuf._MessageImpl
   }
 }
 
-extension Clienttools_DomNodeList: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension Clienttools_DomNodeList: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   static let protoMessageName: String = _protobuf_package + ".DomNodeList"
   static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}nodes\0")
 
@@ -1198,7 +1198,7 @@ extension Clienttools_DomNodeList: SwiftProtobuf.Message, SwiftProtobuf._Message
   }
 }
 
-extension Clienttools_DomAllResponse: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension Clienttools_DomAllResponse: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   static let protoMessageName: String = _protobuf_package + ".DomAllResponse"
   static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}meta\0\u{1}data\0")
 
@@ -1237,7 +1237,7 @@ extension Clienttools_DomAllResponse: SwiftProtobuf.Message, SwiftProtobuf._Mess
   }
 }
 
-extension Clienttools_DomNodeResponse: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension Clienttools_DomNodeResponse: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   static let protoMessageName: String = _protobuf_package + ".DomNodeResponse"
   static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}meta\0\u{1}data\0")
 

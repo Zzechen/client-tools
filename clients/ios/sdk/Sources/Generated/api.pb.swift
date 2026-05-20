@@ -20,12 +20,12 @@ import SwiftProtobuf
 // incompatible with the version of SwiftProtobuf to which you are linking.
 // Please ensure that you are building against the same version of the API
 // that was used to generate this file.
-fileprivate struct _GeneratedWithProtocGenSwiftVersion: SwiftProtobuf.ProtobufAPIVersionCheck {
+fileprivate nonisolated struct _GeneratedWithProtocGenSwiftVersion: SwiftProtobuf.ProtobufAPIVersionCheck {
   struct _2: SwiftProtobuf.ProtobufAPIVersion_2 {}
   typealias Version = _2
 }
 
-struct Clienttools_ResponseMeta: Sendable {
+nonisolated struct Clienttools_ResponseMeta: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -52,7 +52,7 @@ struct Clienttools_ResponseMeta: Sendable {
   fileprivate var _device: Clienttools_DeviceInfo? = nil
 }
 
-struct Clienttools_Empty: Sendable {
+nonisolated struct Clienttools_Empty: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -62,7 +62,7 @@ struct Clienttools_Empty: Sendable {
   init() {}
 }
 
-struct Clienttools_PageResponse: Sendable {
+nonisolated struct Clienttools_PageResponse: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -93,38 +93,37 @@ struct Clienttools_PageResponse: Sendable {
   fileprivate var _data: Clienttools_PageInfo? = nil
 }
 
-struct Clienttools_NodeResponse: Sendable {
+nonisolated struct Clienttools_NodeResponse: @unchecked Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
 
   var meta: Clienttools_ResponseMeta {
-    get {_meta ?? Clienttools_ResponseMeta()}
-    set {_meta = newValue}
+    get {_storage._meta ?? Clienttools_ResponseMeta()}
+    set {_uniqueStorage()._meta = newValue}
   }
   /// Returns true if `meta` has been explicitly set.
-  var hasMeta: Bool {self._meta != nil}
+  var hasMeta: Bool {_storage._meta != nil}
   /// Clears the value of `meta`. Subsequent reads from it will return its default value.
-  mutating func clearMeta() {self._meta = nil}
+  mutating func clearMeta() {_uniqueStorage()._meta = nil}
 
   var data: Clienttools_Node {
-    get {_data ?? Clienttools_Node()}
-    set {_data = newValue}
+    get {_storage._data ?? Clienttools_Node()}
+    set {_uniqueStorage()._data = newValue}
   }
   /// Returns true if `data` has been explicitly set.
-  var hasData: Bool {self._data != nil}
+  var hasData: Bool {_storage._data != nil}
   /// Clears the value of `data`. Subsequent reads from it will return its default value.
-  mutating func clearData() {self._data = nil}
+  mutating func clearData() {_uniqueStorage()._data = nil}
 
   var unknownFields = SwiftProtobuf.UnknownStorage()
 
   init() {}
 
-  fileprivate var _meta: Clienttools_ResponseMeta? = nil
-  fileprivate var _data: Clienttools_Node? = nil
+  fileprivate var _storage = _StorageClass.defaultInstance
 }
 
-struct Clienttools_NodeListResponse: Sendable {
+nonisolated struct Clienttools_NodeListResponse: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -155,7 +154,7 @@ struct Clienttools_NodeListResponse: Sendable {
   fileprivate var _data: Clienttools_NodeList? = nil
 }
 
-struct Clienttools_ModifyResponse: Sendable {
+nonisolated struct Clienttools_ModifyResponse: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -178,7 +177,7 @@ struct Clienttools_ModifyResponse: Sendable {
   fileprivate var _meta: Clienttools_ResponseMeta? = nil
 }
 
-struct Clienttools_ClickResponse: Sendable {
+nonisolated struct Clienttools_ClickResponse: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -209,7 +208,7 @@ struct Clienttools_ClickResponse: Sendable {
   fileprivate var _data: Clienttools_ClickResult? = nil
 }
 
-struct Clienttools_ScrollResponse: Sendable {
+nonisolated struct Clienttools_ScrollResponse: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -240,7 +239,7 @@ struct Clienttools_ScrollResponse: Sendable {
   fileprivate var _data: Clienttools_ScrollResult? = nil
 }
 
-struct Clienttools_SimpleResponse: Sendable {
+nonisolated struct Clienttools_SimpleResponse: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -261,7 +260,7 @@ struct Clienttools_SimpleResponse: Sendable {
   fileprivate var _meta: Clienttools_ResponseMeta? = nil
 }
 
-struct Clienttools_PushHtmlRequest: Sendable {
+nonisolated struct Clienttools_PushHtmlRequest: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -277,7 +276,7 @@ struct Clienttools_PushHtmlRequest: Sendable {
   init() {}
 }
 
-struct Clienttools_PushHtmlResult: Sendable {
+nonisolated struct Clienttools_PushHtmlResult: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -293,7 +292,7 @@ struct Clienttools_PushHtmlResult: Sendable {
   init() {}
 }
 
-struct Clienttools_PushHtmlResponse: Sendable {
+nonisolated struct Clienttools_PushHtmlResponse: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -324,7 +323,7 @@ struct Clienttools_PushHtmlResponse: Sendable {
   fileprivate var _data: Clienttools_PushHtmlResult? = nil
 }
 
-struct Clienttools_WebviewShowRequest: Sendable {
+nonisolated struct Clienttools_WebviewShowRequest: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -338,7 +337,7 @@ struct Clienttools_WebviewShowRequest: Sendable {
   init() {}
 }
 
-struct Clienttools_WebviewAdjustRequest: Sendable {
+nonisolated struct Clienttools_WebviewAdjustRequest: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -354,7 +353,7 @@ struct Clienttools_WebviewAdjustRequest: Sendable {
   init() {}
 }
 
-struct Clienttools_CaptureResponse: Sendable {
+nonisolated struct Clienttools_CaptureResponse: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -377,7 +376,7 @@ struct Clienttools_CaptureResponse: Sendable {
   fileprivate var _meta: Clienttools_ResponseMeta? = nil
 }
 
-struct Clienttools_MockRuleResponse: Sendable {
+nonisolated struct Clienttools_MockRuleResponse: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -408,7 +407,7 @@ struct Clienttools_MockRuleResponse: Sendable {
   fileprivate var _data: Clienttools_MockRule? = nil
 }
 
-struct Clienttools_MockRuleListResponse: Sendable {
+nonisolated struct Clienttools_MockRuleListResponse: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -439,7 +438,7 @@ struct Clienttools_MockRuleListResponse: Sendable {
   fileprivate var _data: Clienttools_MockRuleList? = nil
 }
 
-struct Clienttools_ClearMockRulesResponse: Sendable {
+nonisolated struct Clienttools_ClearMockRulesResponse: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -464,9 +463,9 @@ struct Clienttools_ClearMockRulesResponse: Sendable {
 
 // MARK: - Code below here is support for the SwiftProtobuf runtime.
 
-fileprivate let _protobuf_package = "clienttools"
+fileprivate nonisolated let _protobuf_package = "clienttools"
 
-extension Clienttools_ResponseMeta: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension Clienttools_ResponseMeta: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   static let protoMessageName: String = _protobuf_package + ".ResponseMeta"
   static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}code\0\u{1}message\0\u{3}sdk_version\0\u{1}device\0")
 
@@ -515,7 +514,7 @@ extension Clienttools_ResponseMeta: SwiftProtobuf.Message, SwiftProtobuf._Messag
   }
 }
 
-extension Clienttools_Empty: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension Clienttools_Empty: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   static let protoMessageName: String = _protobuf_package + ".Empty"
   static let _protobuf_nameMap = SwiftProtobuf._NameMap()
 
@@ -534,7 +533,7 @@ extension Clienttools_Empty: SwiftProtobuf.Message, SwiftProtobuf._MessageImplem
   }
 }
 
-extension Clienttools_PageResponse: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension Clienttools_PageResponse: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   static let protoMessageName: String = _protobuf_package + ".PageResponse"
   static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}meta\0\u{1}data\0")
 
@@ -573,46 +572,84 @@ extension Clienttools_PageResponse: SwiftProtobuf.Message, SwiftProtobuf._Messag
   }
 }
 
-extension Clienttools_NodeResponse: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension Clienttools_NodeResponse: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   static let protoMessageName: String = _protobuf_package + ".NodeResponse"
   static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}meta\0\u{1}data\0")
 
+  fileprivate class _StorageClass {
+    var _meta: Clienttools_ResponseMeta? = nil
+    var _data: Clienttools_Node? = nil
+
+      // This property is used as the initial default value for new instances of the type.
+      // The type itself is protecting the reference to its storage via CoW semantics.
+      // This will force a copy to be made of this reference when the first mutation occurs;
+      // hence, it is safe to mark this as `nonisolated(unsafe)`.
+      static nonisolated(unsafe) let defaultInstance = _StorageClass()
+
+    private init() {}
+
+    init(copying source: _StorageClass) {
+      _meta = source._meta
+      _data = source._data
+    }
+  }
+
+  fileprivate mutating func _uniqueStorage() -> _StorageClass {
+    if !isKnownUniquelyReferenced(&_storage) {
+      _storage = _StorageClass(copying: _storage)
+    }
+    return _storage
+  }
+
   mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
-    while let fieldNumber = try decoder.nextFieldNumber() {
-      // The use of inline closures is to circumvent an issue where the compiler
-      // allocates stack space for every case branch when no optimizations are
-      // enabled. https://github.com/apple/swift-protobuf/issues/1034
-      switch fieldNumber {
-      case 1: try { try decoder.decodeSingularMessageField(value: &self._meta) }()
-      case 2: try { try decoder.decodeSingularMessageField(value: &self._data) }()
-      default: break
+    _ = _uniqueStorage()
+    try withExtendedLifetime(_storage) { (_storage: _StorageClass) in
+      while let fieldNumber = try decoder.nextFieldNumber() {
+        // The use of inline closures is to circumvent an issue where the compiler
+        // allocates stack space for every case branch when no optimizations are
+        // enabled. https://github.com/apple/swift-protobuf/issues/1034
+        switch fieldNumber {
+        case 1: try { try decoder.decodeSingularMessageField(value: &_storage._meta) }()
+        case 2: try { try decoder.decodeSingularMessageField(value: &_storage._data) }()
+        default: break
+        }
       }
     }
   }
 
   func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
-    // The use of inline closures is to circumvent an issue where the compiler
-    // allocates stack space for every if/case branch local when no optimizations
-    // are enabled. https://github.com/apple/swift-protobuf/issues/1034 and
-    // https://github.com/apple/swift-protobuf/issues/1182
-    try { if let v = self._meta {
-      try visitor.visitSingularMessageField(value: v, fieldNumber: 1)
-    } }()
-    try { if let v = self._data {
-      try visitor.visitSingularMessageField(value: v, fieldNumber: 2)
-    } }()
+    try withExtendedLifetime(_storage) { (_storage: _StorageClass) in
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every if/case branch local when no optimizations
+      // are enabled. https://github.com/apple/swift-protobuf/issues/1034 and
+      // https://github.com/apple/swift-protobuf/issues/1182
+      try { if let v = _storage._meta {
+        try visitor.visitSingularMessageField(value: v, fieldNumber: 1)
+      } }()
+      try { if let v = _storage._data {
+        try visitor.visitSingularMessageField(value: v, fieldNumber: 2)
+      } }()
+    }
     try unknownFields.traverse(visitor: &visitor)
   }
 
   static func ==(lhs: Clienttools_NodeResponse, rhs: Clienttools_NodeResponse) -> Bool {
-    if lhs._meta != rhs._meta {return false}
-    if lhs._data != rhs._data {return false}
+    if lhs._storage !== rhs._storage {
+      let storagesAreEqual: Bool = withExtendedLifetime((lhs._storage, rhs._storage)) { (_args: (_StorageClass, _StorageClass)) in
+        let _storage = _args.0
+        let rhs_storage = _args.1
+        if _storage._meta != rhs_storage._meta {return false}
+        if _storage._data != rhs_storage._data {return false}
+        return true
+      }
+      if !storagesAreEqual {return false}
+    }
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }
 }
 
-extension Clienttools_NodeListResponse: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension Clienttools_NodeListResponse: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   static let protoMessageName: String = _protobuf_package + ".NodeListResponse"
   static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}meta\0\u{1}data\0")
 
@@ -651,7 +688,7 @@ extension Clienttools_NodeListResponse: SwiftProtobuf.Message, SwiftProtobuf._Me
   }
 }
 
-extension Clienttools_ModifyResponse: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension Clienttools_ModifyResponse: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   static let protoMessageName: String = _protobuf_package + ".ModifyResponse"
   static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}meta\0\u{1}message\0")
 
@@ -690,7 +727,7 @@ extension Clienttools_ModifyResponse: SwiftProtobuf.Message, SwiftProtobuf._Mess
   }
 }
 
-extension Clienttools_ClickResponse: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension Clienttools_ClickResponse: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   static let protoMessageName: String = _protobuf_package + ".ClickResponse"
   static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}meta\0\u{1}data\0")
 
@@ -729,7 +766,7 @@ extension Clienttools_ClickResponse: SwiftProtobuf.Message, SwiftProtobuf._Messa
   }
 }
 
-extension Clienttools_ScrollResponse: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension Clienttools_ScrollResponse: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   static let protoMessageName: String = _protobuf_package + ".ScrollResponse"
   static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}meta\0\u{1}data\0")
 
@@ -768,7 +805,7 @@ extension Clienttools_ScrollResponse: SwiftProtobuf.Message, SwiftProtobuf._Mess
   }
 }
 
-extension Clienttools_SimpleResponse: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension Clienttools_SimpleResponse: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   static let protoMessageName: String = _protobuf_package + ".SimpleResponse"
   static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}meta\0")
 
@@ -802,7 +839,7 @@ extension Clienttools_SimpleResponse: SwiftProtobuf.Message, SwiftProtobuf._Mess
   }
 }
 
-extension Clienttools_PushHtmlRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension Clienttools_PushHtmlRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   static let protoMessageName: String = _protobuf_package + ".PushHtmlRequest"
   static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}tag\0\u{1}timestamp\0\u{1}html\0")
 
@@ -842,7 +879,7 @@ extension Clienttools_PushHtmlRequest: SwiftProtobuf.Message, SwiftProtobuf._Mes
   }
 }
 
-extension Clienttools_PushHtmlResult: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension Clienttools_PushHtmlResult: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   static let protoMessageName: String = _protobuf_package + ".PushHtmlResult"
   static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}tag\0\u{1}timestamp\0\u{3}file_path\0")
 
@@ -882,7 +919,7 @@ extension Clienttools_PushHtmlResult: SwiftProtobuf.Message, SwiftProtobuf._Mess
   }
 }
 
-extension Clienttools_PushHtmlResponse: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension Clienttools_PushHtmlResponse: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   static let protoMessageName: String = _protobuf_package + ".PushHtmlResponse"
   static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}meta\0\u{1}data\0")
 
@@ -921,7 +958,7 @@ extension Clienttools_PushHtmlResponse: SwiftProtobuf.Message, SwiftProtobuf._Me
   }
 }
 
-extension Clienttools_WebviewShowRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension Clienttools_WebviewShowRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   static let protoMessageName: String = _protobuf_package + ".WebviewShowRequest"
   static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}tag\0\u{1}timestamp\0")
 
@@ -956,7 +993,7 @@ extension Clienttools_WebviewShowRequest: SwiftProtobuf.Message, SwiftProtobuf._
   }
 }
 
-extension Clienttools_WebviewAdjustRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension Clienttools_WebviewAdjustRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   static let protoMessageName: String = _protobuf_package + ".WebviewAdjustRequest"
   static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{3}offset_x\0\u{3}offset_y\0\u{1}opacity\0")
 
@@ -996,7 +1033,7 @@ extension Clienttools_WebviewAdjustRequest: SwiftProtobuf.Message, SwiftProtobuf
   }
 }
 
-extension Clienttools_CaptureResponse: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension Clienttools_CaptureResponse: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   static let protoMessageName: String = _protobuf_package + ".CaptureResponse"
   static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}meta\0\u{3}image_png\0")
 
@@ -1035,7 +1072,7 @@ extension Clienttools_CaptureResponse: SwiftProtobuf.Message, SwiftProtobuf._Mes
   }
 }
 
-extension Clienttools_MockRuleResponse: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension Clienttools_MockRuleResponse: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   static let protoMessageName: String = _protobuf_package + ".MockRuleResponse"
   static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}meta\0\u{1}data\0")
 
@@ -1074,7 +1111,7 @@ extension Clienttools_MockRuleResponse: SwiftProtobuf.Message, SwiftProtobuf._Me
   }
 }
 
-extension Clienttools_MockRuleListResponse: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension Clienttools_MockRuleListResponse: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   static let protoMessageName: String = _protobuf_package + ".MockRuleListResponse"
   static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}meta\0\u{1}data\0")
 
@@ -1113,7 +1150,7 @@ extension Clienttools_MockRuleListResponse: SwiftProtobuf.Message, SwiftProtobuf
   }
 }
 
-extension Clienttools_ClearMockRulesResponse: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension Clienttools_ClearMockRulesResponse: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   static let protoMessageName: String = _protobuf_package + ".ClearMockRulesResponse"
   static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}meta\0\u{3}cleared_count\0")
 
