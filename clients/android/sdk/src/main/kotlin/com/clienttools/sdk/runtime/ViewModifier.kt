@@ -1,7 +1,10 @@
 package com.clienttools.sdk.runtime
 
 import android.os.Looper
+import android.widget.TextView
 import com.clienttools.sdk.ClientToolsSDK
+import com.clienttools.sdk.proto.ModifyViewRequest
+import java.util.concurrent.CountDownLatch
 
 object ViewModifier {
 
@@ -52,6 +55,56 @@ object ViewModifier {
                 }
             }
             true
+        }
+    }
+
+    fun modify(viewId: String, req: ModifyViewRequest): Pair<Boolean, String> {
+        val activity = ClientToolsSDK.getCurrentActivity()
+            ?: return Pair(false, "No activity available")
+
+        var result: Pair<Boolean, String> = Pair(false, "unknown error")
+        val latch = CountDownLatch(1)
+        activity.runOnUiThread {
+            result = applyModify(viewId, req)
+            latch.countDown()
+        }
+        latch.await()
+        return result
+    }
+
+    private fun applyModify(viewId: String, req: ModifyViewRequest): Pair<Boolean, String> {
+        val views = ViewTreeTraversal.findViewById(viewId)
+        if (views.isEmpty()) return Pair(false, "View not found: $viewId")
+        val view = views[0]
+
+        if (req.hasText() && view !is TextView) {
+            return Pair(false, "text requires TextView, but '$viewId' is ${view.javaClass.simpleName}")
+        }
+
+        val density = view.resources.displayMetrics.density
+        return try {
+            if (req.hasMove() || req.hasSize()) {
+                view.pivotX = 0f
+                view.pivotY = 0f
+            }
+            if (req.hasMove()) {
+                val m = req.move
+                if (m.hasDx()) view.translationX += m.dx.value * density
+                if (m.hasDy()) view.translationY += m.dy.value * density
+            }
+            if (req.hasSize()) {
+                val s = req.size
+                val originalW = view.width.toFloat()
+                val originalH = view.height.toFloat()
+                if (s.hasWidth() && originalW > 0f) view.scaleX = s.width.value * density / originalW
+                if (s.hasHeight() && originalH > 0f) view.scaleY = s.height.value * density / originalH
+            }
+            if (req.hasText() && view is TextView) {
+                view.text = req.text.content
+            }
+            Pair(true, "")
+        } catch (e: Exception) {
+            Pair(false, e.message ?: "error")
         }
     }
 }
