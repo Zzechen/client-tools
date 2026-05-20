@@ -52,10 +52,6 @@ message Node {
   map<string, string> custom_attrs = 8;
   int32 visibility = 9;
   bool is_enabled = 10;
-  float translate_x = 11;
-  float translate_y = 12;
-  float scale_x = 13;
-  float scale_y = 14;
 }
 
 message NodeList {
