@@ -16,7 +16,6 @@ import com.clienttools.sdk.mock.MockRuleEntry
 import com.clienttools.sdk.mock.MockRuleStore
 import com.clienttools.sdk.proto.*
 import java.util.UUID
-import com.clienttools.sdk.runtime.AndroidViewModifier
 import com.clienttools.sdk.runtime.ViewModifier
 import com.clienttools.sdk.runtime.ViewQueryService
 import com.google.protobuf.ByteString
@@ -88,10 +87,10 @@ object ApiHandler {
         }
     }
 
-    fun handleModifyAndroid(bodyBytes: ByteArray): NanoHTTPD.Response {
+    fun handleModify(bodyBytes: ByteArray): NanoHTTPD.Response {
         return try {
-            val req = ModifyViewAndroidRequest.parseFrom(bodyBytes)
-            val (ok, msg) = AndroidViewModifier.apply(req.id, req.props)
+            val req = ModifyViewRequest.parseFrom(bodyBytes)
+            val (ok, msg) = ViewModifier.modify(req.id, req)
             if (ok) {
                 val resp = ModifyResponse.newBuilder().setMeta(ProtoHelper.okMeta(ctx())).build()
                 okResponse(resp.toByteArray())
@@ -99,7 +98,7 @@ object ApiHandler {
                 errResponse(NanoHTTPD.Response.Status.NOT_FOUND, msg)
             }
         } catch (e: Exception) {
-            Log.e("ApiHandler", "handleModifyAndroid", e)
+            Log.e("ApiHandler", "handleModify", e)
             errResponse(NanoHTTPD.Response.Status.INTERNAL_ERROR, e.message ?: "error")
         }
     }

@@ -43,8 +43,8 @@ class HttpServer(
                     ApiHandler.handleGetNode(id)
                 }
 
-                method == Method.POST && uri == "/api/modify/android" ->
-                    ApiHandler.handleModifyAndroid(readBodyBytes(session))
+                method == Method.POST && uri == "/api/modify" ->
+                    ApiHandler.handleModify(readBodyBytes(session))
 
                 method == Method.GET && uri == "/webview/files" ->
                     ApiHandler.handleWebviewFiles(ClientToolsSDK.fileStore)
