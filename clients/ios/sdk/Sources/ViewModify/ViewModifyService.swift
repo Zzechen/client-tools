@@ -4,30 +4,35 @@ class ViewModifyService {
 
     private let viewQueryService = ViewQueryService()
 
-    // iOS 路径：transform + 尺寸约束 + padding + 文字属性
-    func modifyIosProto(id: String, props: Clienttools_IosViewProps) -> (Bool, String) {
-        guard let view = viewQueryService.findView(byId: id) else { return (false, "View not found: \(id)") }
+    func modify(id: String, req: Clienttools_ModifyViewRequest) -> (Bool, String) {
+        guard let view = viewQueryService.findView(byId: id) else {
+            return (false, "View not found: \(id)")
+        }
 
-        // 类型断言：有 text 字段则要求必须是 UILabel 或 UITextField
-        if props.hasText {
+        if req.hasText {
             guard view is UILabel || view is UITextField else {
-                let typeName = type(of: view)
-                return (false, "text props requires UILabel or UITextField, but view '\(id)' is \(typeName)")
+                return (false, "text requires UILabel or UITextField, but '\(id)' is \(type(of: view))")
             }
         }
 
         let sema = DispatchSemaphore(value: 0)
         DispatchQueue.main.async {
-            // 1. transform
-            Self.applyTransform(to: view, props: props)
-
-            // 2. 文字属性（已断言是 UILabel 或 UITextField）
-            if props.hasText, let label = view as? UILabel {
-                Self.applyTextProps(to: label, text: props.text)
-            } else if props.hasText, let textField = view as? UITextField, props.text.hasContent {
-                textField.text = props.text.content.value
+            if req.hasMove || req.hasSize {
+                Self.ensureTopLeftAnchor(view)
             }
-
+            if req.hasMove {
+                Self.applyMove(to: view, move: req.move)
+            }
+            if req.hasSize {
+                Self.applySize(to: view, size: req.size)
+            }
+            if req.hasText {
+                if let label = view as? UILabel {
+                    label.text = req.text.content
+                } else if let tf = view as? UITextField {
+                    tf.text = req.text.content
+                }
+            }
             view.setNeedsLayout()
             view.layoutIfNeeded()
             sema.signal()
@@ -36,68 +41,48 @@ class ViewModifyService {
         return (true, "")
     }
 
-    private static func applyTransform(to view: UIView, props: Clienttools_IosViewProps) {
-        guard props.hasTranslateXDp || props.hasTranslateYDp || props.hasScaleX || props.hasScaleY else { return }
+    // pivot 设到左上角（幂等），补偿 position 保持视觉位置不变
+    private static func ensureTopLeftAnchor(_ view: UIView) {
+        guard view.layer.anchorPoint != CGPoint(x: 0, y: 0) else { return }
+        let old = view.layer.anchorPoint
+        let size = view.bounds.size
+        view.layer.position = CGPoint(
+            x: view.layer.position.x - old.x * size.width,
+            y: view.layer.position.y - old.y * size.height
+        )
+        view.layer.anchorPoint = CGPoint(x: 0, y: 0)
+    }
 
-        // 将 anchorPoint 设为 (0,0)，补偿 position 保持视觉位置不变，幂等
-        let oldAnchor = view.layer.anchorPoint
-        if oldAnchor != CGPoint(x: 0, y: 0) {
-            let size = view.bounds.size
-            view.layer.position = CGPoint(
-                x: view.layer.position.x - oldAnchor.x * size.width,
-                y: view.layer.position.y - oldAnchor.y * size.height
-            )
-            view.layer.anchorPoint = CGPoint(x: 0, y: 0)
-        }
+    // 增量平移：在当前 translation 基础上叠加 dx/dy，保持 scale 不变
+    private static func applyMove(to view: UIView, move: Clienttools_MoveProps) {
+        let t = view.transform
+        let currentTx = t.tx
+        let currentTy = t.ty
+        let sx = sqrt(t.a * t.a + t.c * t.c)
+        let sy = sqrt(t.b * t.b + t.d * t.d)
+        let newTx = currentTx + (move.hasDx ? CGFloat(move.dx.value) : 0)
+        let newTy = currentTy + (move.hasDy ? CGFloat(move.dy.value) : 0)
+        // scale first, then translate（屏幕空间：translate 不受 scale 影响）
+        view.transform = CGAffineTransform(scaleX: sx == 0 ? 1 : sx, y: sy == 0 ? 1 : sy)
+            .concatenating(CGAffineTransform(translationX: newTx, y: newTy))
+    }
 
-        // 从当前 transform 反解分量（假设无 rotation）
+    // 绝对尺寸：根据目标 dp 算出 scaleX/Y，保持 translation 不变
+    private static func applySize(to view: UIView, size: Clienttools_SizeProps) {
         let t = view.transform
         let currentTx = t.tx
         let currentTy = t.ty
         let currentSx = sqrt(t.a * t.a + t.c * t.c)
         let currentSy = sqrt(t.b * t.b + t.d * t.d)
-
-        let newTx = props.hasTranslateXDp ? CGFloat(props.translateXDp.value) : currentTx
-        let newTy = props.hasTranslateYDp ? CGFloat(props.translateYDp.value) : currentTy
-        let newSx = props.hasScaleX ? CGFloat(props.scaleX.value) : (currentSx == 0 ? 1 : currentSx)
-        let newSy = props.hasScaleY ? CGFloat(props.scaleY.value) : (currentSy == 0 ? 1 : currentSy)
-
-        // 先 scale 再 translate：屏幕空间语义，translate 不受 scale 影响
+        let originalW = view.bounds.width   // layout 原始宽，不受 transform 影响
+        let originalH = view.bounds.height
+        let newSx = (size.hasWidth && originalW > 0)
+            ? CGFloat(size.width.value) / originalW
+            : (currentSx == 0 ? 1 : currentSx)
+        let newSy = (size.hasHeight && originalH > 0)
+            ? CGFloat(size.height.value) / originalH
+            : (currentSy == 0 ? 1 : currentSy)
         view.transform = CGAffineTransform(scaleX: newSx, y: newSy)
-            .concatenating(CGAffineTransform(translationX: newTx, y: newTy))
-    }
-
-    private static func applyTextProps(to label: UILabel, text: Clienttools_IosTextProps) {
-        if text.hasContent {
-            label.text = text.content.value
-        }
-
-        if text.hasLetterSpacingEm {
-            let em = CGFloat(text.letterSpacingEm.value)
-            let fontSize = label.font.pointSize
-            if var attrs = label.attributedText?.mutableCopy() as? NSMutableAttributedString {
-                attrs.addAttribute(.kern, value: em * fontSize, range: NSRange(location: 0, length: attrs.length))
-                label.attributedText = attrs
-            } else {
-                label.attributedText = NSAttributedString(string: label.text ?? "", attributes: [
-                    .font: label.font as Any,
-                    .foregroundColor: label.textColor as Any,
-                    .kern: em * fontSize
-                ])
-            }
-        }
-
-        if text.hasLineSpacingExtraDp {
-            let extra = CGFloat(text.lineSpacingExtraDp.value)
-            let style = NSMutableParagraphStyle()
-            style.lineSpacing = extra
-            let base = label.attributedText?.mutableCopy() as? NSMutableAttributedString
-                ?? NSMutableAttributedString(string: label.text ?? "", attributes: [
-                    .font: label.font as Any,
-                    .foregroundColor: label.textColor as Any
-                ])
-            base.addAttribute(.paragraphStyle, value: style, range: NSRange(location: 0, length: base.length))
-            label.attributedText = base
-        }
+            .concatenating(CGAffineTransform(translationX: currentTx, y: currentTy))
     }
 }
