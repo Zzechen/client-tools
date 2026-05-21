@@ -12,8 +12,7 @@
 | | `capture_view` | 截取指定 View 的截图 |
 | 交互 | `click_view` | 点击指定 View |
 | | `scroll_view` | 滚动指定 View |
-| 视图修改 | `modify_view_android` | 修改 Android View 布局属性 |
-| | `modify_view_ios` | 修改 iOS UIView transform/文字属性 |
+| 视图修改 | `modify_view` | 修改 View 的位置、尺寸或文案（Android/iOS 通用） |
 | WebView 覆层 | `push_html` | 推送 HTML 到 WebView 覆层并显示 |
 | | `show_webview` | 切换显示已保存的 HTML |
 | | `hide_overlay` | 隐藏 WebView 覆层 |
@@ -66,11 +65,7 @@
   "widthDp": 335.0,
   "heightDp": 48.0,
   "visibility": 0,
-  "isEnabled": true,
-  "translateX": 0.0,
-  "translateY": 0.0,
-  "scaleX": 1.0,
-  "scaleY": 1.0
+  "isEnabled": true
 }
 ```
 
@@ -145,51 +140,20 @@
 
 ## 视图修改
 
-### modify_view_android
+### modify_view
 
-修改 Android View 的布局属性。margin/padding 为增量，size 为绝对值。传 text 则断言为 TextView 子类，否则整体拒绝。**仅 Android。**
-
-**参数：**
-
-| 名称 | 类型 | 必填 | 说明 |
-|------|------|------|------|
-| id | string | 是 | Android View 的 resource id（不含 `@id/` 前缀） |
-| margin | object | 否 | margin 增量（dp） |
-| margin.topDiffDp | number | 否 | 上 margin 增量 |
-| margin.bottomDiffDp | number | 否 | 下 margin 增量 |
-| margin.leftDiffDp | number | 否 | 左 margin 增量 |
-| margin.rightDiffDp | number | 否 | 右 margin 增量 |
-| padding | object | 否 | padding 增量（dp），字段同 margin |
-| size | object | 否 | 尺寸设置 |
-| size.width | number \| "wrap_content" | 否 | 宽度（dp 数值或 "wrap_content"） |
-| size.height | number \| "wrap_content" | 否 | 高度（dp 数值或 "wrap_content"） |
-| text | object | 否 | 文字属性，断言为 TextView |
-| text.letterSpacingEm | number | 否 | 字间距（em） |
-| text.lineSpacingExtraDp | number | 否 | 额外行间距（dp） |
-| text.includeFontPadding | boolean | 否 | 是否包含字体内边距 |
-
-**返回：** `"ok"` 或错误信息字符串
-
----
-
-### modify_view_ios
-
-修改 iOS UIView 的 transform（位移/缩放）或文字属性。传 text 则断言为 UILabel，否则整体拒绝。**仅 iOS。**
+修改 View 的位置、尺寸或文案。内部通过 translation/scale 实现，pivot 固定左上角，操作互不干扰。Android/iOS 通用。
 
 **参数：**
 
 | 名称 | 类型 | 必填 | 说明 |
 |------|------|------|------|
-| id | string | 是 | iOS View 的 accessibilityIdentifier |
-| props | object | 是 | 属性对象 |
-| props.translateXDp | number | 否 | X 轴位移绝对值（dp），屏幕空间，不受 scale 影响 |
-| props.translateYDp | number | 否 | Y 轴位移绝对值（dp），屏幕空间，不受 scale 影响 |
-| props.scaleX | number | 否 | X 轴缩放绝对值，1.0 为原始大小 |
-| props.scaleY | number | 否 | Y 轴缩放绝对值，1.0 为原始大小 |
-| props.text | object | 否 | 文字属性，断言为 UILabel |
-| props.text.content | string | 否 | 替换 UILabel 文案内容 |
-| props.text.letterSpacingEm | number | 否 | 字间距（em） |
-| props.text.lineSpacingExtraDp | number | 否 | 额外行间距（dp） |
+| id | string | 是 | View 的 id |
+| move_dx | number | 否 | 横向偏移增量（dp），正右 |
+| move_dy | number | 否 | 纵向偏移增量（dp），正下 |
+| width | number | 否 | 目标宽度（dp），绝对值 |
+| height | number | 否 | 目标高度（dp），绝对值 |
+| text | string | 否 | 替换文案内容（要求 view 为 TextView/UILabel/UITextField） |
 
 **返回：** `"ok"` 或错误信息字符串
 

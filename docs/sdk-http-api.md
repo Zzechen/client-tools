@@ -30,8 +30,7 @@ SDK 在设备上启动 HTTP Server，MCP Server 通过 `http://localhost:8080` �
 | `/api/click` | POST | ✓ | ✓ | 点击 View |
 | `/api/scroll` | POST | ✓ | ✓ | 滚动 View |
 | `/api/capture/{id}` | GET | ✓ | ✓ | 截取 View 截图 |
-| `/api/modify/android` | POST | ✓ | — | 修改 Android View 属性 |
-| `/api/modify/ios` | POST | — | ✓ | 修改 iOS View 属性 |
+| `/api/modify` | POST | ✓ | ✓ | 修改 View 位置/尺寸/文案 |
 | `/webview/files` | GET | ✓ | ✓ | 列出 HTML 文件 |
 | `/webview/push-html` | POST | ✓ | ✓ | 推送 HTML |
 | `/webview/show` | POST | ✓ | ✓ | 显示 HTML |
@@ -142,23 +141,18 @@ image_png: bytes    // PNG 二进制
 
 ---
 
-### POST /api/modify/android
+### POST /api/modify
 
-修改 Android View 布局属性。**仅 Android。**
+修改 View 的位置（translation）、尺寸（scale）或文案。Android/iOS 通用，pivot 固定左上角。
 
-**请求体：** `ModifyViewAndroidRequest`
+**请求体：** `ModifyViewRequest`
 ```
 id: string
-props.margin.top_diff_dp:    FloatValue（可选）
-props.margin.bottom_diff_dp: FloatValue（可选）
-props.margin.left_diff_dp:   FloatValue（可选）
-props.margin.right_diff_dp:  FloatValue（可选）
-props.padding.*:             FloatValue（同 margin，可选）
-props.size.width_dp / width_wrap_content:   oneof（可选）
-props.size.height_dp / height_wrap_content: oneof（可选）
-props.text.letter_spacing_em:     FloatValue（可选）
-props.text.line_spacing_extra_dp: FloatValue（可选）
-props.text.include_font_padding:  BoolValue（可选）
+move.dx: FloatValue（可选）      // 横向偏移增量（dp），正右
+move.dy: FloatValue（可选）      // 纵向偏移增量（dp），正下
+size.width:  FloatValue（可选）  // 目标宽度（dp），绝对值
+size.height: FloatValue（可选）  // 目标高度（dp），绝对值
+text.content: string（可选）     // 替换文案，断言 view 为 TextView/UILabel/UITextField
 ```
 
 **响应：** `ModifyResponse`
@@ -166,26 +160,6 @@ props.text.include_font_padding:  BoolValue（可选）
 meta: ResponseMeta
 message: string    // "ok" 或错误描述
 ```
-
----
-
-### POST /api/modify/ios
-
-修改 iOS UIView transform 或文字属性。**仅 iOS。**
-
-**请求体：** `ModifyViewIosRequest`
-```
-id: string
-props.translate_x_dp:         FloatValue（可选）  // X 轴位移绝对值（dp）
-props.translate_y_dp:         FloatValue（可选）  // Y 轴位移绝对值（dp）
-props.scale_x:                FloatValue（可选）  // X 轴缩放，1.0 = 原始
-props.scale_y:                FloatValue（可选）  // Y 轴缩放，1.0 = 原始
-props.text.content:           StringValue（可选） // 替换 UILabel 文案
-props.text.letter_spacing_em: FloatValue（可选）
-props.text.line_spacing_extra_dp: FloatValue（可选）
-```
-
-**响应：** `ModifyResponse`（同 modify/android）
 
 ---
 
@@ -471,10 +445,6 @@ cleared_count: int32    // 被清空的规则数量
 | customAttrs | map | 自定义标签键值对 |
 | visibility | int32 | 0=VISIBLE, 4=INVISIBLE, 8=GONE |
 | isEnabled | bool | 是否可交互 |
-| translateX | float | X 轴位移（dp） |
-| translateY | float | Y 轴位移（dp） |
-| scaleX | float | X 轴缩放 |
-| scaleY | float | Y 轴缩放 |
 
 **NodeAttrs（按 type 区分）：**
 
