@@ -169,8 +169,8 @@ class HttpServer {
             handleClick(bodyData, connection: connection)
         case ("POST", "/api/scroll"):
             handleScroll(bodyData, connection: connection)
-        case ("POST", "/api/modify/ios"):
-            handleModifyIos(bodyData, connection: connection)
+        case ("POST", "/api/modify"):
+            handleModify(bodyData, connection: connection)
         case ("POST", "/webview/push-html"):
             handleWebviewPushHtml(bodyData, connection: connection)
         case ("POST", "/webview/show"):
@@ -347,11 +347,11 @@ class HttpServer {
         sendProto(resp, connection: connection)
     }
 
-    private func handleModifyIos(_ body: Data, connection: NWConnection) {
-        guard let req = try? Clienttools_ModifyViewIosRequest(serializedBytes: body) else {
+    private func handleModify(_ body: Data, connection: NWConnection) {
+        guard let req = try? Clienttools_ModifyViewRequest(serializedBytes: body) else {
             sendError(code: 400, message: "Invalid request", connection: connection); return
         }
-        let (success, message) = viewModifyService.modifyIosProto(id: req.id, props: req.props)
+        let (success, message) = viewModifyService.modify(id: req.id, req: req)
         var resp = Clienttools_ModifyResponse()
         resp.meta = okMeta()
         resp.message = message
