@@ -1,4 +1,4 @@
-import { fromBinary, toBinary, create, type MessageShape, type DescMessage } from "@bufbuild/protobuf";
+import { fromBinary, toBinary, create, type MessageShape, type DescMessage, type MessageInitShape } from "@bufbuild/protobuf";
 import { execSync } from "child_process";
 
 const PORT = process.env.CLIENT_TOOLS_PORT ?? "8080";
@@ -53,7 +53,7 @@ export async function sdkPost<Req extends DescMessage, Res extends DescMessage>(
     return fromBinary(resSchema, bytes);
   } catch {
     // Android error responses may be plain text (not protobuf); return empty proto.
-    return create(resSchema, {});
+    return create(resSchema, {} as MessageInitShape<Res>);
   }
 }
 
