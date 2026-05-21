@@ -1,0 +1,17 @@
+{
+  "name": "@client-tools/runtime-tests",
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "test:android": "PLATFORM=android tsx src/index.ts",
+    "test:ios": "PLATFORM=ios tsx src/index.ts"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "tsx": "^4.19.0",
+    "typescript": "^5.5.0"
+  },
+  "dependencies": {
+    "@bufbuild/protobuf": "^2.2.3"
+  }
+}
