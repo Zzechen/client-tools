@@ -10,16 +10,10 @@ public struct ViewNode: Codable {
     public let visibility: Int
     public let isEnabled: Bool
     public let attrs: NodeAttrs?
-    public let translateX: Float
-    public let translateY: Float
-    public let scaleX: Float
-    public let scaleY: Float
 
     public init(id: String, type: String, screenX: Float, screenY: Float,
                 widthDp: Float, heightDp: Float, visibility: Int, isEnabled: Bool,
-                attrs: NodeAttrs?,
-                translateX: Float = 0, translateY: Float = 0,
-                scaleX: Float = 1, scaleY: Float = 1) {
+                attrs: NodeAttrs?) {
         self.id = id
         self.type = type
         self.screenX = screenX
@@ -29,10 +23,6 @@ public struct ViewNode: Codable {
         self.visibility = visibility
         self.isEnabled = isEnabled
         self.attrs = attrs
-        self.translateX = translateX
-        self.translateY = translateY
-        self.scaleX = scaleX
-        self.scaleY = scaleY
     }
 }
 

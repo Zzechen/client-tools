@@ -14,26 +14,23 @@ class ViewTraverser {
             let origin = subview.convert(CGPoint.zero, to: nil)
             let visibilityCode: Int = subview.isHidden ? 8 : (subview.alpha == 0 ? 4 : 0)
 
+            // 计算视觉尺寸（layout 原始尺寸 × scale）
             let t = subview.transform
-            let tx = Float(t.tx)
-            let ty = Float(t.ty)
             let sx = Float(sqrt(t.a * t.a + t.c * t.c))
             let sy = Float(sqrt(t.b * t.b + t.d * t.d))
+            let visualSx = sx == 0 ? 1 : sx
+            let visualSy = sy == 0 ? 1 : sy
 
             let node = ViewNode(
                 id: viewId,
                 type: ViewTypeMapper.map(subview),
                 screenX: Float(origin.x),
                 screenY: Float(origin.y),
-                widthDp: Float(subview.bounds.width),
-                heightDp: Float(subview.bounds.height),
+                widthDp: Float(subview.bounds.width) * visualSx,
+                heightDp: Float(subview.bounds.height) * visualSy,
                 visibility: visibilityCode,
                 isEnabled: subview.isUserInteractionEnabled,
-                attrs: StyleQuerier.query(subview),
-                translateX: tx,
-                translateY: ty,
-                scaleX: sx == 0 ? 1 : sx,
-                scaleY: sy == 0 ? 1 : sy
+                attrs: StyleQuerier.query(subview)
             )
 
             nodes.append(node)
