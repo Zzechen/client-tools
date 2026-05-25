@@ -26,11 +26,6 @@ class ViewQueryService {
         node.screenY = vn.screenY
         node.widthDp = vn.widthDp
         node.heightDp = vn.heightDp
-        node.translateX = vn.translateX
-        node.translateY = vn.translateY
-        node.scaleX = vn.scaleX
-        node.scaleY = vn.scaleY
-
         var nodeAttrs = Clienttools_NodeAttrs()
         switch vn.attrs {
         case .text(let ta):
