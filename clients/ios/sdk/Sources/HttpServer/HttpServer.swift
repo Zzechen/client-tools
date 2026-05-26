@@ -18,8 +18,13 @@ class HttpServer {
     )
     private static let sdkVersion: Int32 = 1
 
-    init(port: Int = 8080) {
+    private let customRoutes: [CustomRoute]
+    private let customHandlerTimeoutMs: Int
+
+    init(port: Int = 8080, customRoutes: [CustomRoute] = [], customHandlerTimeoutMs: Int = 4500) {
         self.port = port
+        self.customRoutes = customRoutes
+        self.customHandlerTimeoutMs = customHandlerTimeoutMs
         self.listener = try? NWListener(using: .tcp, on: NWEndpoint.Port(integerLiteral: UInt16(port)))
     }
 
@@ -210,6 +215,18 @@ class HttpServer {
             } else if method == "DELETE" && path.hasPrefix("/mock/rules/") {
                 let ruleId = String(path.dropFirst("/mock/rules/".count))
                 handleMockDelete(ruleId, connection: connection)
+            } else if method == "GET" && path == "/custom/routes" {
+                handleCustomRoutes(connection: connection)
+            } else if path.hasPrefix("/custom/") {
+                let customPath = String(path.dropFirst("/custom/".count))
+                if let route = customRoutes.first(where: {
+                    $0.path == customPath && $0.method.value == method
+                }) {
+                    let bodyStr = String(data: bodyData, encoding: .utf8)
+                    handleCustomCall(route, body: bodyStr, connection: connection)
+                } else {
+                    sendError(code: 404, message: "Not found", httpCode: 404, connection: connection)
+                }
             } else {
                 sendError(code: 404, message: "Not found", httpCode: 404, connection: connection)
             }
@@ -529,5 +546,51 @@ class HttpServer {
         resp.meta = okMeta()
         resp.clearedCount = Int32(count)
         sendProto(resp, connection: connection)
+    }
+
+    private func handleCustomRoutes(connection: NWConnection) {
+        func esc(_ s: String) -> String {
+            s.replacingOccurrences(of: "\\", with: "\\\\")
+             .replacingOccurrences(of: "\"", with: "\\\"")
+        }
+        let items = customRoutes.map { route -> String in
+            let paramsJson = route.params.map { k, v in
+                "\"\(esc(k))\":\"\(esc(v))\""
+            }.joined(separator: ",")
+            return "{\"path\":\"/custom/\(route.path)\",\"method\":\"\(route.method.value)\",\"description\":\"\(esc(route.description))\",\"params\":{\(paramsJson)}}"
+        }.joined(separator: ",")
+        sendJson("[\(items)]", connection: connection)
+    }
+
+    private func handleCustomCall(_ route: CustomRoute, body: String?, connection: NWConnection) {
+        let timeoutMs = customHandlerTimeoutMs
+        let sema = DispatchSemaphore(value: 0)
+        let lock = NSLock()
+        var result = CustomResult.error("handler timeout")
+        var signaled = false
+
+        func signalOnce(_ r: CustomResult) {
+            lock.lock(); defer { lock.unlock() }
+            guard !signaled else { return }
+            signaled = true
+            result = r
+            sema.signal()
+        }
+
+        Task {
+            do {
+                let r = try await route.handler(body)
+                signalOnce(r)
+            } catch {
+                signalOnce(CustomResult.error("handler error: \(error.localizedDescription)"))
+            }
+        }
+
+        DispatchQueue.global().asyncAfter(deadline: .now() + .milliseconds(timeoutMs)) {
+            signalOnce(CustomResult.error("handler timeout"))
+        }
+
+        sema.wait()
+        sendJson(result.toJson(), connection: connection)
     }
 }

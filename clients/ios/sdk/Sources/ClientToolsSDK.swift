@@ -12,14 +12,22 @@ public class ClientToolsSDK {
     public let inspectorViewModel = InspectorViewModel()
     public let imageFileStore = ImageFileStore()
     public private(set) var port: Int = 8080
+    private var customRoutes: [CustomRoute] = []
+    private var customHandlerTimeoutMs: Int = 4500
 
     private init() {}
 
-    public func start(port: Int = 8080) {
+    public func start(
+        port: Int = 8080,
+        customRoutes: [CustomRoute] = [],
+        customHandlerTimeoutMs: Int = 4500
+    ) {
         #if DEBUG
         guard !isRunning else { return }
         isRunning = true
         self.port = port
+        self.customRoutes = customRoutes
+        self.customHandlerTimeoutMs = customHandlerTimeoutMs
         startHttpServer(port: port)
         startPageTracking()
         startOverlayManager()
@@ -28,7 +36,7 @@ public class ClientToolsSDK {
     }
 
     private func startHttpServer(port: Int) {
-        httpServer = HttpServer(port: port)
+        httpServer = HttpServer(port: port, customRoutes: customRoutes, customHandlerTimeoutMs: customHandlerTimeoutMs)
         httpServer?.start()
     }
 
