@@ -198,6 +198,8 @@ class LoginActivity : AppCompatActivity() {
     }
 
     private fun navigateToUserInfo(user: UserInfo, token: String) {
+        DemoApplication.currentUser = user
+        DemoApplication.currentToken = token
         startActivity(Intent(this, UserInfoActivity::class.java).apply {
             putExtra(UserInfoActivity.KEY_USER, user)
             putExtra(UserInfoActivity.KEY_TOKEN, token)
