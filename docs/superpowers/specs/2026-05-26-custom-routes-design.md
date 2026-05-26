@@ -320,6 +320,142 @@ export async function sdkPostText(path: string, body: string): Promise<string>
 
 ---
 
+## Demo 接入
+
+Demo 中注册两条有意义的自定义路由，覆盖 GET 和 POST 场景，用于功能验收。
+
+### 路由设计
+
+| 路由 | 方法 | 描述 |
+|------|------|------|
+| `demo/current-user` | GET | 返回当前已登录的用户信息和 token 前缀 |
+| `demo/set-username` | POST | 更新当前展示的用户名（写操作，验证 POST + 异步） |
+
+**`demo/current-user` 响应示例：**
+```json
+{
+  "id": "u123",
+  "name": "张三",
+  "phone": "138****8888",
+  "email": "zhang@example.com",
+  "tokenPrefix": "eyJhbGciOi..."
+}
+```
+
+**`demo/set-username` 请求体：**
+```json
+{ "name": "新名字" }
+```
+
+### Android Demo（DemoApplication.kt）
+
+```kotlin
+// 用于跨 Activity 共享当前用户状态
+companion object {
+    var currentUser: UserInfo? = null
+    var currentToken: String = ""
+}
+
+override fun onCreate() {
+    super.onCreate()
+    ClientToolsSDK.init(
+        context = this,
+        customRoutes = listOf(
+            CustomRoute(
+                path = "demo/current-user",
+                method = HttpMethod.GET,
+                description = "返回当前登录用户信息，未登录时返回 error",
+                handler = { _ ->
+                    val user = currentUser
+                        ?: return@CustomRoute CustomResult.error("not logged in")
+                    CustomResult.ok("""
+                        {"id":"${user.id}","name":"${user.name}",
+                         "phone":"${user.phone}","email":"${user.email}",
+                         "tokenPrefix":"${currentToken.take(20)}"}
+                    """.trimIndent())
+                }
+            ),
+            CustomRoute(
+                path = "demo/set-username",
+                method = HttpMethod.POST,
+                description = "更新当前展示的用户名",
+                params = mapOf("name" to "新用户名"),
+                handler = { body ->
+                    val name = JSONObject(body ?: "{}").optString("name")
+                    if (name.isBlank()) return@CustomRoute CustomResult.error("name is required")
+                    currentUser = currentUser?.copy(name = name)
+                        ?: return@CustomRoute CustomResult.error("not logged in")
+                    CustomResult.ok("""{"name":"$name"}""")
+                }
+            )
+        )
+    )
+    httpClient = OkHttpClient.Builder()
+        .addInterceptor(MockInterceptor())
+        .build()
+}
+```
+
+`UserInfoActivity` 登录成功后将 user 和 token 写入 `DemoApplication.currentUser` / `currentToken`。
+
+### iOS Demo（AppDelegate.swift）
+
+```swift
+// AppDelegate 持有当前用户状态
+var currentUser: UserInfo? = nil
+var currentToken: String = ""
+
+func application(_ application: UIApplication, didFinishLaunchingWithOptions ...) -> Bool {
+    ClientToolsSDK.shared.start(
+        customRoutes: [
+            CustomRoute(
+                path: "demo/current-user",
+                method: .get,
+                description: "返回当前登录用户信息，未登录时返回 error",
+                handler: { [weak self] _ in
+                    guard let user = self?.currentUser else {
+                        return .error("not logged in")
+                    }
+                    let json = """
+                        {"id":"\(user.id)","name":"\(user.name)",
+                         "phone":"\(user.phone)","email":"\(user.email)",
+                         "tokenPrefix":"\(self?.currentToken.prefix(20) ?? "")"}
+                    """
+                    return .ok(json)
+                }
+            ),
+            CustomRoute(
+                path: "demo/set-username",
+                method: .post,
+                description: "更新当前展示的用户名",
+                params: ["name": "新用户名"],
+                handler: { [weak self] body in
+                    guard let body,
+                          let data = body.data(using: .utf8),
+                          let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
+                          let name = json["name"] as? String, !name.isEmpty else {
+                        return .error("name is required")
+                    }
+                    self?.currentUser?.name = name
+                    return .ok("{\"name\":\"\(name)\"}")
+                }
+            )
+        ]
+    )
+    return true
+}
+```
+
+### 验收步骤
+
+1. 启动 demo app 并完成登录
+2. MCP 调用 `list_custom_routes` → 应返回包含 `demo/current-user`、`demo/set-username` 的路由列表
+3. MCP 调用 `custom_call(path="demo/current-user", method="GET")` → 应返回登录用户信息
+4. MCP 调用 `custom_call(path="demo/set-username", method="POST", body='{"name":"测试用户"}')` → 应返回 `{"name":"测试用户"}`，UI 同步更新
+5. 未登录时调用 `demo/current-user` → 应返回 `{"code":-1,"message":"not logged in","data":null}`
+
+---
+
 ## 文档同步
 
 实现完成后需同步更新：
