@@ -326,31 +326,28 @@ Demo 中注册两条有意义的自定义路由，覆盖 GET 和 POST 场景，�
 
 ### 路由设计
 
-| 路由 | 方法 | 描述 |
-|------|------|------|
-| `demo/current-user` | GET | 返回当前已登录的用户信息和 token 前缀 |
-| `demo/set-username` | POST | 更新当前展示的用户名（写操作，验证 POST + 异步） |
+每条路由覆盖一个典型分支，合计覆盖所有关键路径：
 
-**`demo/current-user` 响应示例：**
+| 路由 | 方法 | 覆盖分支 | 描述 |
+|------|------|----------|------|
+| `demo/current-user` | GET | 正常 / 业务错误 | 已登录返回用户信息，未登录返回 error |
+| `demo/set-username` | POST | 正常 / 参数校验错误 | 更新用户名，name 为空时返回 error |
+| `demo/slow-query` | GET | 超时 | 固定 delay 6000ms，必然触发 handler 超时 |
+| `demo/crash` | GET | 异常 | 直接 throw，验证 SDK 捕获异常并包装返回 |
+
+**`demo/current-user` 响应示例（正常）：**
 ```json
-{
-  "id": "u123",
-  "name": "张三",
-  "phone": "138****8888",
-  "email": "zhang@example.com",
-  "tokenPrefix": "eyJhbGciOi..."
-}
+{"id":"u123","name":"张三","phone":"138****8888","email":"zhang@example.com","tokenPrefix":"eyJhbGciOi..."}
 ```
 
 **`demo/set-username` 请求体：**
 ```json
-{ "name": "新名字" }
+{"name": "新名字"}
 ```
 
 ### Android Demo（DemoApplication.kt）
 
 ```kotlin
-// 用于跨 Activity 共享当前用户状态
 companion object {
     var currentUser: UserInfo? = null
     var currentToken: String = ""
@@ -361,6 +358,7 @@ override fun onCreate() {
     ClientToolsSDK.init(
         context = this,
         customRoutes = listOf(
+            // 分支：正常 + 业务错误（未登录）
             CustomRoute(
                 path = "demo/current-user",
                 method = HttpMethod.GET,
@@ -368,17 +366,14 @@ override fun onCreate() {
                 handler = { _ ->
                     val user = currentUser
                         ?: return@CustomRoute CustomResult.error("not logged in")
-                    CustomResult.ok("""
-                        {"id":"${user.id}","name":"${user.name}",
-                         "phone":"${user.phone}","email":"${user.email}",
-                         "tokenPrefix":"${currentToken.take(20)}"}
-                    """.trimIndent())
+                    CustomResult.ok("""{"id":"${user.id}","name":"${user.name}","phone":"${user.phone}","email":"${user.email}","tokenPrefix":"${currentToken.take(20)}"}""")
                 }
             ),
+            // 分支：正常 + 参数校验错误
             CustomRoute(
                 path = "demo/set-username",
                 method = HttpMethod.POST,
-                description = "更新当前展示的用户名",
+                description = "更新当前展示的用户名，name 为空时返回 error",
                 params = mapOf("name" to "新用户名"),
                 handler = { body ->
                     val name = JSONObject(body ?: "{}").optString("name")
@@ -386,6 +381,25 @@ override fun onCreate() {
                     currentUser = currentUser?.copy(name = name)
                         ?: return@CustomRoute CustomResult.error("not logged in")
                     CustomResult.ok("""{"name":"$name"}""")
+                }
+            ),
+            // 分支：超时（delay > customHandlerTimeoutMs）
+            CustomRoute(
+                path = "demo/slow-query",
+                method = HttpMethod.GET,
+                description = "模拟耗时操作，固定 delay 6000ms，必然触发 handler 超时",
+                handler = { _ ->
+                    delay(6000)
+                    CustomResult.ok("""{"result":"should not reach here"}""")
+                }
+            ),
+            // 分支：未捕获异常
+            CustomRoute(
+                path = "demo/crash",
+                method = HttpMethod.GET,
+                description = "直接抛出异常，验证 SDK 捕获并包装为 error 响应",
+                handler = { _ ->
+                    throw RuntimeException("intentional crash for testing")
                 }
             )
         )
@@ -401,43 +415,56 @@ override fun onCreate() {
 ### iOS Demo（AppDelegate.swift）
 
 ```swift
-// AppDelegate 持有当前用户状态
 var currentUser: UserInfo? = nil
 var currentToken: String = ""
 
 func application(_ application: UIApplication, didFinishLaunchingWithOptions ...) -> Bool {
     ClientToolsSDK.shared.start(
         customRoutes: [
+            // 分支：正常 + 业务错误（未登录）
             CustomRoute(
                 path: "demo/current-user",
                 method: .get,
                 description: "返回当前登录用户信息，未登录时返回 error",
                 handler: { [weak self] _ in
-                    guard let user = self?.currentUser else {
-                        return .error("not logged in")
-                    }
-                    let json = """
-                        {"id":"\(user.id)","name":"\(user.name)",
-                         "phone":"\(user.phone)","email":"\(user.email)",
-                         "tokenPrefix":"\(self?.currentToken.prefix(20) ?? "")"}
-                    """
-                    return .ok(json)
+                    guard let user = self?.currentUser else { return .error("not logged in") }
+                    return .ok("{\"id\":\"\(user.id)\",\"name\":\"\(user.name)\",\"phone\":\"\(user.phone)\",\"email\":\"\(user.email)\",\"tokenPrefix\":\"\(self?.currentToken.prefix(20) ?? "")\"}")
                 }
             ),
+            // 分支：正常 + 参数校验错误
             CustomRoute(
                 path: "demo/set-username",
                 method: .post,
-                description: "更新当前展示的用户名",
+                description: "更新当前展示的用户名，name 为空时返回 error",
                 params: ["name": "新用户名"],
                 handler: { [weak self] body in
                     guard let body,
                           let data = body.data(using: .utf8),
                           let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
-                          let name = json["name"] as? String, !name.isEmpty else {
-                        return .error("name is required")
-                    }
+                          let name = json["name"] as? String, !name.isEmpty
+                    else { return .error("name is required") }
                     self?.currentUser?.name = name
                     return .ok("{\"name\":\"\(name)\"}")
+                }
+            ),
+            // 分支：超时
+            CustomRoute(
+                path: "demo/slow-query",
+                method: .get,
+                description: "模拟耗时操作，固定 delay 6000ms，必然触发 handler 超时",
+                handler: { _ in
+                    try? await Task.sleep(nanoseconds: 6_000_000_000)
+                    return .ok("{\"result\":\"should not reach here\"}")
+                }
+            ),
+            // 分支：未捕获异常
+            CustomRoute(
+                path: "demo/crash",
+                method: .get,
+                description: "直接抛出异常，验证 SDK 捕获并包装为 error 响应",
+                handler: { _ in
+                    throw NSError(domain: "DemoError", code: -1,
+                                  userInfo: [NSLocalizedDescriptionKey: "intentional crash for testing"])
                 }
             )
         ]
@@ -448,11 +475,15 @@ func application(_ application: UIApplication, didFinishLaunchingWithOptions ...
 
 ### 验收步骤
 
-1. 启动 demo app 并完成登录
-2. MCP 调用 `list_custom_routes` → 应返回包含 `demo/current-user`、`demo/set-username` 的路由列表
-3. MCP 调用 `custom_call(path="demo/current-user", method="GET")` → 应返回登录用户信息
-4. MCP 调用 `custom_call(path="demo/set-username", method="POST", body='{"name":"测试用户"}')` → 应返回 `{"name":"测试用户"}`，UI 同步更新
-5. 未登录时调用 `demo/current-user` → 应返回 `{"code":-1,"message":"not logged in","data":null}`
+| # | 操作 | 预期结果 |
+|---|------|----------|
+| 1 | `list_custom_routes` | 返回 4 条路由，含 path/method/description/params |
+| 2 | 登录后调用 `demo/current-user` GET | `code:0`，返回用户信息 JSON |
+| 3 | 未登录时调用 `demo/current-user` GET | `code:-1, message:"not logged in"` |
+| 4 | `demo/set-username` POST `{"name":"测试用户"}` | `code:0`，UI 用户名同步更新 |
+| 5 | `demo/set-username` POST `{}` | `code:-1, message:"name is required"` |
+| 6 | `demo/slow-query` GET | `code:-1, message:"handler timeout"`，响应在 5s 内返回 |
+| 7 | `demo/crash` GET | `code:-1, message:"handler error: intentional crash for testing"` |
 
 ---
 
