@@ -479,4 +479,33 @@ object ApiHandler {
             errResponse(NanoHTTPD.Response.Status.INTERNAL_ERROR, e.message ?: "error")
         }
     }
+
+    fun handleCustomRoutes(routes: List<CustomRoute>): NanoHTTPD.Response {
+        fun String.esc() = replace("\\", "\\\\").replace("\"", "\\\"")
+        val items = routes.joinToString(",") { route ->
+            val params = route.params.entries.joinToString(",") { (k, v) ->
+                "\"${k.esc()}\":\"${v.esc()}\""
+            }
+            """{"path":"/custom/${route.path}","method":"${route.method.value}","description":"${route.description.esc()}","params":{$params}}"""
+        }
+        return NanoHTTPD.newFixedLengthResponse(
+            NanoHTTPD.Response.Status.OK, "application/json", "[$items]"
+        )
+    }
+
+    suspend fun handleCustomCall(
+        route: CustomRoute,
+        body: String?,
+        timeoutMs: Long
+    ): NanoHTTPD.Response {
+        val result = try {
+            kotlinx.coroutines.withTimeout(timeoutMs) { route.handler(body) }
+        } catch (e: kotlinx.coroutines.TimeoutCancellationException) {
+            CustomResult.error("handler timeout")
+        } catch (e: Exception) {
+            CustomResult.error("handler error: ${e.message}")
+        }
+        val json = buildCustomResultJson(result)
+        return NanoHTTPD.newFixedLengthResponse(NanoHTTPD.Response.Status.OK, "text/plain", json)
+    }
 }
