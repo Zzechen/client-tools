@@ -95,3 +95,27 @@ export async function sdkDelete<Res extends DescMessage>(
   }
   return fromBinary(resSchema, buf);
 }
+
+const CUSTOM_TIMEOUT_MS = parseInt(process.env.CLIENT_TOOLS_CUSTOM_TIMEOUT_MS ?? "5000", 10);
+
+export async function sdkGetText(path: string): Promise<string> {
+  ensureAdbForward();
+  const res = await fetchWithTimeout(`${BASE_URL}${path}`, { method: "GET" }, CUSTOM_TIMEOUT_MS);
+  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  return res.text();
+}
+
+export async function sdkPostText(path: string, body: string): Promise<string> {
+  ensureAdbForward();
+  const res = await fetchWithTimeout(
+    `${BASE_URL}${path}`,
+    {
+      method: "POST",
+      headers: { "Content-Type": "text/plain" },
+      body,
+    },
+    CUSTOM_TIMEOUT_MS
+  );
+  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  return res.text();
+}

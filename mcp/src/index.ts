@@ -8,6 +8,7 @@ import { registerViewTools } from "./tools/view.js";
 import { registerInspectorTools } from "./tools/inspector.js";
 import { registerPageTools } from "./tools/page.js";
 import { registerMockTools } from "./tools/mock.js";
+import { registerCustomTools } from "./tools/custom.js";
 
 const server = new McpServer({
   name: "client-tools",
@@ -21,6 +22,7 @@ registerViewTools(server);
 registerInspectorTools(server);
 registerPageTools(server);
 registerMockTools(server);
+registerCustomTools(server);
 
 const transport = new StdioServerTransport();
 await server.connect(transport);
