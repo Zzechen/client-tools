@@ -46,6 +46,8 @@ SDK 在设备上启动 HTTP Server，MCP Server 通过 `http://localhost:8080` �
 | `/mock/rules` | GET | ✓ | ✓ | 列出 mock 规则 |
 | `/mock/rules/{id}` | DELETE | ✓ | ✓ | 删除 mock 规则 |
 | `/mock/rules` | DELETE | ✓ | ✓ | 清空 mock 规则 |
+| `/custom/routes` | GET | ✓ | ✓ | 列出 app 层注册的自定义路由 |
+| `/custom/{path}` | GET/POST | ✓ | ✓ | 调用 app 层自定义路由 |
 
 ---
 
@@ -402,6 +404,48 @@ data.rules: MockRule[]
 meta: ResponseMeta
 cleared_count: int32    // 被清空的规则数量
 ```
+
+---
+
+### GET /custom/routes
+
+列出 app 层在 SDK 初始化时注册的所有自定义路由。
+
+**响应：** JSON 数组（`Content-Type: application/json`）
+```json
+[
+  {
+    "path": "/custom/user/profile",
+    "method": "GET",
+    "description": "获取当前登录用户信息",
+    "params": {}
+  }
+]
+```
+
+---
+
+### GET|POST /custom/{path}
+
+调用 app 层注册的自定义路由。`{path}` 对应注册时的 `path` 字段。
+
+- GET：无请求体
+- POST：请求体为任意字符串（通常为 JSON），`Content-Type` 不限
+
+**响应：** JSON 字符串（`Content-Type: text/plain`）
+
+成功：
+```json
+{"code": 0, "message": "ok", "data": "..."}
+```
+失败（handler 返回错误、超时、或抛出异常）：
+```json
+{"code": -1, "message": "错误描述", "data": null}
+```
+
+> - handler 超时：SDK 默认 4500ms，超时后返回 `{"code":-1,"message":"handler timeout","data":null}`
+> - handler 抛出异常：SDK 捕获并返回 `{"code":-1,"message":"handler error: ...","data":null}`
+> - 路由不存在：HTTP 404
 
 ---
 

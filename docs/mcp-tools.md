@@ -27,6 +27,8 @@
 | | `mock_list` | 列出所有 mock 规则 |
 | | `mock_delete` | 按 id 删除 mock 规则 |
 | | `mock_clear` | 清空所有 mock 规则 |
+| 自定义路由 | `list_custom_routes` | 列出 app 层注册的所有自定义路由 |
+| | `custom_call` | 调用 app 层注册的自定义路由 |
 
 ---
 
@@ -411,3 +413,56 @@
 ```json
 {"cleared_count": 3}
 ```
+
+---
+
+## 自定义路由
+
+### list_custom_routes
+
+列出 app 层在 SDK 初始化时注册的所有自定义路由，包含路径、HTTP 方法、描述和参数说明。Android/iOS 通用。
+
+**参数：** 无
+
+**返回：** JSON 数组
+```json
+[
+  {
+    "path": "/custom/user/profile",
+    "method": "GET",
+    "description": "获取当前登录用户信息",
+    "params": {}
+  },
+  {
+    "path": "/custom/user/settings",
+    "method": "POST",
+    "description": "更新用户设置",
+    "params": {"settings": "JSON 格式的设置项"}
+  }
+]
+```
+
+---
+
+### custom_call
+
+调用 app 层注册的自定义路由。Android/iOS 通用。
+
+**参数：**
+
+| 名称 | 类型 | 必填 | 说明 |
+|------|------|------|------|
+| path | string | 是 | 路由路径，不含 `/custom/` 前缀，如 `"user/profile"` |
+| method | "GET" \| "POST" | 是 | HTTP 方法 |
+| body | string | 否 | 请求体（POST 时使用，通常为 JSON） |
+
+**返回：** 标准 JSON 响应
+```json
+{"code": 0, "message": "ok", "data": "..."}
+```
+或错误时：
+```json
+{"code": -1, "message": "错误描述", "data": null}
+```
+
+> `data` 字段始终为字符串类型（含 null）。handler 超时或抛出异常时，SDK 自动捕获并返回 error 响应，不透传给 MCP。
