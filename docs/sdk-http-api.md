@@ -5,8 +5,7 @@ SDK 在设备上启动 HTTP Server，MCP Server 通过 `http://localhost:8080` �
 ## 通用说明
 
 - **端口：** 8080
-- **数据格式：** Protocol Buffers（`Content-Type: application/x-protobuf`）
-  - 例外：`/inspector/*` 和 `/dom/*` 接口使用 JSON
+- **数据格式：** Protocol Buffers（`Content-Type: application/x-protobuf`），所有接口统一使用
 - **通用响应字段（ResponseMeta）：**
 
 | 字段 | 类型 | 说明 |
@@ -167,16 +166,10 @@ message: string    // "ok" 或错误描述
 
 列出设备上已保存的 HTML 文件。
 
-**响应：** `FileListResponse`（JSON）
-```json
-{
-  "meta": { "code": 0 },
-  "data": {
-    "files": [
-      {"tag": "login", "timestamp": "0520-1430", "filePath": "...", "isCurrent": true}
-    ]
-  }
-}
+**响应：** `FileListResponse`
+```
+meta: ResponseMeta
+data.files: FileItem[]    // tag, timestamp, filePath, isCurrent
 ```
 
 ---
@@ -245,7 +238,7 @@ opacity: float     // 透明度绝对值 0.0~1.0
 
 推送图片到覆层并显示。
 
-**请求体：** `PushImageRequest`（protobuf）
+**请求体：** `PushImageRequest`
 ```
 tag: string
 timestamp: string    // 格式 MMdd-HHmm
@@ -253,12 +246,13 @@ image: bytes         // 图片二进制
 ext: string          // "png" 或 "jpg"
 ```
 
-**响应：** `PushImageResponse`（JSON）
-```json
-{
-  "meta": { "code": 0 },
-  "data": {"tag": "login", "timestamp": "0520-1430", "filePath": "...", "fileSize": 102400}
-}
+**响应：** `PushImageResponse`
+```
+meta: ResponseMeta
+data.tag: string
+data.timestamp: string
+data.file_path: string
+data.file_size: int64
 ```
 
 ---
@@ -267,18 +261,20 @@ ext: string          // "png" 或 "jpg"
 
 切换显示已保存的图片。
 
-**请求体：** `ShowImageRequest`（protobuf）
+**请求体：** `ShowImageRequest`
 ```
 tag: string
 timestamp: string
 ```
 
-**响应：** `ShowImageResponse`（JSON）
-```json
-{
-  "meta": { "code": 0 },
-  "data": {"tag": "login", "timestamp": "0520-1430", "opacity": 0.5, "offsetX": 0, "offsetY": 0}
-}
+**响应：** `ShowImageResponse`
+```
+meta: ResponseMeta
+data.tag: string
+data.timestamp: string
+data.opacity: float
+data.offset_x: float
+data.offset_y: float
 ```
 
 ---
@@ -287,16 +283,10 @@ timestamp: string
 
 列出已保存的图片。
 
-**响应：** `ImageListResponse`（JSON）
-```json
-{
-  "meta": { "code": 0 },
-  "data": {
-    "images": [
-      {"tag": "login", "timestamp": "0520-1430", "ext": "png", "size": 102400, "isCurrent": true}
-    ]
-  }
-}
+**响应：** `ImageListResponse`
+```
+meta: ResponseMeta
+data.images: ImageItem[]    // tag, timestamp, ext, size, isCurrent
 ```
 
 ---
@@ -305,12 +295,10 @@ timestamp: string
 
 隐藏图片或 WebView 覆层。
 
-**请求体：** `HideRequest`（JSON）
-```json
-{"type": "image"}
+**请求体：** `HideRequest`
 ```
-
-> `type`: `"image"` | `"webview"` | `""`（空 = 按当前 activeTab 判断）
+type: string    // "image" | "webview" | ""（空 = 按当前 activeTab 判断）
+```
 
 **响应：** `SimpleResponse`
 
@@ -320,24 +308,20 @@ timestamp: string
 
 调整图片或 WebView 覆层的位置和透明度。
 
-**请求体：** `InspectorAdjustRequest`（JSON）
-```json
-{
-  "type": "image",
-  "offset_x": 0,
-  "offset_y": 0,
-  "opacity": 0.8
-}
+**请求体：** `InspectorAdjustRequest`
+```
+type: string      // "image" | "webview" | ""（空 = 按当前 activeTab 判断）
+offset_x: float   // X 轴偏移增量（dp）
+offset_y: float   // Y 轴偏移增量（dp）
+opacity: float    // 透明度绝对值 0.0~1.0
 ```
 
-> `type`: `"image"` | `"webview"`
-
-**响应：** `InspectorAdjustResponse`（JSON）
-```json
-{
-  "meta": { "code": 0 },
-  "data": {"offsetX": 0, "offsetY": 0, "opacity": 0.8}
-}
+**响应：** `InspectorAdjustResponse`
+```
+meta: ResponseMeta
+data.offset_x: float
+data.offset_y: float
+data.opacity: float
 ```
 
 ---
@@ -346,16 +330,10 @@ timestamp: string
 
 获取 WebView 中所有 DOM 节点，坐标为屏幕绝对坐标（含 WebView 偏移换算）。
 
-**响应：** `DomAllResponse`（JSON）
-```json
-{
-  "meta": { "code": 0 },
-  "data": {
-    "nodes": [
-      {"id": "title", "tag": "h1", "text": "登录", "x": 20.0, "y": 100.0, "width": 335.0, "height": 40.0}
-    ]
-  }
-}
+**响应：** `DomAllResponse`
+```
+meta: ResponseMeta
+data.nodes: DomNode[]    // 见「数据模型 → DomNode」
 ```
 
 ---
@@ -364,12 +342,10 @@ timestamp: string
 
 按 id 查询单个 DOM 节点。`id` 需 URL encode。
 
-**响应：** `DomNodeResponse`（JSON）
-```json
-{
-  "meta": { "code": 0 },
-  "data": {"id": "title", "tag": "h1", "text": "登录", "x": 20.0, "y": 100.0, "width": 335.0, "height": 40.0}
-}
+**响应：** `DomNodeResponse`
+```
+meta: ResponseMeta
+data: DomNode
 ```
 
 ---
