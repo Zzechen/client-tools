@@ -8,7 +8,9 @@ import fi.iki.elonen.NanoHTTPD
 
 class HttpServer(
     private val context: Context,
-    private val pageChangeListener: PageChangeListener
+    private val pageChangeListener: PageChangeListener,
+    private val customRoutes: List<CustomRoute> = emptyList(),
+    private val customHandlerTimeoutMs: Long = 4500L
 ) : NanoHTTPD(8080) {
 
     init {
@@ -104,6 +106,22 @@ class HttpServer(
 
                 method == Method.DELETE && uri == "/mock/rules" ->
                     ApiHandler.handleMockClear()
+
+                method == Method.GET && uri == "/custom/routes" ->
+                    ApiHandler.handleCustomRoutes(customRoutes)
+
+                uri.startsWith("/custom/") -> {
+                    val path = uri.removePrefix("/custom/")
+                    val route = customRoutes.find {
+                        it.path == path && it.method.value == method.name
+                    }
+                    if (route != null)
+                        kotlinx.coroutines.runBlocking {
+                            ApiHandler.handleCustomCall(route, readBody(session), customHandlerTimeoutMs)
+                        }
+                    else
+                        newFixedLengthResponse(Response.Status.NOT_FOUND, MIME_PLAINTEXT, "Not found")
+                }
 
                 else -> newFixedLengthResponse(Response.Status.NOT_FOUND, MIME_PLAINTEXT, "Not found")
             }

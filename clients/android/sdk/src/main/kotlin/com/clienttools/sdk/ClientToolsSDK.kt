@@ -26,14 +26,18 @@ object ClientToolsSDK {
 
     fun getTop(): InspectorPage? = pageStack.lastOrNull()
 
-    fun init(context: Context) {
+    fun init(
+        context: Context,
+        customRoutes: List<com.clienttools.sdk.http.CustomRoute> = emptyList(),
+        customHandlerTimeoutMs: Long = 4500L
+    ) {
         if (isInitialized) return
         try {
             fileStore = InspectorFileStore(context)
             imageFileStore = ImageFileStore(context)
             pageChangeListener = PageChangeListener()
             pageChangeListener!!.register(context)
-            httpServer = HttpServer(context, pageChangeListener!!)
+            httpServer = HttpServer(context, pageChangeListener!!, customRoutes, customHandlerTimeoutMs)
             httpServer!!.startServer()
             registerInspectorLifecycle(context)
             isInitialized = true
