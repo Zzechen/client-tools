@@ -17,6 +17,36 @@ App (Android / iOS)
 
 App 内嵌 SDK，SDK 暴露 HTTP 接口；MCP Server 将接口封装为 MCP 工具，供 AI 直接调用。
 
+## 安装
+
+**Android SDK**（via JitPack）
+
+```gradle
+// settings.gradle
+repositories { maven { url 'https://jitpack.io' } }
+
+// build.gradle
+implementation 'com.github.Zzechen:client-tools:v1.0.1'
+```
+
+**iOS SDK**（via CocoaPods）
+
+```ruby
+pod 'ClientToolsSDK', :git => 'https://github.com/Zzechen/client-tools.git', :tag => 'ios/1.0.0'
+```
+
+**MCP Server**（via npm）
+
+```bash
+npx client-tools-mcp
+```
+
+**Claude Code Skill**（via npm）
+
+```bash
+claude plugins install client-tools-plugin
+```
+
 ## 快速开始
 
 ### 我是 App 开发者
