@@ -15,6 +15,8 @@ import com.clienttools.sdk.listener.PageChangeListener
 import com.clienttools.sdk.mock.MockRuleEntry
 import com.clienttools.sdk.mock.MockRuleStore
 import com.clienttools.sdk.proto.*
+import com.clienttools.sdk.webview.WebViewRedirectEntry
+import com.clienttools.sdk.webview.WebViewRedirectStore
 import java.util.UUID
 import com.clienttools.sdk.runtime.ViewModifier
 import com.clienttools.sdk.runtime.ViewQueryService
@@ -476,6 +478,73 @@ object ApiHandler {
             okResponse(resp.toByteArray())
         } catch (e: Exception) {
             Log.e("ApiHandler", "handleMockClear", e)
+            errResponse(NanoHTTPD.Response.Status.INTERNAL_ERROR, e.message ?: "error")
+        }
+    }
+
+    private fun WebViewRedirectEntry.toProto(): WebViewRedirectRule = WebViewRedirectRule.newBuilder()
+        .setId(id)
+        .setUrlPattern(urlPattern)
+        .setTargetUrl(targetUrl)
+        .build()
+
+    fun handleWebViewRedirectAdd(body: ByteArray): NanoHTTPD.Response {
+        return try {
+            val req = AddWebViewRedirectRequest.parseFrom(body)
+            val entry = WebViewRedirectEntry(
+                id = UUID.randomUUID().toString(),
+                urlPattern = req.urlPattern,
+                targetUrl = req.targetUrl
+            )
+            WebViewRedirectStore.add(entry)
+            val resp = WebViewRedirectResponse.newBuilder()
+                .setMeta(ProtoHelper.okMeta(ctx()))
+                .setData(entry.toProto())
+                .build()
+            okResponse(resp.toByteArray())
+        } catch (e: Exception) {
+            Log.e("ApiHandler", "handleWebViewRedirectAdd", e)
+            errResponse(NanoHTTPD.Response.Status.INTERNAL_ERROR, e.message ?: "error")
+        }
+    }
+
+    fun handleWebViewRedirectList(): NanoHTTPD.Response {
+        return try {
+            val protoRules = WebViewRedirectStore.list().map { it.toProto() }
+            val resp = WebViewRedirectListResponse.newBuilder()
+                .setMeta(ProtoHelper.okMeta(ctx()))
+                .setData(WebViewRedirectRuleList.newBuilder().addAllRules(protoRules).build())
+                .build()
+            okResponse(resp.toByteArray())
+        } catch (e: Exception) {
+            Log.e("ApiHandler", "handleWebViewRedirectList", e)
+            errResponse(NanoHTTPD.Response.Status.INTERNAL_ERROR, e.message ?: "error")
+        }
+    }
+
+    fun handleWebViewRedirectDelete(id: String): NanoHTTPD.Response {
+        return try {
+            WebViewRedirectStore.delete(id)
+            val resp = SimpleResponse.newBuilder()
+                .setMeta(ProtoHelper.okMeta(ctx()))
+                .build()
+            okResponse(resp.toByteArray())
+        } catch (e: Exception) {
+            Log.e("ApiHandler", "handleWebViewRedirectDelete", e)
+            errResponse(NanoHTTPD.Response.Status.INTERNAL_ERROR, e.message ?: "error")
+        }
+    }
+
+    fun handleWebViewRedirectClear(): NanoHTTPD.Response {
+        return try {
+            val count = WebViewRedirectStore.clear()
+            val resp = ClearWebViewRedirectsResponse.newBuilder()
+                .setMeta(ProtoHelper.okMeta(ctx()))
+                .setClearedCount(count)
+                .build()
+            okResponse(resp.toByteArray())
+        } catch (e: Exception) {
+            Log.e("ApiHandler", "handleWebViewRedirectClear", e)
             errResponse(NanoHTTPD.Response.Status.INTERNAL_ERROR, e.message ?: "error")
         }
     }

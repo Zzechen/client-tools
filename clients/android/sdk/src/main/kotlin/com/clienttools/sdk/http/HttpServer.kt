@@ -107,6 +107,20 @@ class HttpServer(
                 method == Method.DELETE && uri == "/mock/rules" ->
                     ApiHandler.handleMockClear()
 
+                method == Method.POST && uri == "/webview/redirects" ->
+                    ApiHandler.handleWebViewRedirectAdd(readBodyBytes(session))
+
+                method == Method.GET && uri == "/webview/redirects" ->
+                    ApiHandler.handleWebViewRedirectList()
+
+                method == Method.DELETE && uri.startsWith("/webview/redirects/") -> {
+                    val id = uri.removePrefix("/webview/redirects/")
+                    ApiHandler.handleWebViewRedirectDelete(id)
+                }
+
+                method == Method.DELETE && uri == "/webview/redirects" ->
+                    ApiHandler.handleWebViewRedirectClear()
+
                 method == Method.GET && uri == "/custom/routes" ->
                     ApiHandler.handleCustomRoutes(customRoutes)
 

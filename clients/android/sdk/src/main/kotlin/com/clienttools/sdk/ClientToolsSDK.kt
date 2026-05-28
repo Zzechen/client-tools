@@ -10,6 +10,7 @@ import com.clienttools.sdk.inspector.ImageFileStore
 import com.clienttools.sdk.inspector.InspectorFileStore
 import com.clienttools.sdk.inspector.InspectorPage
 import com.clienttools.sdk.listener.PageChangeListener
+import com.clienttools.sdk.webview.WebViewRedirectStore
 import java.util.WeakHashMap
 
 object ClientToolsSDK {
@@ -83,6 +84,8 @@ object ClientToolsSDK {
     fun addPageChangeListener(callback: (pageName: String, timestamp: Long) -> Unit) {
         pageChangeListener?.addListener(callback)
     }
+
+    fun resolveRedirect(url: String): String = WebViewRedirectStore.resolveRedirect(url)
 
     fun shutdown() {
         httpServer?.stopServer()
