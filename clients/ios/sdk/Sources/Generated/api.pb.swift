@@ -461,6 +461,91 @@ nonisolated struct Clienttools_ClearMockRulesResponse: Sendable {
   fileprivate var _meta: Clienttools_ResponseMeta? = nil
 }
 
+nonisolated struct Clienttools_WebViewRedirectResponse: Sendable {
+  // SwiftProtobuf.Message conformance is added in an extension below. See the
+  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+  // methods supported on all messages.
+
+  var meta: Clienttools_ResponseMeta {
+    get {_meta ?? Clienttools_ResponseMeta()}
+    set {_meta = newValue}
+  }
+  /// Returns true if `meta` has been explicitly set.
+  var hasMeta: Bool {self._meta != nil}
+  /// Clears the value of `meta`. Subsequent reads from it will return its default value.
+  mutating func clearMeta() {self._meta = nil}
+
+  var data: Clienttools_WebViewRedirectRule {
+    get {_data ?? Clienttools_WebViewRedirectRule()}
+    set {_data = newValue}
+  }
+  /// Returns true if `data` has been explicitly set.
+  var hasData: Bool {self._data != nil}
+  /// Clears the value of `data`. Subsequent reads from it will return its default value.
+  mutating func clearData() {self._data = nil}
+
+  var unknownFields = SwiftProtobuf.UnknownStorage()
+
+  init() {}
+
+  fileprivate var _meta: Clienttools_ResponseMeta? = nil
+  fileprivate var _data: Clienttools_WebViewRedirectRule? = nil
+}
+
+nonisolated struct Clienttools_WebViewRedirectListResponse: Sendable {
+  // SwiftProtobuf.Message conformance is added in an extension below. See the
+  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+  // methods supported on all messages.
+
+  var meta: Clienttools_ResponseMeta {
+    get {_meta ?? Clienttools_ResponseMeta()}
+    set {_meta = newValue}
+  }
+  /// Returns true if `meta` has been explicitly set.
+  var hasMeta: Bool {self._meta != nil}
+  /// Clears the value of `meta`. Subsequent reads from it will return its default value.
+  mutating func clearMeta() {self._meta = nil}
+
+  var data: Clienttools_WebViewRedirectRuleList {
+    get {_data ?? Clienttools_WebViewRedirectRuleList()}
+    set {_data = newValue}
+  }
+  /// Returns true if `data` has been explicitly set.
+  var hasData: Bool {self._data != nil}
+  /// Clears the value of `data`. Subsequent reads from it will return its default value.
+  mutating func clearData() {self._data = nil}
+
+  var unknownFields = SwiftProtobuf.UnknownStorage()
+
+  init() {}
+
+  fileprivate var _meta: Clienttools_ResponseMeta? = nil
+  fileprivate var _data: Clienttools_WebViewRedirectRuleList? = nil
+}
+
+nonisolated struct Clienttools_ClearWebViewRedirectsResponse: Sendable {
+  // SwiftProtobuf.Message conformance is added in an extension below. See the
+  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+  // methods supported on all messages.
+
+  var meta: Clienttools_ResponseMeta {
+    get {_meta ?? Clienttools_ResponseMeta()}
+    set {_meta = newValue}
+  }
+  /// Returns true if `meta` has been explicitly set.
+  var hasMeta: Bool {self._meta != nil}
+  /// Clears the value of `meta`. Subsequent reads from it will return its default value.
+  mutating func clearMeta() {self._meta = nil}
+
+  var clearedCount: Int32 = 0
+
+  var unknownFields = SwiftProtobuf.UnknownStorage()
+
+  init() {}
+
+  fileprivate var _meta: Clienttools_ResponseMeta? = nil
+}
+
 // MARK: - Code below here is support for the SwiftProtobuf runtime.
 
 fileprivate nonisolated let _protobuf_package = "clienttools"
@@ -1182,6 +1267,123 @@ nonisolated extension Clienttools_ClearMockRulesResponse: SwiftProtobuf.Message,
   }
 
   static func ==(lhs: Clienttools_ClearMockRulesResponse, rhs: Clienttools_ClearMockRulesResponse) -> Bool {
+    if lhs._meta != rhs._meta {return false}
+    if lhs.clearedCount != rhs.clearedCount {return false}
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+nonisolated extension Clienttools_WebViewRedirectResponse: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  static let protoMessageName: String = _protobuf_package + ".WebViewRedirectResponse"
+  static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}meta\0\u{1}data\0")
+
+  mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 1: try { try decoder.decodeSingularMessageField(value: &self._meta) }()
+      case 2: try { try decoder.decodeSingularMessageField(value: &self._data) }()
+      default: break
+      }
+    }
+  }
+
+  func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    // The use of inline closures is to circumvent an issue where the compiler
+    // allocates stack space for every if/case branch local when no optimizations
+    // are enabled. https://github.com/apple/swift-protobuf/issues/1034 and
+    // https://github.com/apple/swift-protobuf/issues/1182
+    try { if let v = self._meta {
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 1)
+    } }()
+    try { if let v = self._data {
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 2)
+    } }()
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  static func ==(lhs: Clienttools_WebViewRedirectResponse, rhs: Clienttools_WebViewRedirectResponse) -> Bool {
+    if lhs._meta != rhs._meta {return false}
+    if lhs._data != rhs._data {return false}
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+nonisolated extension Clienttools_WebViewRedirectListResponse: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  static let protoMessageName: String = _protobuf_package + ".WebViewRedirectListResponse"
+  static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}meta\0\u{1}data\0")
+
+  mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 1: try { try decoder.decodeSingularMessageField(value: &self._meta) }()
+      case 2: try { try decoder.decodeSingularMessageField(value: &self._data) }()
+      default: break
+      }
+    }
+  }
+
+  func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    // The use of inline closures is to circumvent an issue where the compiler
+    // allocates stack space for every if/case branch local when no optimizations
+    // are enabled. https://github.com/apple/swift-protobuf/issues/1034 and
+    // https://github.com/apple/swift-protobuf/issues/1182
+    try { if let v = self._meta {
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 1)
+    } }()
+    try { if let v = self._data {
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 2)
+    } }()
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  static func ==(lhs: Clienttools_WebViewRedirectListResponse, rhs: Clienttools_WebViewRedirectListResponse) -> Bool {
+    if lhs._meta != rhs._meta {return false}
+    if lhs._data != rhs._data {return false}
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+nonisolated extension Clienttools_ClearWebViewRedirectsResponse: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  static let protoMessageName: String = _protobuf_package + ".ClearWebViewRedirectsResponse"
+  static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}meta\0\u{3}cleared_count\0")
+
+  mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 1: try { try decoder.decodeSingularMessageField(value: &self._meta) }()
+      case 2: try { try decoder.decodeSingularInt32Field(value: &self.clearedCount) }()
+      default: break
+      }
+    }
+  }
+
+  func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    // The use of inline closures is to circumvent an issue where the compiler
+    // allocates stack space for every if/case branch local when no optimizations
+    // are enabled. https://github.com/apple/swift-protobuf/issues/1034 and
+    // https://github.com/apple/swift-protobuf/issues/1182
+    try { if let v = self._meta {
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 1)
+    } }()
+    if self.clearedCount != 0 {
+      try visitor.visitSingularInt32Field(value: self.clearedCount, fieldNumber: 2)
+    }
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  static func ==(lhs: Clienttools_ClearWebViewRedirectsResponse, rhs: Clienttools_ClearWebViewRedirectsResponse) -> Bool {
     if lhs._meta != rhs._meta {return false}
     if lhs.clearedCount != rhs.clearedCount {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
