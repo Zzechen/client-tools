@@ -32,7 +32,7 @@ implementation 'com.github.Zzechen:client-tools:v1.0.1'
 **iOS SDK**（via CocoaPods）
 
 ```ruby
-pod 'ClientToolsSDK', :git => 'https://github.com/Zzechen/client-tools.git', :tag => 'ios/1.0.0'
+pod 'ClientToolsSDK', '~> 1.0.0'
 ```
 
 **MCP Server**（via npm）
