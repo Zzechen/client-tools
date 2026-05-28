@@ -1,0 +1,19 @@
+{
+  "name": "client-tools-plugin",
+  "version": "0.1.0",
+  "description": "Claude Code skills for Client Tools — AI-assisted visual inspection and correction of Android/iOS app UI",
+  "keywords": [
+    "claude-code",
+    "claude-plugin",
+    "mcp",
+    "android",
+    "ios",
+    "inspector"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Zzechen/client-tools.git"
+  },
+  "homepage": "https://github.com/Zzechen/client-tools",
+  "license": "MIT"
+}
