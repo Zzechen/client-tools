@@ -55,3 +55,7 @@ docs/              — 文档
 skill/             — client-tools-inspect 技能
 tests/             — 运行时 E2E 测试脚本
 ```
+
+## License
+
+[MIT](LICENSE)
