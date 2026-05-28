@@ -247,3 +247,55 @@ node server.js 8888    # 自定义端口
 ```
 
 启动后输出局域网访问地址，供设备填入重定向规则的 `targetUrl`。
+
+---
+
+## 测试计划
+
+### 1. 单元测试：`resolveRedirect()` 逻辑
+
+在 Android SDK 单元测试和 iOS SDK 单元测试中各自覆盖：
+
+| 用例 | 预期结果 |
+|------|---------|
+| 无规则时调用 | 返回原始 URL 不变 |
+| 精确 URL 命中规则 | 返回 targetUrl |
+| 正则前缀匹配命中 | 返回 targetUrl |
+| 多条规则，第一条命中 | 返回第一条规则的 targetUrl |
+| 原始 URL 带 query，targetUrl 无 query | query 参数追加到 targetUrl |
+| 原始 URL 带 query，targetUrl 也有 query | 合并，原始 query 同名参数优先 |
+| 规则 urlPattern 不匹配 | 返回原始 URL 不变 |
+| 清空规则后调用 | 返回原始 URL 不变 |
+
+### 2. HTTP 接口测试（运行时 E2E）
+
+在 `tests/runtime/src/suites/` 新增 `webview-redirect.ts`，参照 `mock.ts` 的结构：
+
+| 用例 | 验证点 |
+|------|--------|
+| `POST /webview/redirects` | 返回含 id 的规则对象 |
+| `GET /webview/redirects` | 列表包含刚添加的规则 |
+| `DELETE /webview/redirects/{id}` | 删除后列表中不再出现 |
+| `DELETE /webview/redirects` | 清空后列表为空，clearedCount 正确 |
+
+### 3. Demo 集成验证（人工 + AI 辅助）
+
+使用 Demo App + 本地静态文件服务器做完整端到端验证：
+
+| 步骤 | 操作 | 验证点 |
+|------|------|--------|
+| 1 | 启动 `tests/local-server`，记录局域网地址 | 浏览器可访问 index.html |
+| 2 | 打开 Demo WebView 测试页 | 两个 WebView 正常加载原始 URL，状态栏显示原始地址 |
+| 3 | AI 调用 `webview_redirect_add`，将远程 URL 规则指向本地服务器 | 规则添加成功，返回 id |
+| 4 | 点击「重新加载」 | 远程 URL WebView 已显示本地服务器内容 |
+| 5 | 验证 query 参数透传 | 原始 URL 的 query 参数出现在本地页面中 |
+| 6 | AI 调用 `webview_redirect_add`，将本地 HTML 文件 URL 指向本地服务器 | 本地文件 WebView 也成功替换 |
+| 7 | AI 调用 `webview_redirect_clear` | 两个 WebView 重新加载后恢复原始内容 |
+
+### 4. Noop 验证
+
+| 用例 | 验证点 |
+|------|--------|
+| Android release 包编译 | 引入 noop artifact 后编译无报错 |
+| `resolveRedirect()` 在 noop 中调用 | 返回原始 URL，无任何副作用 |
+| iOS Release 配置编译 | 引入 noop pod 后编译无报错 |
