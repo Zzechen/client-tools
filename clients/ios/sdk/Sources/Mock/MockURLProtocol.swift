@@ -34,6 +34,20 @@ class MockURLProtocol: URLProtocol {
         }
 
         let deliver = {
+            if !rule.error.isEmpty {
+                let error: URLError
+                switch rule.error {
+                case "timeout":
+                    error = URLError(.timedOut)
+                case "connection_refused":
+                    error = URLError(.cannotConnectToHost)
+                default:
+                    error = URLError(.networkConnectionLost)
+                }
+                self.client?.urlProtocol(self, didFailWithError: error)
+                return
+            }
+
             self.client?.urlProtocol(self, didReceive: response, cacheStoragePolicy: .notAllowed)
             self.client?.urlProtocol(self, didLoad: bodyData)
             self.client?.urlProtocolDidFinishLoading(self)
