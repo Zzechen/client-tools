@@ -4,6 +4,7 @@ import { runCaptureSuite } from "./suites/capture.js";
 import { runInteractSuite } from "./suites/interact.js";
 import { runModifyViewSuite } from "./suites/modify-view.js";
 import { runMockSuite } from "./suites/mock.js";
+import { runWebViewRedirectSuite } from "./suites/webview-redirect.js";
 import { getResults } from "./helpers.js";
 
 const PLATFORM = process.env.PLATFORM ?? "android";
@@ -21,6 +22,7 @@ try {
   await runInteractSuite();
   await runModifyViewSuite();
   await runMockSuite();
+  await runWebViewRedirectSuite();
 } catch (e) {
   console.error("\n💥  Fatal error (uncaught):", e);
   process.exit(1);
