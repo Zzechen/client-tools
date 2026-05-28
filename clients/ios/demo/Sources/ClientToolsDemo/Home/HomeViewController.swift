@@ -16,6 +16,9 @@ class HomeViewController: UIViewController {
         ("Login Demo", "三种登录方式：验证码/密码/邮箱", "📱", { [weak self] in
             self?.navigationController?.pushViewController(LoginViewController(), animated: true)
         }),
+        ("WebView 重定向测试", "验证 URL 重定向规则", "↩️", { [weak self] in
+            self?.navigationController?.pushViewController(WebViewRedirectViewController(), animated: true)
+        }),
         ("VerifyCode Demo", "验证码输入页", "🔐", { [weak self] in
             self?.navigationController?.pushViewController(VerifyCodeViewController(), animated: true)
         }),
