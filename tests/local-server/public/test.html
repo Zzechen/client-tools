@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head><meta charset="UTF-8"><title>测试页</title>
+<style>
+body{font-family:sans-serif;padding:40px;background:#1a1a2e;color:#eee;}
+h1{color:#00d4aa;}pre{background:#111;padding:16px;border-radius:8px;color:#0f0;white-space:pre-wrap;}
+</style></head>
+<body>
+  <h1>本地测试页</h1>
+  <p>Query 参数：</p>
+  <pre id="qp">{{QUERY}}</pre>
+  <script>
+    document.getElementById('qp').textContent = window.location.search || '(无)';
+  </script>
+</body>
+</html>

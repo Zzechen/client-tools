@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head><meta charset="UTF-8"><title>本地服务器</title>
+<style>
+body{font-family:sans-serif;padding:40px;background:#1a1a2e;color:#eee;}
+h1{color:#00d4aa;}p{color:#aaa;}strong{color:#fff;}
+</style></head>
+<body>
+  <h1>本地服务器 - 已替换</h1>
+  <p>WebView 重定向成功！</p>
+  <p>Query 参数：<strong>{{QUERY}}</strong></p>
+  <script>
+    // Also show live query params
+    const live = window.location.search.slice(1);
+    if (live) document.querySelector('strong').textContent = live;
+  </script>
+</body>
+</html>
