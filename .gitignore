@@ -51,6 +51,7 @@ mcp/src/generated/
 
 # Node / TypeScript
 node_modules/
+package-lock.json
 *.js.map
 *.d.ts.map
 dist/
