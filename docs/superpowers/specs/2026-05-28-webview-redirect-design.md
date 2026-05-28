@@ -219,5 +219,31 @@ Demo 主页新增入口「WebView 重定向测试」，跳转到测试页。
 | `clients/ios/noop/` | 新建目录，所有公开 API 空实现，podspec |
 | `clients/ios/demo/` | 新增 WebView 重定向测试页、`test_local.html` |
 | `mcp/src/tools/webview.ts` | 新增 4 个 redirect 工具 |
+| `tests/local-server/` | 新增静态文件服务器，用于验证重定向目标 |
 | `docs/mcp-tools.md` | 同步更新工具列表 |
 | `docs/sdk-http-api.md` | 同步更新接口文档 |
+
+---
+
+## 本地静态文件服务器
+
+路径：`tests/local-server/`
+
+用途：提供本地 Web 页面供 WebView 重定向测试时加载，运行在开发者电脑上，设备通过局域网 IP 访问。
+
+```
+tests/local-server/
+  server.js          — Node.js 静态文件服务器（无依赖或仅用 http 模块）
+  public/
+    index.html       — 默认首页，显示"本地服务器 - 已替换"
+    test.html        — 带 query 参数展示的测试页
+```
+
+启动方式：
+```bash
+cd tests/local-server
+node server.js         # 默认监听 0.0.0.0:3000
+node server.js 8888    # 自定义端口
+```
+
+启动后输出局域网访问地址，供设备填入重定向规则的 `targetUrl`。
