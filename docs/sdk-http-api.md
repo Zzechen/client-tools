@@ -48,6 +48,10 @@ SDK 在设备上启动 HTTP Server，MCP Server 通过 `http://localhost:8080` �
 | `/mock/rules` | DELETE | ✓ | ✓ | 清空 mock 规则 |
 | `/custom/routes` | GET | ✓ | ✓ | 列出 app 层注册的自定义路由 |
 | `/custom/{path}` | GET/POST | ✓ | ✓ | 调用 app 层自定义路由 |
+| `/webview/redirects` | POST | ✓ | ✓ | 添加 WebView 重定向规则 |
+| `/webview/redirects` | GET | ✓ | ✓ | 列出所有重定向规则 |
+| `/webview/redirects/{id}` | DELETE | ✓ | ✓ | 删除指定重定向规则 |
+| `/webview/redirects` | DELETE | ✓ | ✓ | 清空所有重定向规则 |
 
 ---
 
@@ -499,3 +503,67 @@ cleared_count: int32    // 被清空的规则数量
 | status | int32 | HTTP 状态码 |
 | headers | map | 响应 headers |
 | body | string | 响应体字符串 |
+
+---
+
+## WebView 重定向
+
+### POST `/webview/redirects`
+
+添加一条重定向规则。请求体：`AddWebViewRedirectRequest`（proto）。
+
+| 字段 | 类型 | 说明 |
+|------|------|------|
+| urlPattern | string | 正则表达式，匹配原始 URL（不含 query 部分） |
+| targetUrl | string | 命中后跳转的目标地址 |
+
+响应体：`WebViewRedirectResponse`，含 `data.id`（uuid）。
+
+### GET `/webview/redirects`
+
+列出所有规则。响应体：`WebViewRedirectListResponse`，含 `data.rules`。
+
+### DELETE `/webview/redirects/{id}`
+
+删除指定规则。响应体：`SimpleResponse`。
+
+### DELETE `/webview/redirects`
+
+清空所有规则。响应体：`ClearWebViewRedirectsResponse`，含 `clearedCount`。
+
+---
+
+### resolveRedirect() SDK 方法
+
+App 在加载 WebView 前调用此方法，根据规则返回最终 URL：
+- 无规则命中 → 返回原始 URL 不变
+- 命中 → 返回 targetUrl，并将原始 URL 的 query 参数追加到目标 URL（原始同名参数优先）
+- 匹配策略：**第一条命中生效**（按添加顺序）
+
+**Android:**
+```kotlin
+val finalUrl = ClientToolsSDK.resolveRedirect(originalUrl)
+webView.loadUrl(finalUrl)
+```
+
+**iOS:**
+```swift
+let finalUrl = ClientToolsSDK.shared.resolveRedirect(originalUrl)
+webView.load(URLRequest(url: URL(string: finalUrl)!))
+```
+
+### Release 包接入（noop）
+
+Release 包引入 noop 实现，`resolveRedirect()` 直接返回原始 URL，零运行时开销：
+
+**Android:**
+```gradle
+debugImplementation   'com.github.Zzechen:client-tools:v1.x.x'
+releaseImplementation 'com.github.Zzechen:client-tools-noop:v1.x.x'
+```
+
+**iOS:**
+```ruby
+pod 'ClientToolsSDK',      :configurations => ['Debug']
+pod 'ClientToolsSDK-Noop', :configurations => ['Release']
+```

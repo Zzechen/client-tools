@@ -24,6 +24,10 @@ SDK 嵌入 App 后暴露一套 HTTP 接口，MCP Server 将这些接口封装为
 - App 自行注册任意 HTTP 路由，暴露私有能力给 AI
 - 典型用途：页面跳转、获取当前用户信息、查询 App 状态、触发业务操作
 
+**WebView 重定向**
+- 将 App 内 WebView 加载的指定远程 URL 替换为本地开发地址
+- 支持正则匹配、query 参数透传，debug/release 包分离（noop 实现）
+
 **其他**
 - Mock：拦截和模拟网络请求
 - 图片管理：推送本地图片到设备展示
@@ -82,7 +86,7 @@ claude plugins install client-tools-plugin
 
 通过 MCP 工具控制移动端界面、做视觉核对。
 
-→ 查看 [MCP 工具列表](docs/mcp-tools.md)（23 个工具）
+→ 查看 [MCP 工具列表](docs/mcp-tools.md)（27 个工具）
 
 → 查看 [SDK HTTP API](docs/sdk-http-api.md)
 
