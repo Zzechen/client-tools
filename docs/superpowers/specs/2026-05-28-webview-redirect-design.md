@@ -179,6 +179,34 @@ pod 'ClientToolsSDK-Noop', :configurations => ['Release']
 
 ---
 
+## Demo 测试页
+
+Android (`clients/android/demo/`) 和 iOS (`clients/ios/demo/`) 各新增一个 **WebView 测试页**，用于完整验证重定向功能。
+
+### 页面入口
+Demo 主页新增入口「WebView 重定向测试」，跳转到测试页。
+
+### 测试页内容
+页面包含两个 WebView：
+
+| WebView | 加载的 URL | 说明 |
+|---------|-----------|------|
+| 远程 URL WebView | `https://example.com`（可配置） | 模拟生产远程页面 |
+| 本地文件 WebView | assets/`test_local.html` | 模拟已有本地 HTML 资源 |
+
+页面上方显示每个 WebView 当前实际加载的 URL（调用 `resolveRedirect()` 后的结果），方便验证规则是否生效。
+
+### 测试 HTML 文件
+`assets/test_local.html`（Android）/ `Resources/test_local.html`（iOS）：一个简单 HTML 页面，显示"本地测试页 - 原始"，作为被替换的原始内容。
+
+### 验证流程
+1. 打开测试页，两个 WebView 正常加载原始 URL
+2. AI 调用 `webview_redirect_add` 添加规则，将某 URL 指向本地地址
+3. 点击页面上的「重新加载」按钮，触发 `resolveRedirect()` 重新执行
+4. 验证对应 WebView 已加载目标地址，query 参数正确透传
+
+---
+
 ## 实现范围
 
 | 模块 | 变更 |
@@ -186,8 +214,10 @@ pod 'ClientToolsSDK-Noop', :configurations => ['Release']
 | `proto/` | 新增 `WebViewRedirectRule` 及相关消息 |
 | `clients/android/sdk/` | 新增 `WebViewRedirectStore`、`resolveRedirect()` 实现、HTTP 路由 |
 | `clients/android/noop/` | 新建模块，所有公开 API 空实现，JitPack 发布配置 |
+| `clients/android/demo/` | 新增 WebView 重定向测试页、`test_local.html` |
 | `clients/ios/sdk/` | 新增 `WebViewRedirectStore`、`resolveRedirect()` 实现、HTTP 路由 |
 | `clients/ios/noop/` | 新建目录，所有公开 API 空实现，podspec |
+| `clients/ios/demo/` | 新增 WebView 重定向测试页、`test_local.html` |
 | `mcp/src/tools/webview.ts` | 新增 4 个 redirect 工具 |
 | `docs/mcp-tools.md` | 同步更新工具列表 |
 | `docs/sdk-http-api.md` | 同步更新接口文档 |
