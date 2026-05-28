@@ -31,6 +31,26 @@ AI Coding 客户端页面开发增强套件，目标是让 AI 高质量完成「
 - 与用户交流使用中文
 - 结构化数据格式优先使用 JSON
 
+## 分支与 Worktree 工作流
+
+- **主分支（main）已保护**，禁止直接 push，所有变更必须通过 PR 合并
+- **新功能开发使用 worktree 模式**，保持主工作区干净：
+
+```bash
+# 开始新功能
+./scripts/worktree.sh new feat/xxx
+cd ../worktrees/feat/xxx
+
+# 开发完成后提 PR
+git push -u origin feat/xxx
+gh pr create
+
+# PR 合并后清理
+./scripts/worktree.sh rm feat/xxx
+```
+
+- Worktree 目录统一放在 `../worktrees/`（项目目录同级，不提交到仓库）
+
 ## 技术约定
 
 - **Android 布局**：统一使用 XML（不使用 Jetpack Compose）
