@@ -12,8 +12,4 @@ Pod::Spec.new do |s|
   s.source_files     = 'Sources/**/*.swift'
   s.frameworks      = 'UIKit', 'WebKit', 'Network'
   s.dependency 'SwiftProtobuf', '~> 1.28'
-
-  s.subspec 'Core' do |ss|
-    ss.source_files = 'Sources/**/*.swift'
-  end
 end
