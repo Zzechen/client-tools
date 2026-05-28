@@ -3,6 +3,7 @@ plugins {
     id("org.jetbrains.kotlin.android")
     id("org.jetbrains.kotlin.plugin.serialization")
     id("com.google.protobuf")
+    id("maven-publish")
 }
 
 kotlin {
@@ -32,6 +33,19 @@ protobuf {
             task.builtins {
                 create("java")
                 create("kotlin")
+            }
+        }
+    }
+}
+
+afterEvaluate {
+    publishing {
+        publications {
+            create<MavenPublication>("release") {
+                from(components["release"])
+                groupId = "com.github.Zzechen"
+                artifactId = "client-tools"
+                version = "1.0.0"
             }
         }
     }
