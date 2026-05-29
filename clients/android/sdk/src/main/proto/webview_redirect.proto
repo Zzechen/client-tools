@@ -1,0 +1,19 @@
+syntax = "proto3";
+package clienttools;
+option java_package = "com.clienttools.sdk.proto";
+option java_multiple_files = true;
+
+message WebViewRedirectRule {
+  string id          = 1;
+  string url_pattern = 2;
+  string target_url  = 3;
+}
+
+message AddWebViewRedirectRequest {
+  string url_pattern = 1;
+  string target_url  = 2;
+}
+
+message WebViewRedirectRuleList {
+  repeated WebViewRedirectRule rules = 1;
+}

@@ -29,6 +29,10 @@
 | | `mock_clear` | 清空所有 mock 规则 |
 | 自定义路由 | `list_custom_routes` | 列出 app 层注册的所有自定义路由 |
 | | `custom_call` | 调用 app 层注册的自定义路由 |
+| WebView 重定向 | `webview_redirect_add` | 添加 URL 重定向规则 |
+| | `webview_redirect_list` | 列出所有重定向规则 |
+| | `webview_redirect_delete` | 按 id 删除重定向规则 |
+| | `webview_redirect_clear` | 清空所有重定向规则 |
 
 ---
 
@@ -466,3 +470,68 @@
 ```
 
 > `data` 字段始终为字符串类型（含 null）。handler 超时或抛出异常时，SDK 自动捕获并返回 error 响应，不透传给 MCP。
+
+---
+
+## WebView 重定向
+
+用于在本地 Web 开发时，将 App 内 WebView 加载的指定远程 URL 替换为本地开发地址。App 在加载 WebView 前调用 `ClientToolsSDK.resolveRedirect(url)` 方法，该方法根据规则返回最终 URL。
+
+### webview_redirect_add
+
+添加一条重定向规则。命中后，原始 URL 的 query 参数会追加到 targetUrl（原始参数同名时优先）。Android/iOS 通用。
+
+**参数：**
+
+| 名称 | 类型 | 必填 | 说明 |
+|------|------|------|------|
+| urlPattern | string | 是 | 正则表达式，匹配原始 URL（不含 query 部分） |
+| targetUrl | string | 是 | 命中后重定向到的目标地址，如 `http://192.168.1.x:3000/page` |
+
+**返回：**
+```json
+{"id": "uuid", "urlPattern": "https://example\\.com/page", "targetUrl": "http://192.168.1.1:3000/page"}
+```
+
+---
+
+### webview_redirect_list
+
+列出所有当前生效的 WebView 重定向规则。Android/iOS 通用。
+
+**参数：** 无
+
+**返回：**
+```json
+[{"id": "uuid", "urlPattern": "...", "targetUrl": "..."}]
+```
+
+---
+
+### webview_redirect_delete
+
+按 id 删除一条重定向规则。Android/iOS 通用。
+
+**参数：**
+
+| 名称 | 类型 | 必填 | 说明 |
+|------|------|------|------|
+| id | string | 是 | 规则 id，由 `webview_redirect_add` 返回 |
+
+**返回：**
+```json
+{"success": true}
+```
+
+---
+
+### webview_redirect_clear
+
+清空所有重定向规则。Android/iOS 通用。
+
+**参数：** 无
+
+**返回：**
+```json
+{"cleared_count": 2}
+```

@@ -6,6 +6,7 @@ import "page.proto";
 import "node.proto";
 import "modify.proto";
 import "mock.proto";
+import "webview_redirect.proto";
 
 message ResponseMeta {
   int32 code = 1;
@@ -36,3 +37,7 @@ message CaptureResponse { ResponseMeta meta = 1; bytes image_png = 2; }
 message MockRuleResponse      { ResponseMeta meta = 1; MockRule data = 2; }
 message MockRuleListResponse  { ResponseMeta meta = 1; MockRuleList data = 2; }
 message ClearMockRulesResponse { ResponseMeta meta = 1; int32 cleared_count = 2; }
+
+message WebViewRedirectResponse      { ResponseMeta meta = 1; WebViewRedirectRule data = 2; }
+message WebViewRedirectListResponse  { ResponseMeta meta = 1; WebViewRedirectRuleList data = 2; }
+message ClearWebViewRedirectsResponse { ResponseMeta meta = 1; int32 cleared_count = 2; }

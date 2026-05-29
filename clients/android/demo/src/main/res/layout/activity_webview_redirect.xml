@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/webview_redirect_root"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="@color/bg_dark">
+
+    <LinearLayout
+        android:id="@+id/webview_redirect_nav_bar"
+        android:layout_width="match_parent"
+        android:layout_height="56dp"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:paddingStart="16dp"
+        android:paddingEnd="16dp">
+
+        <TextView
+            android:id="@+id/webview_redirect_btn_back"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="← Back"
+            android:textColor="@color/text_secondary"
+            android:textSize="14sp" />
+
+        <TextView
+            android:id="@+id/webview_redirect_title"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="WebView 重定向测试"
+            android:textColor="@color/text_primary"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            android:gravity="center" />
+
+        <TextView
+            android:id="@+id/webview_redirect_btn_reload"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="重新加载"
+            android:textColor="@color/primary_light"
+            android:textSize="14sp" />
+
+    </LinearLayout>
+
+    <TextView
+        android:id="@+id/webview_redirect_label_remote"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="远程 URL WebView"
+        android:textColor="@color/text_secondary"
+        android:textSize="12sp"
+        android:paddingStart="16dp"
+        android:paddingTop="8dp"
+        android:paddingBottom="4dp" />
+
+    <TextView
+        android:id="@+id/webview_redirect_url_remote"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textColor="@color/primary_light"
+        android:textSize="11sp"
+        android:paddingStart="16dp"
+        android:paddingBottom="4dp" />
+
+    <WebView
+        android:id="@+id/webview_redirect_remote"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1" />
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="@color/text_secondary"
+        android:alpha="0.2" />
+
+    <TextView
+        android:id="@+id/webview_redirect_label_local"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="本地文件 WebView"
+        android:textColor="@color/text_secondary"
+        android:textSize="12sp"
+        android:paddingStart="16dp"
+        android:paddingTop="8dp"
+        android:paddingBottom="4dp" />
+
+    <TextView
+        android:id="@+id/webview_redirect_url_local"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textColor="@color/primary_light"
+        android:textSize="11sp"
+        android:paddingStart="16dp"
+        android:paddingBottom="4dp" />
+
+    <WebView
+        android:id="@+id/webview_redirect_local"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1" />
+
+</LinearLayout>

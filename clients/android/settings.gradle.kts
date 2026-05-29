@@ -17,3 +17,4 @@ rootProject.name = "android"
 
 include(":sdk")
 include(":demo")
+include(":noop")

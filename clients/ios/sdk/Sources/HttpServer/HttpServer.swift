@@ -202,6 +202,12 @@ class HttpServer {
             handleMockList(connection: connection)
         case ("DELETE", "/mock/rules"):
             handleMockClear(connection: connection)
+        case ("POST", "/webview/redirects"):
+            handleWebViewRedirectAdd(bodyData, connection: connection)
+        case ("GET", "/webview/redirects"):
+            handleWebViewRedirectList(connection: connection)
+        case ("DELETE", "/webview/redirects"):
+            handleWebViewRedirectClear(connection: connection)
         default:
             if method == "GET" && path.hasPrefix("/api/capture/") {
                 let nodeId = String(path.dropFirst("/api/capture/".count))
@@ -215,6 +221,9 @@ class HttpServer {
             } else if method == "DELETE" && path.hasPrefix("/mock/rules/") {
                 let ruleId = String(path.dropFirst("/mock/rules/".count))
                 handleMockDelete(ruleId, connection: connection)
+            } else if method == "DELETE" && path.hasPrefix("/webview/redirects/") {
+                let ruleId = String(path.dropFirst("/webview/redirects/".count))
+                handleWebViewRedirectDelete(ruleId, connection: connection)
             } else if method == "GET" && path == "/custom/routes" {
                 handleCustomRoutes(connection: connection)
             } else if path.hasPrefix("/custom/") {
@@ -543,6 +552,55 @@ class HttpServer {
     private func handleMockClear(connection: NWConnection) {
         let count = MockRuleStore.shared.clear()
         var resp = Clienttools_ClearMockRulesResponse()
+        resp.meta = okMeta()
+        resp.clearedCount = Int32(count)
+        sendProto(resp, connection: connection)
+    }
+
+    private func makeRedirectProto(_ entry: WebViewRedirectEntry) -> Clienttools_WebViewRedirectRule {
+        var rule = Clienttools_WebViewRedirectRule()
+        rule.id = entry.id
+        rule.urlPattern = entry.urlPattern
+        rule.targetURL = entry.targetUrl
+        return rule
+    }
+
+    private func handleWebViewRedirectAdd(_ body: Data, connection: NWConnection) {
+        guard let req = try? Clienttools_AddWebViewRedirectRequest(serializedBytes: body) else {
+            sendError(code: 400, message: "Invalid request", connection: connection); return
+        }
+        let entry = WebViewRedirectEntry(
+            id: UUID().uuidString,
+            urlPattern: req.urlPattern,
+            targetUrl: req.targetURL
+        )
+        WebViewRedirectStore.shared.add(entry)
+        var resp = Clienttools_WebViewRedirectResponse()
+        resp.meta = okMeta()
+        resp.data = makeRedirectProto(entry)
+        sendProto(resp, connection: connection)
+    }
+
+    private func handleWebViewRedirectList(connection: NWConnection) {
+        let entries = WebViewRedirectStore.shared.list()
+        var ruleList = Clienttools_WebViewRedirectRuleList()
+        ruleList.rules = entries.map { makeRedirectProto($0) }
+        var resp = Clienttools_WebViewRedirectListResponse()
+        resp.meta = okMeta()
+        resp.data = ruleList
+        sendProto(resp, connection: connection)
+    }
+
+    private func handleWebViewRedirectDelete(_ id: String, connection: NWConnection) {
+        WebViewRedirectStore.shared.delete(id: id)
+        var resp = Clienttools_SimpleResponse()
+        resp.meta = okMeta()
+        sendProto(resp, connection: connection)
+    }
+
+    private func handleWebViewRedirectClear(connection: NWConnection) {
+        let count = WebViewRedirectStore.shared.clear()
+        var resp = Clienttools_ClearWebViewRedirectsResponse()
         resp.meta = okMeta()
         resp.clearedCount = Int32(count)
         sendProto(resp, connection: connection)

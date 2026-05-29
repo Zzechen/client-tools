@@ -24,6 +24,10 @@ SDK 嵌入 App 后暴露一套 HTTP 接口，MCP Server 将这些接口封装为
 - App 自行注册任意 HTTP 路由，暴露私有能力给 AI
 - 典型用途：页面跳转、获取当前用户信息、查询 App 状态、触发业务操作
 
+**WebView 重定向**
+- 将 App 内 WebView 加载的指定远程 URL 替换为本地开发地址
+- 支持正则匹配、query 参数透传，debug/release 包分离（noop 实现）
+
 **其他**
 - Mock：拦截和模拟网络请求
 - 图片管理：推送本地图片到设备展示
@@ -44,30 +48,53 @@ App 内嵌 SDK，SDK 暴露 HTTP 接口；MCP Server 将接口封装为 MCP 工�
 
 **Android SDK**（via JitPack）
 
-```gradle
-// settings.gradle
-repositories { maven { url 'https://jitpack.io' } }
+在 `settings.gradle.kts` 中添加 JitPack 仓库：
 
-// build.gradle
-implementation 'com.github.Zzechen:client-tools:v1.0.1'
+```kotlin
+dependencyResolutionManagement {
+    repositories {
+        // ...
+        maven { url = uri("https://jitpack.io") }
+    }
+}
 ```
+
+在 `app/build.gradle.kts` 中按 debug/release 分别依赖：
+
+```kotlin
+// debug 包：完整 SDK，暴露 HTTP 接口
+debugImplementation("com.github.Zzechen:client-tools:v1.0.1")
+// release 包：noop 桩，所有接口空实现，零运行时开销
+releaseImplementation("com.github.Zzechen:client-tools-noop:v1.0.1")
+```
+
+> `client-tools-noop` 与 `client-tools` 实现同一接口，release 包无需改代码，直接替换即可。
 
 **iOS SDK**（via CocoaPods）
 
 ```ruby
-pod 'ClientToolsSDK', '~> 1.0.1'
+pod 'ClientToolsSDK', :git => 'https://github.com/Zzechen/client-tools.git', :tag => 'ios/1.0.1'
 ```
 
-**MCP Server**（via npm）
+**MCP Server**（本地构建）
 
 ```bash
-npx client-tools-mcp
+cd mcp && npm install && npm run build
+# adb forward（每次连接 Android 设备后执行）
+adb forward tcp:8080 tcp:8080
 ```
 
-**Claude Code Skill**（via npm）
+Claude Code 配置（`.mcp.json`）：
 
-```bash
-claude plugins install client-tools-plugin
+```json
+{
+  "mcpServers": {
+    "client-tools": {
+      "command": "node",
+      "args": ["/path/to/client-tools/mcp/dist/index.js"]
+    }
+  }
+}
 ```
 
 ## 快速开始
@@ -82,7 +109,7 @@ claude plugins install client-tools-plugin
 
 通过 MCP 工具控制移动端界面、做视觉核对。
 
-→ 查看 [MCP 工具列表](docs/mcp-tools.md)（23 个工具）
+→ 查看 [MCP 工具列表](docs/mcp-tools.md)（27 个工具）
 
 → 查看 [SDK HTTP API](docs/sdk-http-api.md)
 

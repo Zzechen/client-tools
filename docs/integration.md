@@ -10,46 +10,30 @@
 
 最低 API：26（Android 8.0）
 
-**Gradle Plugin（`build.gradle.kts` 项目级）：**
+**添加 JitPack 仓库（`settings.gradle.kts` 项目级）：**
 
 ```kotlin
-plugins {
-    id("com.google.protobuf") version "0.9.4" apply false
-}
-```
-
-**SDK 依赖（`build.gradle.kts` 模块级）：**
-
-```kotlin
-// TODO: Maven 坐标待 SDK 发布后填入，目前使用本地 .aar
-implementation(files("libs/client-tools-sdk.aar"))
-
-// protobuf-kotlin（SDK 传递依赖，需显式声明）
-implementation("com.google.protobuf:protobuf-kotlin:4.26.1")
-
-// SDK 内部依赖（若未打包进 .aar 则需添加）
-implementation("org.nanohttpd:nanohttpd:2.3.1")
-implementation("androidx.recyclerview:recyclerview:1.3.2")
-implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.7.0")
-implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.7.0")
-```
-
-**protobuf 配置（`build.gradle.kts` 模块级）：**
-
-```kotlin
-protobuf {
-    protoc {
-        artifact = "com.google.protobuf:protoc:4.26.1"
-    }
-    generateProtoTasks {
-        all().forEach { task ->
-            task.builtins {
-                create("kotlin")
-            }
-        }
+dependencyResolutionManagement {
+    repositories {
+        google()
+        mavenCentral()
+        maven { url = uri("https://jitpack.io") }
     }
 }
 ```
+
+**SDK 依赖（`app/build.gradle.kts` 模块级）：**
+
+```kotlin
+// debug 包：完整 SDK，暴露 HTTP 接口供 AI 调用
+debugImplementation("com.github.Zzechen:client-tools:v1.0.1")
+// release 包：noop 桩，所有接口空实现，零运行时开销
+releaseImplementation("com.github.Zzechen:client-tools-noop:v1.0.1")
+```
+
+将版本号替换为最新 tag（参见 [Releases](https://github.com/Zzechen/client-tools/releases)）。
+
+> `client-tools-noop` 与 `client-tools` 实现同一接口，release 包无需修改业务代码。
 
 参考实现：`clients/android/demo/`
 
@@ -67,8 +51,7 @@ use_frameworks!
 
 target 'YourTarget' do
   pod 'SwiftProtobuf', '~> 1.28'
-  # TODO: CocoaPod 名称待 SDK 发布后填入，目前使用本地路径
-  pod 'ClientToolsSDK', :path => '../sdk'
+  pod 'ClientToolsSDK', :git => 'https://github.com/Zzechen/client-tools.git', :tag => 'ios/1.0.1'
 end
 
 post_install do |installer|

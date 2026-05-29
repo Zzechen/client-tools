@@ -66,4 +66,8 @@ public class ClientToolsSDK {
         config.protocolClasses = [MockURLProtocol.self]
         return URLSession(configuration: config)
     }
+
+    public func resolveRedirect(_ url: String) -> String {
+        return WebViewRedirectStore.shared.resolveRedirect(url)
+    }
 }

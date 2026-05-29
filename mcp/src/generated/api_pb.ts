@@ -12,13 +12,15 @@ import type { ClickResult, ScrollResult } from "./modify_pb.js";
 import { file_modify } from "./modify_pb.js";
 import type { MockRule, MockRuleList } from "./mock_pb.js";
 import { file_mock } from "./mock_pb.js";
+import type { WebViewRedirectRule, WebViewRedirectRuleList } from "./webview_redirect_pb.js";
+import { file_webview_redirect } from "./webview_redirect_pb.js";
 import type { Message } from "@bufbuild/protobuf";
 
 /**
  * Describes the file api.proto.
  */
 export const file_api: GenFile = /*@__PURE__*/
-  fileDesc("CglhcGkucHJvdG8SC2NsaWVudHRvb2xzImsKDFJlc3BvbnNlTWV0YRIMCgRjb2RlGAEgASgFEg8KB21lc3NhZ2UYAiABKAkSEwoLc2RrX3ZlcnNpb24YAyABKAUSJwoGZGV2aWNlGAQgASgLMhcuY2xpZW50dG9vbHMuRGV2aWNlSW5mbyIHCgVFbXB0eSJcCgxQYWdlUmVzcG9uc2USJwoEbWV0YRgBIAEoCzIZLmNsaWVudHRvb2xzLlJlc3BvbnNlTWV0YRIjCgRkYXRhGAIgASgLMhUuY2xpZW50dG9vbHMuUGFnZUluZm8iWAoMTm9kZVJlc3BvbnNlEicKBG1ldGEYASABKAsyGS5jbGllbnR0b29scy5SZXNwb25zZU1ldGESHwoEZGF0YRgCIAEoCzIRLmNsaWVudHRvb2xzLk5vZGUiYAoQTm9kZUxpc3RSZXNwb25zZRInCgRtZXRhGAEgASgLMhkuY2xpZW50dG9vbHMuUmVzcG9uc2VNZXRhEiMKBGRhdGEYAiABKAsyFS5jbGllbnR0b29scy5Ob2RlTGlzdCJKCg5Nb2RpZnlSZXNwb25zZRInCgRtZXRhGAEgASgLMhkuY2xpZW50dG9vbHMuUmVzcG9uc2VNZXRhEg8KB21lc3NhZ2UYAiABKAkiYAoNQ2xpY2tSZXNwb25zZRInCgRtZXRhGAEgASgLMhkuY2xpZW50dG9vbHMuUmVzcG9uc2VNZXRhEiYKBGRhdGEYAiABKAsyGC5jbGllbnR0b29scy5DbGlja1Jlc3VsdCJiCg5TY3JvbGxSZXNwb25zZRInCgRtZXRhGAEgASgLMhkuY2xpZW50dG9vbHMuUmVzcG9uc2VNZXRhEicKBGRhdGEYAiABKAsyGS5jbGllbnR0b29scy5TY3JvbGxSZXN1bHQiOQoOU2ltcGxlUmVzcG9uc2USJwoEbWV0YRgBIAEoCzIZLmNsaWVudHRvb2xzLlJlc3BvbnNlTWV0YSI/Cg9QdXNoSHRtbFJlcXVlc3QSCwoDdGFnGAEgASgJEhEKCXRpbWVzdGFtcBgCIAEoCRIMCgRodG1sGAMgASgMIkMKDlB1c2hIdG1sUmVzdWx0EgsKA3RhZxgBIAEoCRIRCgl0aW1lc3RhbXAYAiABKAkSEQoJZmlsZV9wYXRoGAMgASgJImYKEFB1c2hIdG1sUmVzcG9uc2USJwoEbWV0YRgBIAEoCzIZLmNsaWVudHRvb2xzLlJlc3BvbnNlTWV0YRIpCgRkYXRhGAIgASgLMhsuY2xpZW50dG9vbHMuUHVzaEh0bWxSZXN1bHQiNAoSV2Vidmlld1Nob3dSZXF1ZXN0EgsKA3RhZxgBIAEoCRIRCgl0aW1lc3RhbXAYAiABKAkiSwoUV2Vidmlld0FkanVzdFJlcXVlc3QSEAoIb2Zmc2V0X3gYASABKAISEAoIb2Zmc2V0X3kYAiABKAISDwoHb3BhY2l0eRgDIAEoAiJNCg9DYXB0dXJlUmVzcG9uc2USJwoEbWV0YRgBIAEoCzIZLmNsaWVudHRvb2xzLlJlc3BvbnNlTWV0YRIRCglpbWFnZV9wbmcYAiABKAwiYAoQTW9ja1J1bGVSZXNwb25zZRInCgRtZXRhGAEgASgLMhkuY2xpZW50dG9vbHMuUmVzcG9uc2VNZXRhEiMKBGRhdGEYAiABKAsyFS5jbGllbnR0b29scy5Nb2NrUnVsZSJoChRNb2NrUnVsZUxpc3RSZXNwb25zZRInCgRtZXRhGAEgASgLMhkuY2xpZW50dG9vbHMuUmVzcG9uc2VNZXRhEicKBGRhdGEYAiABKAsyGS5jbGllbnR0b29scy5Nb2NrUnVsZUxpc3QiWAoWQ2xlYXJNb2NrUnVsZXNSZXNwb25zZRInCgRtZXRhGAEgASgLMhkuY2xpZW50dG9vbHMuUmVzcG9uc2VNZXRhEhUKDWNsZWFyZWRfY291bnQYAiABKAVCHQoZY29tLmNsaWVudHRvb2xzLnNkay5wcm90b1ABYgZwcm90bzM", [file_page, file_node, file_modify, file_mock]);
+  fileDesc("CglhcGkucHJvdG8SC2NsaWVudHRvb2xzImsKDFJlc3BvbnNlTWV0YRIMCgRjb2RlGAEgASgFEg8KB21lc3NhZ2UYAiABKAkSEwoLc2RrX3ZlcnNpb24YAyABKAUSJwoGZGV2aWNlGAQgASgLMhcuY2xpZW50dG9vbHMuRGV2aWNlSW5mbyIHCgVFbXB0eSJcCgxQYWdlUmVzcG9uc2USJwoEbWV0YRgBIAEoCzIZLmNsaWVudHRvb2xzLlJlc3BvbnNlTWV0YRIjCgRkYXRhGAIgASgLMhUuY2xpZW50dG9vbHMuUGFnZUluZm8iWAoMTm9kZVJlc3BvbnNlEicKBG1ldGEYASABKAsyGS5jbGllbnR0b29scy5SZXNwb25zZU1ldGESHwoEZGF0YRgCIAEoCzIRLmNsaWVudHRvb2xzLk5vZGUiYAoQTm9kZUxpc3RSZXNwb25zZRInCgRtZXRhGAEgASgLMhkuY2xpZW50dG9vbHMuUmVzcG9uc2VNZXRhEiMKBGRhdGEYAiABKAsyFS5jbGllbnR0b29scy5Ob2RlTGlzdCJKCg5Nb2RpZnlSZXNwb25zZRInCgRtZXRhGAEgASgLMhkuY2xpZW50dG9vbHMuUmVzcG9uc2VNZXRhEg8KB21lc3NhZ2UYAiABKAkiYAoNQ2xpY2tSZXNwb25zZRInCgRtZXRhGAEgASgLMhkuY2xpZW50dG9vbHMuUmVzcG9uc2VNZXRhEiYKBGRhdGEYAiABKAsyGC5jbGllbnR0b29scy5DbGlja1Jlc3VsdCJiCg5TY3JvbGxSZXNwb25zZRInCgRtZXRhGAEgASgLMhkuY2xpZW50dG9vbHMuUmVzcG9uc2VNZXRhEicKBGRhdGEYAiABKAsyGS5jbGllbnR0b29scy5TY3JvbGxSZXN1bHQiOQoOU2ltcGxlUmVzcG9uc2USJwoEbWV0YRgBIAEoCzIZLmNsaWVudHRvb2xzLlJlc3BvbnNlTWV0YSI/Cg9QdXNoSHRtbFJlcXVlc3QSCwoDdGFnGAEgASgJEhEKCXRpbWVzdGFtcBgCIAEoCRIMCgRodG1sGAMgASgMIkMKDlB1c2hIdG1sUmVzdWx0EgsKA3RhZxgBIAEoCRIRCgl0aW1lc3RhbXAYAiABKAkSEQoJZmlsZV9wYXRoGAMgASgJImYKEFB1c2hIdG1sUmVzcG9uc2USJwoEbWV0YRgBIAEoCzIZLmNsaWVudHRvb2xzLlJlc3BvbnNlTWV0YRIpCgRkYXRhGAIgASgLMhsuY2xpZW50dG9vbHMuUHVzaEh0bWxSZXN1bHQiNAoSV2Vidmlld1Nob3dSZXF1ZXN0EgsKA3RhZxgBIAEoCRIRCgl0aW1lc3RhbXAYAiABKAkiSwoUV2Vidmlld0FkanVzdFJlcXVlc3QSEAoIb2Zmc2V0X3gYASABKAISEAoIb2Zmc2V0X3kYAiABKAISDwoHb3BhY2l0eRgDIAEoAiJNCg9DYXB0dXJlUmVzcG9uc2USJwoEbWV0YRgBIAEoCzIZLmNsaWVudHRvb2xzLlJlc3BvbnNlTWV0YRIRCglpbWFnZV9wbmcYAiABKAwiYAoQTW9ja1J1bGVSZXNwb25zZRInCgRtZXRhGAEgASgLMhkuY2xpZW50dG9vbHMuUmVzcG9uc2VNZXRhEiMKBGRhdGEYAiABKAsyFS5jbGllbnR0b29scy5Nb2NrUnVsZSJoChRNb2NrUnVsZUxpc3RSZXNwb25zZRInCgRtZXRhGAEgASgLMhkuY2xpZW50dG9vbHMuUmVzcG9uc2VNZXRhEicKBGRhdGEYAiABKAsyGS5jbGllbnR0b29scy5Nb2NrUnVsZUxpc3QiWAoWQ2xlYXJNb2NrUnVsZXNSZXNwb25zZRInCgRtZXRhGAEgASgLMhkuY2xpZW50dG9vbHMuUmVzcG9uc2VNZXRhEhUKDWNsZWFyZWRfY291bnQYAiABKAUicgoXV2ViVmlld1JlZGlyZWN0UmVzcG9uc2USJwoEbWV0YRgBIAEoCzIZLmNsaWVudHRvb2xzLlJlc3BvbnNlTWV0YRIuCgRkYXRhGAIgASgLMiAuY2xpZW50dG9vbHMuV2ViVmlld1JlZGlyZWN0UnVsZSJ6ChtXZWJWaWV3UmVkaXJlY3RMaXN0UmVzcG9uc2USJwoEbWV0YRgBIAEoCzIZLmNsaWVudHRvb2xzLlJlc3BvbnNlTWV0YRIyCgRkYXRhGAIgASgLMiQuY2xpZW50dG9vbHMuV2ViVmlld1JlZGlyZWN0UnVsZUxpc3QiXwodQ2xlYXJXZWJWaWV3UmVkaXJlY3RzUmVzcG9uc2USJwoEbWV0YRgBIAEoCzIZLmNsaWVudHRvb2xzLlJlc3BvbnNlTWV0YRIVCg1jbGVhcmVkX2NvdW50GAIgASgFQh0KGWNvbS5jbGllbnR0b29scy5zZGsucHJvdG9QAWIGcHJvdG8z", [file_page, file_node, file_modify, file_mock, file_webview_redirect]);
 
 /**
  * @generated from message clienttools.ResponseMeta
@@ -426,4 +428,70 @@ export type ClearMockRulesResponse = Message<"clienttools.ClearMockRulesResponse
  */
 export const ClearMockRulesResponseSchema: GenMessage<ClearMockRulesResponse> = /*@__PURE__*/
   messageDesc(file_api, 17);
+
+/**
+ * @generated from message clienttools.WebViewRedirectResponse
+ */
+export type WebViewRedirectResponse = Message<"clienttools.WebViewRedirectResponse"> & {
+  /**
+   * @generated from field: clienttools.ResponseMeta meta = 1;
+   */
+  meta?: ResponseMeta | undefined;
+
+  /**
+   * @generated from field: clienttools.WebViewRedirectRule data = 2;
+   */
+  data?: WebViewRedirectRule | undefined;
+};
+
+/**
+ * Describes the message clienttools.WebViewRedirectResponse.
+ * Use `create(WebViewRedirectResponseSchema)` to create a new message.
+ */
+export const WebViewRedirectResponseSchema: GenMessage<WebViewRedirectResponse> = /*@__PURE__*/
+  messageDesc(file_api, 18);
+
+/**
+ * @generated from message clienttools.WebViewRedirectListResponse
+ */
+export type WebViewRedirectListResponse = Message<"clienttools.WebViewRedirectListResponse"> & {
+  /**
+   * @generated from field: clienttools.ResponseMeta meta = 1;
+   */
+  meta?: ResponseMeta | undefined;
+
+  /**
+   * @generated from field: clienttools.WebViewRedirectRuleList data = 2;
+   */
+  data?: WebViewRedirectRuleList | undefined;
+};
+
+/**
+ * Describes the message clienttools.WebViewRedirectListResponse.
+ * Use `create(WebViewRedirectListResponseSchema)` to create a new message.
+ */
+export const WebViewRedirectListResponseSchema: GenMessage<WebViewRedirectListResponse> = /*@__PURE__*/
+  messageDesc(file_api, 19);
+
+/**
+ * @generated from message clienttools.ClearWebViewRedirectsResponse
+ */
+export type ClearWebViewRedirectsResponse = Message<"clienttools.ClearWebViewRedirectsResponse"> & {
+  /**
+   * @generated from field: clienttools.ResponseMeta meta = 1;
+   */
+  meta?: ResponseMeta | undefined;
+
+  /**
+   * @generated from field: int32 cleared_count = 2;
+   */
+  clearedCount: number;
+};
+
+/**
+ * Describes the message clienttools.ClearWebViewRedirectsResponse.
+ * Use `create(ClearWebViewRedirectsResponseSchema)` to create a new message.
+ */
+export const ClearWebViewRedirectsResponseSchema: GenMessage<ClearWebViewRedirectsResponse> = /*@__PURE__*/
+  messageDesc(file_api, 20);
 
