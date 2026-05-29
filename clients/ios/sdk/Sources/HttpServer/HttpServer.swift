@@ -561,7 +561,7 @@ class HttpServer {
         var rule = Clienttools_WebViewRedirectRule()
         rule.id = entry.id
         rule.urlPattern = entry.urlPattern
-        rule.targetUrl = entry.targetUrl
+        rule.targetURL = entry.targetUrl
         return rule
     }
 
@@ -572,7 +572,7 @@ class HttpServer {
         let entry = WebViewRedirectEntry(
             id: UUID().uuidString,
             urlPattern: req.urlPattern,
-            targetUrl: req.targetUrl
+            targetUrl: req.targetURL
         )
         WebViewRedirectStore.shared.add(entry)
         var resp = Clienttools_WebViewRedirectResponse()

@@ -9,7 +9,7 @@ Pod::Spec.new do |s|
   s.source           = { :git => 'https://github.com/Zzechen/client-tools.git', :tag => "ios/#{s.version}" }
   s.ios.deployment_target = '14.0'
   s.swift_version    = '5.0'
-  s.source_files     = 'clients/ios/sdk/Sources/**/*.swift'
+  s.source_files     = 'Sources/**/*.swift'
   s.frameworks      = 'UIKit', 'WebKit', 'Network'
   s.dependency 'SwiftProtobuf', '~> 1.28'
 end
