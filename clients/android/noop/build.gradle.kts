@@ -29,7 +29,7 @@ afterEvaluate {
                 from(components["release"])
                 groupId = "com.github.Zzechen"
                 artifactId = "client-tools-noop"
-                version = "1.0.0"
+                version = project.properties["CLIENT_TOOLS_VERSION"] as String
             }
         }
     }
