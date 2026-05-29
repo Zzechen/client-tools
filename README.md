@@ -48,30 +48,53 @@ App 内嵌 SDK，SDK 暴露 HTTP 接口；MCP Server 将接口封装为 MCP 工�
 
 **Android SDK**（via JitPack）
 
-```gradle
-// settings.gradle
-repositories { maven { url 'https://jitpack.io' } }
+在 `settings.gradle.kts` 中添加 JitPack 仓库：
 
-// build.gradle
-implementation 'com.github.Zzechen:client-tools:v1.0.1'
+```kotlin
+dependencyResolutionManagement {
+    repositories {
+        // ...
+        maven { url = uri("https://jitpack.io") }
+    }
+}
 ```
+
+在 `app/build.gradle.kts` 中按 debug/release 分别依赖：
+
+```kotlin
+// debug 包：完整 SDK，暴露 HTTP 接口
+debugImplementation("com.github.Zzechen:client-tools:v1.0.1")
+// release 包：noop 桩，所有接口空实现，零运行时开销
+releaseImplementation("com.github.Zzechen:client-tools-noop:v1.0.1")
+```
+
+> `client-tools-noop` 与 `client-tools` 实现同一接口，release 包无需改代码，直接替换即可。
 
 **iOS SDK**（via CocoaPods）
 
 ```ruby
-pod 'ClientToolsSDK', '~> 1.0.1'
+pod 'ClientToolsSDK', :git => 'https://github.com/Zzechen/client-tools.git', :tag => 'ios/1.0.1'
 ```
 
-**MCP Server**（via npm）
+**MCP Server**（本地构建）
 
 ```bash
-npx client-tools-mcp
+cd mcp && npm install && npm run build
+# adb forward（每次连接 Android 设备后执行）
+adb forward tcp:8080 tcp:8080
 ```
 
-**Claude Code Skill**（via npm）
+Claude Code 配置（`.mcp.json`）：
 
-```bash
-claude plugins install client-tools-plugin
+```json
+{
+  "mcpServers": {
+    "client-tools": {
+      "command": "node",
+      "args": ["/path/to/client-tools/mcp/dist/index.js"]
+    }
+  }
+}
 ```
 
 ## 快速开始
