@@ -17,6 +17,37 @@ message ResponseMeta {
 
 message Empty {}
 
+message ScreenState {
+  bool is_awake  = 1;  // 屏幕是否点亮
+  bool is_locked = 2;  // 锁屏是否锁定
+}
+
+message AppInfo {
+  string package_name  = 1;
+  string version_name  = 2;
+  int32  version_code  = 3;
+}
+
+message DeviceInfoFull {
+  float  screen_width_dp  = 1;
+  float  screen_height_dp = 2;
+  float  density          = 3;
+  int32  screen_width_px  = 4;
+  int32  screen_height_px = 5;
+  string model            = 6;  // 设备型号，如 "Pixel 7" / "iPhone"
+  int32  os_major_version = 7;  // Android API level 或 iOS 主版本号
+  string os_version       = 8;  // OS 版本字符串，如 "14" / "17.5"
+}
+
+message InfoData {
+  string         page_name = 1;
+  ScreenState    screen    = 2;
+  DeviceInfoFull device    = 3;
+  AppInfo        app       = 4;
+}
+
+message InfoResponse { ResponseMeta meta = 1; InfoData data = 2; }
+
 message PageResponse     { ResponseMeta meta = 1; PageInfo data = 2; }
 message NodeResponse     { ResponseMeta meta = 1; Node data = 2; }
 message NodeListResponse { ResponseMeta meta = 1; NodeList data = 2; }

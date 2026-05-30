@@ -166,6 +166,10 @@ class HttpServer {
         switch (method, path) {
         case ("GET", "/dom/all"):
             handleDomAll(connection: connection)
+        case ("GET", "/api/info"):
+            handleGetInfo(connection: connection)
+        case ("POST", "/api/screen/wake"):
+            handleScreenWake(connection: connection)
         case ("GET", "/api/page/current"):
             handlePageCurrent(connection: connection)
         case ("GET", "/api/nodes/all"):
@@ -242,6 +246,58 @@ class HttpServer {
         }
     }
 
+    private func handleGetInfo(connection: NWConnection) {
+        let sema = DispatchSemaphore(value: 0)
+        var screenState = Clienttools_ScreenState()
+        var device = Clienttools_DeviceInfoFull()
+        var app = Clienttools_AppInfo()
+        var pageName = ""
+
+        DispatchQueue.main.async {
+            let screen = UIScreen.main
+            let bounds = screen.bounds
+            let scale = screen.scale
+
+            screenState.isAwake = true
+            screenState.isLocked = !UIApplication.shared.isProtectedDataAvailable
+
+            device.screenWidthDp  = Float(bounds.width)
+            device.screenHeightDp = Float(bounds.height)
+            device.density        = Float(scale)
+            device.screenWidthPx  = Int32(bounds.width * scale)
+            device.screenHeightPx = Int32(bounds.height * scale)
+            device.model           = UIDevice.current.model
+            device.osMajorVersion = Int32(ProcessInfo.processInfo.operatingSystemVersion.majorVersion)
+            device.osVersion      = UIDevice.current.systemVersion
+
+            app.packageName  = Bundle.main.bundleIdentifier ?? ""
+            app.versionName  = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? ""
+            app.versionCode  = Int32(Bundle.main.infoDictionary?["CFBundleVersion"] as? String ?? "0") ?? 0
+
+            pageName = ClientToolsSDK.shared.getCurrentPage().pageName
+            sema.signal()
+        }
+        sema.wait()
+
+        var data = Clienttools_InfoData()
+        data.pageName = pageName
+        data.screen   = screenState
+        data.device   = device
+        data.app      = app
+
+        var resp = Clienttools_InfoResponse()
+        resp.meta = okMeta()
+        resp.data = data
+        sendProto(resp, connection: connection)
+    }
+
+    private func handleScreenWake(connection: NWConnection) {
+        // iOS 不支持通过 app 唤醒屏幕，返回成功（no-op）
+        var resp = Clienttools_SimpleResponse()
+        resp.meta = okMeta()
+        sendProto(resp, connection: connection)
+    }
+
     private func handlePageCurrent(connection: NWConnection) {
         let pageInfo = ClientToolsSDK.shared.getCurrentPage()
         var data = Clienttools_PageInfo()
@@ -254,7 +310,13 @@ class HttpServer {
     }
 
     private func handleNodesAll(connection: NWConnection) {
-        let nodes = viewQueryService.getAllProtoNodes()
+        let sema = DispatchSemaphore(value: 0)
+        var nodes: [Clienttools_Node] = []
+        DispatchQueue.main.async {
+            nodes = self.viewQueryService.getAllProtoNodes()
+            sema.signal()
+        }
+        sema.wait()
         var nodeList = Clienttools_NodeList()
         nodeList.nodes = nodes
         var resp = Clienttools_NodeListResponse()
@@ -264,7 +326,14 @@ class HttpServer {
     }
 
     private func handleNodeById(_ id: String, connection: NWConnection) {
-        guard let node = viewQueryService.getProtoNode(byId: id) else {
+        let sema = DispatchSemaphore(value: 0)
+        var node: Clienttools_Node? = nil
+        DispatchQueue.main.async {
+            node = self.viewQueryService.getProtoNode(byId: id)
+            sema.signal()
+        }
+        sema.wait()
+        guard let node = node else {
             sendError(code: 404, message: "Node not found", httpCode: 404, connection: connection); return
         }
         var resp = Clienttools_NodeResponse()
@@ -277,7 +346,8 @@ class HttpServer {
         guard let req = try? Clienttools_ClickRequest(serializedBytes: body) else {
             sendError(code: 400, message: "Invalid request", connection: connection); return
         }
-        guard let view = viewQueryService.findView(byId: req.id) else {
+        let clickIndex = req.hasIndex ? Int(req.index) : 0
+        guard let view = viewQueryService.findView(byId: req.id, index: clickIndex) else {
             sendError(code: 404, message: "View not found", httpCode: 404, connection: connection); return
         }
 

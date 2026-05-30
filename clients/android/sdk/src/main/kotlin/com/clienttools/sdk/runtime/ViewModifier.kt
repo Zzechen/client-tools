@@ -8,10 +8,16 @@ import java.util.concurrent.CountDownLatch
 
 object ViewModifier {
 
-    fun click(viewId: String, centerOffsetXDp: Float? = null, centerOffsetYDp: Float? = null): Boolean {
+    fun click(viewId: String, centerOffsetXDp: Float? = null, centerOffsetYDp: Float? = null, index: Int? = null): Boolean {
         val views = ViewTreeTraversal.findViewById(viewId)
         if (views.isEmpty()) return false
-        views.forEach { view ->
+        val target = if (index != null) {
+            if (index < 0 || index >= views.size) return false
+            listOf(views[index])
+        } else {
+            listOf(views[0])
+        }
+        target.forEach { view ->
             val activity = ClientToolsSDK.getCurrentActivity() ?: return@forEach
             val density = view.resources.displayMetrics.density
             val loc = IntArray(2)

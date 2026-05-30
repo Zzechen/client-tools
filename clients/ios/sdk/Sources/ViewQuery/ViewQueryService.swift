@@ -26,6 +26,8 @@ class ViewQueryService {
         node.screenY = vn.screenY
         node.widthDp = vn.widthDp
         node.heightDp = vn.heightDp
+        node.visibility = Int32(vn.visibility)
+        node.isEnabled = vn.isEnabled
         var nodeAttrs = Clienttools_NodeAttrs()
         switch vn.attrs {
         case .text(let ta):
@@ -74,23 +76,30 @@ class ViewQueryService {
         return result
     }
 
-    func findView(byId id: String) -> UIView? {
+    func findView(byId id: String, index: Int = 0) -> UIView? {
+        let matches = findViews(byId: id)
+        guard index >= 0 && index < matches.count else { return index == 0 ? nil : nil }
+        return matches[index]
+    }
+
+    func findViews(byId id: String) -> [UIView] {
         guard let window = UIApplication.shared.connectedScenes
             .compactMap({ $0 as? UIWindowScene })
             .flatMap({ $0.windows })
             .filter({ $0.tag != OverlayManager.overlayTag && !$0.isHidden })
-            .min(by: { $0.windowLevel < $1.windowLevel }) else { return nil }
-        return findView(in: window, byId: id, path: "")
+            .min(by: { $0.windowLevel < $1.windowLevel }) else { return [] }
+        var results: [UIView] = []
+        collectViews(in: window, byId: id, path: "", results: &results)
+        return results
     }
 
-    private func findView(in view: UIView, byId id: String, path: String) -> UIView? {
-        for (index, subview) in view.subviews.enumerated() {
+    private func collectViews(in view: UIView, byId id: String, path: String, results: inout [UIView]) {
+        for (idx, subview) in view.subviews.enumerated() {
             if subview.tag == OverlayManager.overlayTag { continue }
-            let childPath = path.isEmpty ? "\(index)" : "\(path).\(index)"
+            let childPath = path.isEmpty ? "\(idx)" : "\(path).\(idx)"
             let viewId = ViewHashGenerator.generateId(for: subview, path: childPath)
-            if viewId == id { return subview }
-            if let found = findView(in: subview, byId: id, path: childPath) { return found }
+            if viewId == id { results.append(subview) }
+            collectViews(in: subview, byId: id, path: childPath, results: &results)
         }
-        return nil
     }
 }
