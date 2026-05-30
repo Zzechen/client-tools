@@ -17,6 +17,7 @@ object ClientToolsSDK {
     private var httpServer: HttpServer? = null
     private var pageChangeListener: PageChangeListener? = null
     internal var isInitialized = false
+    internal var appContext: android.content.Context? = null
     private const val TAG = "ClientToolsSDK"
 
     private val pageStack = mutableListOf<InspectorPage>()
@@ -34,6 +35,7 @@ object ClientToolsSDK {
     ) {
         if (isInitialized) return
         try {
+            appContext = context.applicationContext
             fileStore = InspectorFileStore(context)
             imageFileStore = ImageFileStore(context)
             pageChangeListener = PageChangeListener()

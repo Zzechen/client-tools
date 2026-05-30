@@ -1,6 +1,10 @@
 package com.clienttools.sdk.http
 
+import android.app.KeyguardManager
 import android.content.Context
+import android.content.pm.PackageManager
+import android.os.Build
+import android.os.PowerManager
 import android.util.Log
 import com.clienttools.sdk.ClientToolsSDK
 import com.clienttools.sdk.inspector.ActiveTab
@@ -18,6 +22,7 @@ import com.clienttools.sdk.proto.*
 import com.clienttools.sdk.webview.WebViewRedirectEntry
 import com.clienttools.sdk.webview.WebViewRedirectStore
 import java.util.UUID
+import com.clienttools.sdk.runtime.ScreenManager
 import com.clienttools.sdk.runtime.ViewModifier
 import com.clienttools.sdk.runtime.ViewQueryService
 import com.google.protobuf.ByteString
@@ -51,6 +56,76 @@ object ApiHandler {
         val resp = SimpleResponse.newBuilder().setMeta(meta).build()
         val bytes = resp.toByteArray()
         return NanoHTTPD.newFixedLengthResponse(code, "application/x-protobuf", bytes.inputStream(), bytes.size.toLong())
+    }
+
+    fun handleGetInfo(): NanoHTTPD.Response {
+        return try {
+            val c = ctx()
+            val dm = c.resources.displayMetrics
+
+            // 屏幕状态
+            val pm = c.getSystemService(Context.POWER_SERVICE) as PowerManager
+            val km = c.getSystemService(Context.KEYGUARD_SERVICE) as KeyguardManager
+            val screen = ScreenState.newBuilder()
+                .setIsAwake(pm.isInteractive)
+                .setIsLocked(km.isKeyguardLocked)
+                .build()
+
+            // 设备信息
+            val device = DeviceInfoFull.newBuilder()
+                .setScreenWidthDp(dm.widthPixels / dm.density)
+                .setScreenHeightDp(dm.heightPixels / dm.density)
+                .setDensity(dm.density)
+                .setScreenWidthPx(dm.widthPixels)
+                .setScreenHeightPx(dm.heightPixels)
+                .setModel("${Build.MANUFACTURER} ${Build.MODEL}")
+                .setOsMajorVersion(Build.VERSION.SDK_INT)
+                .setOsVersion(Build.VERSION.RELEASE)
+                .build()
+
+            // App 信息
+            val pi = try {
+                @Suppress("DEPRECATION")
+                c.packageManager.getPackageInfo(c.packageName, 0)
+            } catch (_: PackageManager.NameNotFoundException) { null }
+            val app = AppInfo.newBuilder()
+                .setPackageName(c.packageName)
+                .setVersionName(pi?.versionName ?: "")
+                .setVersionCode(
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P)
+                        pi?.longVersionCode?.toInt() ?: 0
+                    else
+                        @Suppress("DEPRECATION") pi?.versionCode ?: 0
+                )
+                .build()
+
+            // 当前页面
+            val (pageName, _) = pageChangeListener?.getCurrentPage() ?: Pair("", "")
+
+            val data = InfoData.newBuilder()
+                .setPageName(pageName)
+                .setScreen(screen)
+                .setDevice(device)
+                .setApp(app)
+                .build()
+
+            val resp = InfoResponse.newBuilder().setMeta(ProtoHelper.okMeta(c)).setData(data).build()
+            okResponse(resp.toByteArray())
+        } catch (e: Exception) {
+            Log.e("ApiHandler", "handleGetInfo", e)
+            errResponse(NanoHTTPD.Response.Status.INTERNAL_ERROR, e.message ?: "error")
+        }
+    }
+
+    fun handleScreenWake(): NanoHTTPD.Response {
+        return try {
+            ScreenManager.wakeAndUnlock()
+            val resp = SimpleResponse.newBuilder().setMeta(ProtoHelper.okMeta(ctx())).build()
+            okResponse(resp.toByteArray())
+        } catch (e: Exception) {
+            Log.e("ApiHandler", "handleScreenWake", e)
+            errResponse(NanoHTTPD.Response.Status.INTERNAL_ERROR, e.message ?: "error")
+        }
     }
 
     fun handleGetCurrentPage(): NanoHTTPD.Response {

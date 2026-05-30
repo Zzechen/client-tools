@@ -58,6 +58,32 @@ export async function sdkPost<Req extends DescMessage, Res extends DescMessage>(
 }
 
 /**
+ * HTTP POST with protobuf body → returns HTTP status and parsed response.
+ * Useful for asserting error status codes.
+ */
+export async function sdkPostWithStatus<Req extends DescMessage, Res extends DescMessage>(
+  path: string,
+  reqSchema: Req,
+  req: MessageShape<Req>,
+  resSchema: Res
+): Promise<{ status: number; data: MessageShape<Res> }> {
+  ensurePortForward();
+  const body = toBinary(reqSchema, req);
+  const { status, bytes } = await fetchBytes(`${BASE_URL}${path}`, {
+    method: "POST",
+    headers: { "Content-Type": "application/x-protobuf" },
+    body,
+  });
+  let data: MessageShape<Res>;
+  try {
+    data = fromBinary(resSchema, bytes);
+  } catch {
+    data = create(resSchema, {} as MessageInitShape<Res>);
+  }
+  return { status, data };
+}
+
+/**
  * HTTP DELETE → parse protobuf response.
  */
 export async function sdkDelete<Res extends DescMessage>(

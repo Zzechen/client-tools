@@ -6,6 +6,7 @@
 
 | 分组 | 工具 | 用途 |
 |------|------|------|
+| 屏幕 | `wake_screen` | 唤醒并解锁屏幕（无密码） |
 | 页面/节点 | `get_current_page` | 查询当前页面名称 |
 | | `get_node` | 查询单个 View 的位置和尺寸 |
 | | `get_all_nodes` | 获取页面所有 View 节点快照 |
@@ -33,6 +34,21 @@
 | | `webview_redirect_list` | 列出所有重定向规则 |
 | | `webview_redirect_delete` | 按 id 删除重定向规则 |
 | | `webview_redirect_clear` | 清空所有重定向规则 |
+
+---
+
+## 屏幕
+
+### wake_screen
+
+唤醒并解锁屏幕（仅限无密码锁屏，Android/iOS 通用）。适用于 AI 操作前确保屏幕点亮。
+
+**参数：** 无
+
+**返回：**
+```json
+{"ok": true}
+```
 
 ---
 

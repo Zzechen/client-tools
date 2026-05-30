@@ -167,12 +167,23 @@ nonisolated struct Clienttools_ClickRequest: Sendable {
   /// Clears the value of `centerOffsetY`. Subsequent reads from it will return its default value.
   mutating func clearCenterOffsetY() {self._centerOffsetY = nil}
 
+  /// 同 id 匹配的第 N 个 View（0-based），缺省点第 0 个
+  var index: Int32 {
+    get {_index ?? 0}
+    set {_index = newValue}
+  }
+  /// Returns true if `index` has been explicitly set.
+  var hasIndex: Bool {self._index != nil}
+  /// Clears the value of `index`. Subsequent reads from it will return its default value.
+  mutating func clearIndex() {self._index = nil}
+
   var unknownFields = SwiftProtobuf.UnknownStorage()
 
   init() {}
 
   fileprivate var _centerOffsetX: SwiftProtobuf.Google_Protobuf_FloatValue? = nil
   fileprivate var _centerOffsetY: SwiftProtobuf.Google_Protobuf_FloatValue? = nil
+  fileprivate var _index: Int32? = nil
 }
 
 nonisolated struct Clienttools_ClickResult: Sendable {
@@ -382,7 +393,7 @@ nonisolated extension Clienttools_ModifyViewRequest: SwiftProtobuf.Message, Swif
 
 nonisolated extension Clienttools_ClickRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   static let protoMessageName: String = _protobuf_package + ".ClickRequest"
-  static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}id\0\u{3}center_offset_x\0\u{3}center_offset_y\0")
+  static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}id\0\u{3}center_offset_x\0\u{3}center_offset_y\0\u{1}index\0")
 
   mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -393,6 +404,7 @@ nonisolated extension Clienttools_ClickRequest: SwiftProtobuf.Message, SwiftProt
       case 1: try { try decoder.decodeSingularStringField(value: &self.id) }()
       case 2: try { try decoder.decodeSingularMessageField(value: &self._centerOffsetX) }()
       case 3: try { try decoder.decodeSingularMessageField(value: &self._centerOffsetY) }()
+      case 4: try { try decoder.decodeSingularInt32Field(value: &self._index) }()
       default: break
       }
     }
@@ -412,6 +424,9 @@ nonisolated extension Clienttools_ClickRequest: SwiftProtobuf.Message, SwiftProt
     try { if let v = self._centerOffsetY {
       try visitor.visitSingularMessageField(value: v, fieldNumber: 3)
     } }()
+    try { if let v = self._index {
+      try visitor.visitSingularInt32Field(value: v, fieldNumber: 4)
+    } }()
     try unknownFields.traverse(visitor: &visitor)
   }
 
@@ -419,6 +434,7 @@ nonisolated extension Clienttools_ClickRequest: SwiftProtobuf.Message, SwiftProt
     if lhs.id != rhs.id {return false}
     if lhs._centerOffsetX != rhs._centerOffsetX {return false}
     if lhs._centerOffsetY != rhs._centerOffsetY {return false}
+    if lhs._index != rhs._index {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }

@@ -20,7 +20,7 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file api.proto.
  */
 export const file_api: GenFile = /*@__PURE__*/
-  fileDesc("CglhcGkucHJvdG8SC2NsaWVudHRvb2xzImsKDFJlc3BvbnNlTWV0YRIMCgRjb2RlGAEgASgFEg8KB21lc3NhZ2UYAiABKAkSEwoLc2RrX3ZlcnNpb24YAyABKAUSJwoGZGV2aWNlGAQgASgLMhcuY2xpZW50dG9vbHMuRGV2aWNlSW5mbyIHCgVFbXB0eSJcCgxQYWdlUmVzcG9uc2USJwoEbWV0YRgBIAEoCzIZLmNsaWVudHRvb2xzLlJlc3BvbnNlTWV0YRIjCgRkYXRhGAIgASgLMhUuY2xpZW50dG9vbHMuUGFnZUluZm8iWAoMTm9kZVJlc3BvbnNlEicKBG1ldGEYASABKAsyGS5jbGllbnR0b29scy5SZXNwb25zZU1ldGESHwoEZGF0YRgCIAEoCzIRLmNsaWVudHRvb2xzLk5vZGUiYAoQTm9kZUxpc3RSZXNwb25zZRInCgRtZXRhGAEgASgLMhkuY2xpZW50dG9vbHMuUmVzcG9uc2VNZXRhEiMKBGRhdGEYAiABKAsyFS5jbGllbnR0b29scy5Ob2RlTGlzdCJKCg5Nb2RpZnlSZXNwb25zZRInCgRtZXRhGAEgASgLMhkuY2xpZW50dG9vbHMuUmVzcG9uc2VNZXRhEg8KB21lc3NhZ2UYAiABKAkiYAoNQ2xpY2tSZXNwb25zZRInCgRtZXRhGAEgASgLMhkuY2xpZW50dG9vbHMuUmVzcG9uc2VNZXRhEiYKBGRhdGEYAiABKAsyGC5jbGllbnR0b29scy5DbGlja1Jlc3VsdCJiCg5TY3JvbGxSZXNwb25zZRInCgRtZXRhGAEgASgLMhkuY2xpZW50dG9vbHMuUmVzcG9uc2VNZXRhEicKBGRhdGEYAiABKAsyGS5jbGllbnR0b29scy5TY3JvbGxSZXN1bHQiOQoOU2ltcGxlUmVzcG9uc2USJwoEbWV0YRgBIAEoCzIZLmNsaWVudHRvb2xzLlJlc3BvbnNlTWV0YSI/Cg9QdXNoSHRtbFJlcXVlc3QSCwoDdGFnGAEgASgJEhEKCXRpbWVzdGFtcBgCIAEoCRIMCgRodG1sGAMgASgMIkMKDlB1c2hIdG1sUmVzdWx0EgsKA3RhZxgBIAEoCRIRCgl0aW1lc3RhbXAYAiABKAkSEQoJZmlsZV9wYXRoGAMgASgJImYKEFB1c2hIdG1sUmVzcG9uc2USJwoEbWV0YRgBIAEoCzIZLmNsaWVudHRvb2xzLlJlc3BvbnNlTWV0YRIpCgRkYXRhGAIgASgLMhsuY2xpZW50dG9vbHMuUHVzaEh0bWxSZXN1bHQiNAoSV2Vidmlld1Nob3dSZXF1ZXN0EgsKA3RhZxgBIAEoCRIRCgl0aW1lc3RhbXAYAiABKAkiSwoUV2Vidmlld0FkanVzdFJlcXVlc3QSEAoIb2Zmc2V0X3gYASABKAISEAoIb2Zmc2V0X3kYAiABKAISDwoHb3BhY2l0eRgDIAEoAiJNCg9DYXB0dXJlUmVzcG9uc2USJwoEbWV0YRgBIAEoCzIZLmNsaWVudHRvb2xzLlJlc3BvbnNlTWV0YRIRCglpbWFnZV9wbmcYAiABKAwiYAoQTW9ja1J1bGVSZXNwb25zZRInCgRtZXRhGAEgASgLMhkuY2xpZW50dG9vbHMuUmVzcG9uc2VNZXRhEiMKBGRhdGEYAiABKAsyFS5jbGllbnR0b29scy5Nb2NrUnVsZSJoChRNb2NrUnVsZUxpc3RSZXNwb25zZRInCgRtZXRhGAEgASgLMhkuY2xpZW50dG9vbHMuUmVzcG9uc2VNZXRhEicKBGRhdGEYAiABKAsyGS5jbGllbnR0b29scy5Nb2NrUnVsZUxpc3QiWAoWQ2xlYXJNb2NrUnVsZXNSZXNwb25zZRInCgRtZXRhGAEgASgLMhkuY2xpZW50dG9vbHMuUmVzcG9uc2VNZXRhEhUKDWNsZWFyZWRfY291bnQYAiABKAUicgoXV2ViVmlld1JlZGlyZWN0UmVzcG9uc2USJwoEbWV0YRgBIAEoCzIZLmNsaWVudHRvb2xzLlJlc3BvbnNlTWV0YRIuCgRkYXRhGAIgASgLMiAuY2xpZW50dG9vbHMuV2ViVmlld1JlZGlyZWN0UnVsZSJ6ChtXZWJWaWV3UmVkaXJlY3RMaXN0UmVzcG9uc2USJwoEbWV0YRgBIAEoCzIZLmNsaWVudHRvb2xzLlJlc3BvbnNlTWV0YRIyCgRkYXRhGAIgASgLMiQuY2xpZW50dG9vbHMuV2ViVmlld1JlZGlyZWN0UnVsZUxpc3QiXwodQ2xlYXJXZWJWaWV3UmVkaXJlY3RzUmVzcG9uc2USJwoEbWV0YRgBIAEoCzIZLmNsaWVudHRvb2xzLlJlc3BvbnNlTWV0YRIVCg1jbGVhcmVkX2NvdW50GAIgASgFQh0KGWNvbS5jbGllbnR0b29scy5zZGsucHJvdG9QAWIGcHJvdG8z", [file_page, file_node, file_modify, file_mock, file_webview_redirect]);
+  fileDesc("CglhcGkucHJvdG8SC2NsaWVudHRvb2xzImsKDFJlc3BvbnNlTWV0YRIMCgRjb2RlGAEgASgFEg8KB21lc3NhZ2UYAiABKAkSEwoLc2RrX3ZlcnNpb24YAyABKAUSJwoGZGV2aWNlGAQgASgLMhcuY2xpZW50dG9vbHMuRGV2aWNlSW5mbyIHCgVFbXB0eSIyCgtTY3JlZW5TdGF0ZRIQCghpc19hd2FrZRgBIAEoCBIRCglpc19sb2NrZWQYAiABKAgiSwoHQXBwSW5mbxIUCgxwYWNrYWdlX25hbWUYASABKAkSFAoMdmVyc2lvbl9uYW1lGAIgASgJEhQKDHZlcnNpb25fY29kZRgDIAEoBSLEAQoORGV2aWNlSW5mb0Z1bGwSFwoPc2NyZWVuX3dpZHRoX2RwGAEgASgCEhgKEHNjcmVlbl9oZWlnaHRfZHAYAiABKAISDwoHZGVuc2l0eRgDIAEoAhIXCg9zY3JlZW5fd2lkdGhfcHgYBCABKAUSGAoQc2NyZWVuX2hlaWdodF9weBgFIAEoBRINCgVtb2RlbBgGIAEoCRIYChBvc19tYWpvcl92ZXJzaW9uGAcgASgFEhIKCm9zX3ZlcnNpb24YCCABKAkilwEKCEluZm9EYXRhEhEKCXBhZ2VfbmFtZRgBIAEoCRIoCgZzY3JlZW4YAiABKAsyGC5jbGllbnR0b29scy5TY3JlZW5TdGF0ZRIrCgZkZXZpY2UYAyABKAsyGy5jbGllbnR0b29scy5EZXZpY2VJbmZvRnVsbBIhCgNhcHAYBCABKAsyFC5jbGllbnR0b29scy5BcHBJbmZvIlwKDEluZm9SZXNwb25zZRInCgRtZXRhGAEgASgLMhkuY2xpZW50dG9vbHMuUmVzcG9uc2VNZXRhEiMKBGRhdGEYAiABKAsyFS5jbGllbnR0b29scy5JbmZvRGF0YSJcCgxQYWdlUmVzcG9uc2USJwoEbWV0YRgBIAEoCzIZLmNsaWVudHRvb2xzLlJlc3BvbnNlTWV0YRIjCgRkYXRhGAIgASgLMhUuY2xpZW50dG9vbHMuUGFnZUluZm8iWAoMTm9kZVJlc3BvbnNlEicKBG1ldGEYASABKAsyGS5jbGllbnR0b29scy5SZXNwb25zZU1ldGESHwoEZGF0YRgCIAEoCzIRLmNsaWVudHRvb2xzLk5vZGUiYAoQTm9kZUxpc3RSZXNwb25zZRInCgRtZXRhGAEgASgLMhkuY2xpZW50dG9vbHMuUmVzcG9uc2VNZXRhEiMKBGRhdGEYAiABKAsyFS5jbGllbnR0b29scy5Ob2RlTGlzdCJKCg5Nb2RpZnlSZXNwb25zZRInCgRtZXRhGAEgASgLMhkuY2xpZW50dG9vbHMuUmVzcG9uc2VNZXRhEg8KB21lc3NhZ2UYAiABKAkiYAoNQ2xpY2tSZXNwb25zZRInCgRtZXRhGAEgASgLMhkuY2xpZW50dG9vbHMuUmVzcG9uc2VNZXRhEiYKBGRhdGEYAiABKAsyGC5jbGllbnR0b29scy5DbGlja1Jlc3VsdCJiCg5TY3JvbGxSZXNwb25zZRInCgRtZXRhGAEgASgLMhkuY2xpZW50dG9vbHMuUmVzcG9uc2VNZXRhEicKBGRhdGEYAiABKAsyGS5jbGllbnR0b29scy5TY3JvbGxSZXN1bHQiOQoOU2ltcGxlUmVzcG9uc2USJwoEbWV0YRgBIAEoCzIZLmNsaWVudHRvb2xzLlJlc3BvbnNlTWV0YSI/Cg9QdXNoSHRtbFJlcXVlc3QSCwoDdGFnGAEgASgJEhEKCXRpbWVzdGFtcBgCIAEoCRIMCgRodG1sGAMgASgMIkMKDlB1c2hIdG1sUmVzdWx0EgsKA3RhZxgBIAEoCRIRCgl0aW1lc3RhbXAYAiABKAkSEQoJZmlsZV9wYXRoGAMgASgJImYKEFB1c2hIdG1sUmVzcG9uc2USJwoEbWV0YRgBIAEoCzIZLmNsaWVudHRvb2xzLlJlc3BvbnNlTWV0YRIpCgRkYXRhGAIgASgLMhsuY2xpZW50dG9vbHMuUHVzaEh0bWxSZXN1bHQiNAoSV2Vidmlld1Nob3dSZXF1ZXN0EgsKA3RhZxgBIAEoCRIRCgl0aW1lc3RhbXAYAiABKAkiSwoUV2Vidmlld0FkanVzdFJlcXVlc3QSEAoIb2Zmc2V0X3gYASABKAISEAoIb2Zmc2V0X3kYAiABKAISDwoHb3BhY2l0eRgDIAEoAiJNCg9DYXB0dXJlUmVzcG9uc2USJwoEbWV0YRgBIAEoCzIZLmNsaWVudHRvb2xzLlJlc3BvbnNlTWV0YRIRCglpbWFnZV9wbmcYAiABKAwiYAoQTW9ja1J1bGVSZXNwb25zZRInCgRtZXRhGAEgASgLMhkuY2xpZW50dG9vbHMuUmVzcG9uc2VNZXRhEiMKBGRhdGEYAiABKAsyFS5jbGllbnR0b29scy5Nb2NrUnVsZSJoChRNb2NrUnVsZUxpc3RSZXNwb25zZRInCgRtZXRhGAEgASgLMhkuY2xpZW50dG9vbHMuUmVzcG9uc2VNZXRhEicKBGRhdGEYAiABKAsyGS5jbGllbnR0b29scy5Nb2NrUnVsZUxpc3QiWAoWQ2xlYXJNb2NrUnVsZXNSZXNwb25zZRInCgRtZXRhGAEgASgLMhkuY2xpZW50dG9vbHMuUmVzcG9uc2VNZXRhEhUKDWNsZWFyZWRfY291bnQYAiABKAUicgoXV2ViVmlld1JlZGlyZWN0UmVzcG9uc2USJwoEbWV0YRgBIAEoCzIZLmNsaWVudHRvb2xzLlJlc3BvbnNlTWV0YRIuCgRkYXRhGAIgASgLMiAuY2xpZW50dG9vbHMuV2ViVmlld1JlZGlyZWN0UnVsZSJ6ChtXZWJWaWV3UmVkaXJlY3RMaXN0UmVzcG9uc2USJwoEbWV0YRgBIAEoCzIZLmNsaWVudHRvb2xzLlJlc3BvbnNlTWV0YRIyCgRkYXRhGAIgASgLMiQuY2xpZW50dG9vbHMuV2ViVmlld1JlZGlyZWN0UnVsZUxpc3QiXwodQ2xlYXJXZWJWaWV3UmVkaXJlY3RzUmVzcG9uc2USJwoEbWV0YRgBIAEoCzIZLmNsaWVudHRvb2xzLlJlc3BvbnNlTWV0YRIVCg1jbGVhcmVkX2NvdW50GAIgASgFQh0KGWNvbS5jbGllbnR0b29scy5zZGsucHJvdG9QAWIGcHJvdG8z", [file_page, file_node, file_modify, file_mock, file_webview_redirect]);
 
 /**
  * @generated from message clienttools.ResponseMeta
@@ -68,6 +68,171 @@ export const EmptySchema: GenMessage<Empty> = /*@__PURE__*/
   messageDesc(file_api, 1);
 
 /**
+ * @generated from message clienttools.ScreenState
+ */
+export type ScreenState = Message<"clienttools.ScreenState"> & {
+  /**
+   * 屏幕是否点亮
+   *
+   * @generated from field: bool is_awake = 1;
+   */
+  isAwake: boolean;
+
+  /**
+   * 锁屏是否锁定
+   *
+   * @generated from field: bool is_locked = 2;
+   */
+  isLocked: boolean;
+};
+
+/**
+ * Describes the message clienttools.ScreenState.
+ * Use `create(ScreenStateSchema)` to create a new message.
+ */
+export const ScreenStateSchema: GenMessage<ScreenState> = /*@__PURE__*/
+  messageDesc(file_api, 2);
+
+/**
+ * @generated from message clienttools.AppInfo
+ */
+export type AppInfo = Message<"clienttools.AppInfo"> & {
+  /**
+   * @generated from field: string package_name = 1;
+   */
+  packageName: string;
+
+  /**
+   * @generated from field: string version_name = 2;
+   */
+  versionName: string;
+
+  /**
+   * @generated from field: int32 version_code = 3;
+   */
+  versionCode: number;
+};
+
+/**
+ * Describes the message clienttools.AppInfo.
+ * Use `create(AppInfoSchema)` to create a new message.
+ */
+export const AppInfoSchema: GenMessage<AppInfo> = /*@__PURE__*/
+  messageDesc(file_api, 3);
+
+/**
+ * @generated from message clienttools.DeviceInfoFull
+ */
+export type DeviceInfoFull = Message<"clienttools.DeviceInfoFull"> & {
+  /**
+   * @generated from field: float screen_width_dp = 1;
+   */
+  screenWidthDp: number;
+
+  /**
+   * @generated from field: float screen_height_dp = 2;
+   */
+  screenHeightDp: number;
+
+  /**
+   * @generated from field: float density = 3;
+   */
+  density: number;
+
+  /**
+   * @generated from field: int32 screen_width_px = 4;
+   */
+  screenWidthPx: number;
+
+  /**
+   * @generated from field: int32 screen_height_px = 5;
+   */
+  screenHeightPx: number;
+
+  /**
+   * 设备型号，如 "Pixel 7" / "iPhone"
+   *
+   * @generated from field: string model = 6;
+   */
+  model: string;
+
+  /**
+   * Android API level 或 iOS 主版本号
+   *
+   * @generated from field: int32 os_major_version = 7;
+   */
+  osMajorVersion: number;
+
+  /**
+   * OS 版本字符串，如 "14" / "17.5"
+   *
+   * @generated from field: string os_version = 8;
+   */
+  osVersion: string;
+};
+
+/**
+ * Describes the message clienttools.DeviceInfoFull.
+ * Use `create(DeviceInfoFullSchema)` to create a new message.
+ */
+export const DeviceInfoFullSchema: GenMessage<DeviceInfoFull> = /*@__PURE__*/
+  messageDesc(file_api, 4);
+
+/**
+ * @generated from message clienttools.InfoData
+ */
+export type InfoData = Message<"clienttools.InfoData"> & {
+  /**
+   * @generated from field: string page_name = 1;
+   */
+  pageName: string;
+
+  /**
+   * @generated from field: clienttools.ScreenState screen = 2;
+   */
+  screen?: ScreenState | undefined;
+
+  /**
+   * @generated from field: clienttools.DeviceInfoFull device = 3;
+   */
+  device?: DeviceInfoFull | undefined;
+
+  /**
+   * @generated from field: clienttools.AppInfo app = 4;
+   */
+  app?: AppInfo | undefined;
+};
+
+/**
+ * Describes the message clienttools.InfoData.
+ * Use `create(InfoDataSchema)` to create a new message.
+ */
+export const InfoDataSchema: GenMessage<InfoData> = /*@__PURE__*/
+  messageDesc(file_api, 5);
+
+/**
+ * @generated from message clienttools.InfoResponse
+ */
+export type InfoResponse = Message<"clienttools.InfoResponse"> & {
+  /**
+   * @generated from field: clienttools.ResponseMeta meta = 1;
+   */
+  meta?: ResponseMeta | undefined;
+
+  /**
+   * @generated from field: clienttools.InfoData data = 2;
+   */
+  data?: InfoData | undefined;
+};
+
+/**
+ * Describes the message clienttools.InfoResponse.
+ * Use `create(InfoResponseSchema)` to create a new message.
+ */
+export const InfoResponseSchema: GenMessage<InfoResponse> = /*@__PURE__*/
+  messageDesc(file_api, 6);
+
+/**
  * @generated from message clienttools.PageResponse
  */
 export type PageResponse = Message<"clienttools.PageResponse"> & {
@@ -87,7 +252,7 @@ export type PageResponse = Message<"clienttools.PageResponse"> & {
  * Use `create(PageResponseSchema)` to create a new message.
  */
 export const PageResponseSchema: GenMessage<PageResponse> = /*@__PURE__*/
-  messageDesc(file_api, 2);
+  messageDesc(file_api, 7);
 
 /**
  * @generated from message clienttools.NodeResponse
@@ -109,7 +274,7 @@ export type NodeResponse = Message<"clienttools.NodeResponse"> & {
  * Use `create(NodeResponseSchema)` to create a new message.
  */
 export const NodeResponseSchema: GenMessage<NodeResponse> = /*@__PURE__*/
-  messageDesc(file_api, 3);
+  messageDesc(file_api, 8);
 
 /**
  * @generated from message clienttools.NodeListResponse
@@ -131,7 +296,7 @@ export type NodeListResponse = Message<"clienttools.NodeListResponse"> & {
  * Use `create(NodeListResponseSchema)` to create a new message.
  */
 export const NodeListResponseSchema: GenMessage<NodeListResponse> = /*@__PURE__*/
-  messageDesc(file_api, 4);
+  messageDesc(file_api, 9);
 
 /**
  * @generated from message clienttools.ModifyResponse
@@ -153,7 +318,7 @@ export type ModifyResponse = Message<"clienttools.ModifyResponse"> & {
  * Use `create(ModifyResponseSchema)` to create a new message.
  */
 export const ModifyResponseSchema: GenMessage<ModifyResponse> = /*@__PURE__*/
-  messageDesc(file_api, 5);
+  messageDesc(file_api, 10);
 
 /**
  * @generated from message clienttools.ClickResponse
@@ -175,7 +340,7 @@ export type ClickResponse = Message<"clienttools.ClickResponse"> & {
  * Use `create(ClickResponseSchema)` to create a new message.
  */
 export const ClickResponseSchema: GenMessage<ClickResponse> = /*@__PURE__*/
-  messageDesc(file_api, 6);
+  messageDesc(file_api, 11);
 
 /**
  * @generated from message clienttools.ScrollResponse
@@ -197,7 +362,7 @@ export type ScrollResponse = Message<"clienttools.ScrollResponse"> & {
  * Use `create(ScrollResponseSchema)` to create a new message.
  */
 export const ScrollResponseSchema: GenMessage<ScrollResponse> = /*@__PURE__*/
-  messageDesc(file_api, 7);
+  messageDesc(file_api, 12);
 
 /**
  * @generated from message clienttools.SimpleResponse
@@ -214,7 +379,7 @@ export type SimpleResponse = Message<"clienttools.SimpleResponse"> & {
  * Use `create(SimpleResponseSchema)` to create a new message.
  */
 export const SimpleResponseSchema: GenMessage<SimpleResponse> = /*@__PURE__*/
-  messageDesc(file_api, 8);
+  messageDesc(file_api, 13);
 
 /**
  * @generated from message clienttools.PushHtmlRequest
@@ -241,7 +406,7 @@ export type PushHtmlRequest = Message<"clienttools.PushHtmlRequest"> & {
  * Use `create(PushHtmlRequestSchema)` to create a new message.
  */
 export const PushHtmlRequestSchema: GenMessage<PushHtmlRequest> = /*@__PURE__*/
-  messageDesc(file_api, 9);
+  messageDesc(file_api, 14);
 
 /**
  * @generated from message clienttools.PushHtmlResult
@@ -268,7 +433,7 @@ export type PushHtmlResult = Message<"clienttools.PushHtmlResult"> & {
  * Use `create(PushHtmlResultSchema)` to create a new message.
  */
 export const PushHtmlResultSchema: GenMessage<PushHtmlResult> = /*@__PURE__*/
-  messageDesc(file_api, 10);
+  messageDesc(file_api, 15);
 
 /**
  * @generated from message clienttools.PushHtmlResponse
@@ -290,7 +455,7 @@ export type PushHtmlResponse = Message<"clienttools.PushHtmlResponse"> & {
  * Use `create(PushHtmlResponseSchema)` to create a new message.
  */
 export const PushHtmlResponseSchema: GenMessage<PushHtmlResponse> = /*@__PURE__*/
-  messageDesc(file_api, 11);
+  messageDesc(file_api, 16);
 
 /**
  * @generated from message clienttools.WebviewShowRequest
@@ -312,7 +477,7 @@ export type WebviewShowRequest = Message<"clienttools.WebviewShowRequest"> & {
  * Use `create(WebviewShowRequestSchema)` to create a new message.
  */
 export const WebviewShowRequestSchema: GenMessage<WebviewShowRequest> = /*@__PURE__*/
-  messageDesc(file_api, 12);
+  messageDesc(file_api, 17);
 
 /**
  * @generated from message clienttools.WebviewAdjustRequest
@@ -339,7 +504,7 @@ export type WebviewAdjustRequest = Message<"clienttools.WebviewAdjustRequest"> &
  * Use `create(WebviewAdjustRequestSchema)` to create a new message.
  */
 export const WebviewAdjustRequestSchema: GenMessage<WebviewAdjustRequest> = /*@__PURE__*/
-  messageDesc(file_api, 13);
+  messageDesc(file_api, 18);
 
 /**
  * @generated from message clienttools.CaptureResponse
@@ -361,7 +526,7 @@ export type CaptureResponse = Message<"clienttools.CaptureResponse"> & {
  * Use `create(CaptureResponseSchema)` to create a new message.
  */
 export const CaptureResponseSchema: GenMessage<CaptureResponse> = /*@__PURE__*/
-  messageDesc(file_api, 14);
+  messageDesc(file_api, 19);
 
 /**
  * @generated from message clienttools.MockRuleResponse
@@ -383,7 +548,7 @@ export type MockRuleResponse = Message<"clienttools.MockRuleResponse"> & {
  * Use `create(MockRuleResponseSchema)` to create a new message.
  */
 export const MockRuleResponseSchema: GenMessage<MockRuleResponse> = /*@__PURE__*/
-  messageDesc(file_api, 15);
+  messageDesc(file_api, 20);
 
 /**
  * @generated from message clienttools.MockRuleListResponse
@@ -405,7 +570,7 @@ export type MockRuleListResponse = Message<"clienttools.MockRuleListResponse"> &
  * Use `create(MockRuleListResponseSchema)` to create a new message.
  */
 export const MockRuleListResponseSchema: GenMessage<MockRuleListResponse> = /*@__PURE__*/
-  messageDesc(file_api, 16);
+  messageDesc(file_api, 21);
 
 /**
  * @generated from message clienttools.ClearMockRulesResponse
@@ -427,7 +592,7 @@ export type ClearMockRulesResponse = Message<"clienttools.ClearMockRulesResponse
  * Use `create(ClearMockRulesResponseSchema)` to create a new message.
  */
 export const ClearMockRulesResponseSchema: GenMessage<ClearMockRulesResponse> = /*@__PURE__*/
-  messageDesc(file_api, 17);
+  messageDesc(file_api, 22);
 
 /**
  * @generated from message clienttools.WebViewRedirectResponse
@@ -449,7 +614,7 @@ export type WebViewRedirectResponse = Message<"clienttools.WebViewRedirectRespon
  * Use `create(WebViewRedirectResponseSchema)` to create a new message.
  */
 export const WebViewRedirectResponseSchema: GenMessage<WebViewRedirectResponse> = /*@__PURE__*/
-  messageDesc(file_api, 18);
+  messageDesc(file_api, 23);
 
 /**
  * @generated from message clienttools.WebViewRedirectListResponse
@@ -471,7 +636,7 @@ export type WebViewRedirectListResponse = Message<"clienttools.WebViewRedirectLi
  * Use `create(WebViewRedirectListResponseSchema)` to create a new message.
  */
 export const WebViewRedirectListResponseSchema: GenMessage<WebViewRedirectListResponse> = /*@__PURE__*/
-  messageDesc(file_api, 19);
+  messageDesc(file_api, 24);
 
 /**
  * @generated from message clienttools.ClearWebViewRedirectsResponse
@@ -493,5 +658,5 @@ export type ClearWebViewRedirectsResponse = Message<"clienttools.ClearWebViewRed
  * Use `create(ClearWebViewRedirectsResponseSchema)` to create a new message.
  */
 export const ClearWebViewRedirectsResponseSchema: GenMessage<ClearWebViewRedirectsResponse> = /*@__PURE__*/
-  messageDesc(file_api, 20);
+  messageDesc(file_api, 25);
 

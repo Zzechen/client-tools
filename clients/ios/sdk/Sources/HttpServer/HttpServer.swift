@@ -166,6 +166,10 @@ class HttpServer {
         switch (method, path) {
         case ("GET", "/dom/all"):
             handleDomAll(connection: connection)
+        case ("GET", "/api/info"):
+            handleGetInfo(connection: connection)
+        case ("POST", "/api/screen/wake"):
+            handleScreenWake(connection: connection)
         case ("GET", "/api/page/current"):
             handlePageCurrent(connection: connection)
         case ("GET", "/api/nodes/all"):
@@ -240,6 +244,53 @@ class HttpServer {
                 sendError(code: 404, message: "Not found", httpCode: 404, connection: connection)
             }
         }
+    }
+
+    private func handleGetInfo(connection: NWConnection) {
+        let screen = UIScreen.main
+        let bounds = screen.bounds
+        let scale = screen.scale
+
+        var screenState = Clienttools_ScreenState()
+        // iOS: 能响应请求说明 app 处于活跃状态，屏幕视为点亮
+        screenState.isAwake = true
+        // isProtectedDataAvailable == false 表示设备已锁屏且数据受保护
+        screenState.isLocked = !UIApplication.shared.isProtectedDataAvailable
+
+        var device = Clienttools_DeviceInfoFull()
+        device.screenWidthDp  = Float(bounds.width)
+        device.screenHeightDp = Float(bounds.height)
+        device.density        = Float(scale)
+        device.screenWidthPx  = Int32(bounds.width * scale)
+        device.screenHeightPx = Int32(bounds.height * scale)
+        device.model           = UIDevice.current.model
+        device.osMajorVersion = Int32(ProcessInfo.processInfo.operatingSystemVersion.majorVersion)
+        device.osVersion      = UIDevice.current.systemVersion
+
+        var app = Clienttools_AppInfo()
+        app.packageName  = Bundle.main.bundleIdentifier ?? ""
+        app.versionName  = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? ""
+        app.versionCode  = Int32(Bundle.main.infoDictionary?["CFBundleVersion"] as? String ?? "0") ?? 0
+
+        let pageInfo = ClientToolsSDK.shared.getCurrentPage()
+
+        var data = Clienttools_InfoData()
+        data.pageName = pageInfo.pageName
+        data.screen   = screenState
+        data.device   = device
+        data.app      = app
+
+        var resp = Clienttools_InfoResponse()
+        resp.meta = okMeta()
+        resp.data = data
+        sendProto(resp, connection: connection)
+    }
+
+    private func handleScreenWake(connection: NWConnection) {
+        // iOS 不支持通过 app 唤醒屏幕，返回成功（no-op）
+        var resp = Clienttools_SimpleResponse()
+        resp.meta = okMeta()
+        sendProto(resp, connection: connection)
     }
 
     private func handlePageCurrent(connection: NWConnection) {

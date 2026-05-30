@@ -6,6 +6,8 @@ import {
   PageResponseSchema,
   ClickResponseSchema,
   ScrollResponseSchema,
+  SimpleResponseSchema,
+  InfoResponseSchema,
 } from "../generated/api_pb.js";
 import { ClickRequestSchema, ScrollRequestSchema } from "../generated/modify_pb.js";
 
@@ -17,6 +19,40 @@ function errResult(e: unknown) {
 }
 
 export function registerPageTools(server: McpServer): void {
+  server.tool("get_info", "获取设备基础信息：当前页面、屏幕亮/锁状态、屏幕尺寸（dp/px）、设备型号、Android 版本、App 包名版本（Android/iOS 通用）", {}, async () => {
+    try {
+      const res = await sdkGet("/api/info", InfoResponseSchema);
+      const d = res.data;
+      return {
+        content: [{
+          type: "text" as const,
+          text: JSON.stringify({
+            pageName: d?.pageName,
+            screen: { isAwake: d?.screen?.isAwake, isLocked: d?.screen?.isLocked },
+            device: {
+              widthDp: d?.device?.screenWidthDp,
+              heightDp: d?.device?.screenHeightDp,
+              widthPx: d?.device?.screenWidthPx,
+              heightPx: d?.device?.screenHeightPx,
+              density: d?.device?.density,
+              model: d?.device?.model,
+              osMajorVersion: d?.device?.osMajorVersion,
+              osVersion: d?.device?.osVersion,
+            },
+            app: { packageName: d?.app?.packageName, versionName: d?.app?.versionName, versionCode: d?.app?.versionCode },
+          }),
+        }],
+      };
+    } catch (e) { return errResult(e); }
+  });
+
+  server.tool("wake_screen", "唤醒并解锁屏幕（仅限无密码锁屏，Android/iOS 通用）", {}, async () => {
+    try {
+      await sdkPost("/api/screen/wake", SimpleResponseSchema, create(SimpleResponseSchema), SimpleResponseSchema);
+      return { content: [{ type: "text" as const, text: JSON.stringify({ ok: true }) }] };
+    } catch (e) { return errResult(e); }
+  });
+
   server.tool("get_current_page", "查询当前页面名称（Android/iOS 通用）", {}, async () => {
     try {
       const res = await sdkGet("/api/page/current", PageResponseSchema);

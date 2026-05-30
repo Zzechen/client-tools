@@ -62,6 +62,140 @@ nonisolated struct Clienttools_Empty: Sendable {
   init() {}
 }
 
+nonisolated struct Clienttools_ScreenState: Sendable {
+  // SwiftProtobuf.Message conformance is added in an extension below. See the
+  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+  // methods supported on all messages.
+
+  /// 屏幕是否点亮
+  var isAwake: Bool = false
+
+  /// 锁屏是否锁定
+  var isLocked: Bool = false
+
+  var unknownFields = SwiftProtobuf.UnknownStorage()
+
+  init() {}
+}
+
+nonisolated struct Clienttools_AppInfo: Sendable {
+  // SwiftProtobuf.Message conformance is added in an extension below. See the
+  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+  // methods supported on all messages.
+
+  var packageName: String = String()
+
+  var versionName: String = String()
+
+  var versionCode: Int32 = 0
+
+  var unknownFields = SwiftProtobuf.UnknownStorage()
+
+  init() {}
+}
+
+nonisolated struct Clienttools_DeviceInfoFull: Sendable {
+  // SwiftProtobuf.Message conformance is added in an extension below. See the
+  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+  // methods supported on all messages.
+
+  var screenWidthDp: Float = 0
+
+  var screenHeightDp: Float = 0
+
+  var density: Float = 0
+
+  var screenWidthPx: Int32 = 0
+
+  var screenHeightPx: Int32 = 0
+
+  /// 设备型号，如 "Pixel 7" / "iPhone"
+  var model: String = String()
+
+  /// Android API level 或 iOS 主版本号
+  var osMajorVersion: Int32 = 0
+
+  /// OS 版本字符串，如 "14" / "17.5"
+  var osVersion: String = String()
+
+  var unknownFields = SwiftProtobuf.UnknownStorage()
+
+  init() {}
+}
+
+nonisolated struct Clienttools_InfoData: Sendable {
+  // SwiftProtobuf.Message conformance is added in an extension below. See the
+  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+  // methods supported on all messages.
+
+  var pageName: String = String()
+
+  var screen: Clienttools_ScreenState {
+    get {_screen ?? Clienttools_ScreenState()}
+    set {_screen = newValue}
+  }
+  /// Returns true if `screen` has been explicitly set.
+  var hasScreen: Bool {self._screen != nil}
+  /// Clears the value of `screen`. Subsequent reads from it will return its default value.
+  mutating func clearScreen() {self._screen = nil}
+
+  var device: Clienttools_DeviceInfoFull {
+    get {_device ?? Clienttools_DeviceInfoFull()}
+    set {_device = newValue}
+  }
+  /// Returns true if `device` has been explicitly set.
+  var hasDevice: Bool {self._device != nil}
+  /// Clears the value of `device`. Subsequent reads from it will return its default value.
+  mutating func clearDevice() {self._device = nil}
+
+  var app: Clienttools_AppInfo {
+    get {_app ?? Clienttools_AppInfo()}
+    set {_app = newValue}
+  }
+  /// Returns true if `app` has been explicitly set.
+  var hasApp: Bool {self._app != nil}
+  /// Clears the value of `app`. Subsequent reads from it will return its default value.
+  mutating func clearApp() {self._app = nil}
+
+  var unknownFields = SwiftProtobuf.UnknownStorage()
+
+  init() {}
+
+  fileprivate var _screen: Clienttools_ScreenState? = nil
+  fileprivate var _device: Clienttools_DeviceInfoFull? = nil
+  fileprivate var _app: Clienttools_AppInfo? = nil
+}
+
+nonisolated struct Clienttools_InfoResponse: @unchecked Sendable {
+  // SwiftProtobuf.Message conformance is added in an extension below. See the
+  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+  // methods supported on all messages.
+
+  var meta: Clienttools_ResponseMeta {
+    get {_storage._meta ?? Clienttools_ResponseMeta()}
+    set {_uniqueStorage()._meta = newValue}
+  }
+  /// Returns true if `meta` has been explicitly set.
+  var hasMeta: Bool {_storage._meta != nil}
+  /// Clears the value of `meta`. Subsequent reads from it will return its default value.
+  mutating func clearMeta() {_uniqueStorage()._meta = nil}
+
+  var data: Clienttools_InfoData {
+    get {_storage._data ?? Clienttools_InfoData()}
+    set {_uniqueStorage()._data = newValue}
+  }
+  /// Returns true if `data` has been explicitly set.
+  var hasData: Bool {_storage._data != nil}
+  /// Clears the value of `data`. Subsequent reads from it will return its default value.
+  mutating func clearData() {_uniqueStorage()._data = nil}
+
+  var unknownFields = SwiftProtobuf.UnknownStorage()
+
+  init() {}
+
+  fileprivate var _storage = _StorageClass.defaultInstance
+}
+
 nonisolated struct Clienttools_PageResponse: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
@@ -613,6 +747,272 @@ nonisolated extension Clienttools_Empty: SwiftProtobuf.Message, SwiftProtobuf._M
   }
 
   static func ==(lhs: Clienttools_Empty, rhs: Clienttools_Empty) -> Bool {
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+nonisolated extension Clienttools_ScreenState: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  static let protoMessageName: String = _protobuf_package + ".ScreenState"
+  static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{3}is_awake\0\u{3}is_locked\0")
+
+  mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 1: try { try decoder.decodeSingularBoolField(value: &self.isAwake) }()
+      case 2: try { try decoder.decodeSingularBoolField(value: &self.isLocked) }()
+      default: break
+      }
+    }
+  }
+
+  func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    if self.isAwake != false {
+      try visitor.visitSingularBoolField(value: self.isAwake, fieldNumber: 1)
+    }
+    if self.isLocked != false {
+      try visitor.visitSingularBoolField(value: self.isLocked, fieldNumber: 2)
+    }
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  static func ==(lhs: Clienttools_ScreenState, rhs: Clienttools_ScreenState) -> Bool {
+    if lhs.isAwake != rhs.isAwake {return false}
+    if lhs.isLocked != rhs.isLocked {return false}
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+nonisolated extension Clienttools_AppInfo: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  static let protoMessageName: String = _protobuf_package + ".AppInfo"
+  static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{3}package_name\0\u{3}version_name\0\u{3}version_code\0")
+
+  mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 1: try { try decoder.decodeSingularStringField(value: &self.packageName) }()
+      case 2: try { try decoder.decodeSingularStringField(value: &self.versionName) }()
+      case 3: try { try decoder.decodeSingularInt32Field(value: &self.versionCode) }()
+      default: break
+      }
+    }
+  }
+
+  func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    if !self.packageName.isEmpty {
+      try visitor.visitSingularStringField(value: self.packageName, fieldNumber: 1)
+    }
+    if !self.versionName.isEmpty {
+      try visitor.visitSingularStringField(value: self.versionName, fieldNumber: 2)
+    }
+    if self.versionCode != 0 {
+      try visitor.visitSingularInt32Field(value: self.versionCode, fieldNumber: 3)
+    }
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  static func ==(lhs: Clienttools_AppInfo, rhs: Clienttools_AppInfo) -> Bool {
+    if lhs.packageName != rhs.packageName {return false}
+    if lhs.versionName != rhs.versionName {return false}
+    if lhs.versionCode != rhs.versionCode {return false}
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+nonisolated extension Clienttools_DeviceInfoFull: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  static let protoMessageName: String = _protobuf_package + ".DeviceInfoFull"
+  static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{3}screen_width_dp\0\u{3}screen_height_dp\0\u{1}density\0\u{3}screen_width_px\0\u{3}screen_height_px\0\u{1}model\0\u{3}os_major_version\0\u{3}os_version\0")
+
+  mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 1: try { try decoder.decodeSingularFloatField(value: &self.screenWidthDp) }()
+      case 2: try { try decoder.decodeSingularFloatField(value: &self.screenHeightDp) }()
+      case 3: try { try decoder.decodeSingularFloatField(value: &self.density) }()
+      case 4: try { try decoder.decodeSingularInt32Field(value: &self.screenWidthPx) }()
+      case 5: try { try decoder.decodeSingularInt32Field(value: &self.screenHeightPx) }()
+      case 6: try { try decoder.decodeSingularStringField(value: &self.model) }()
+      case 7: try { try decoder.decodeSingularInt32Field(value: &self.osMajorVersion) }()
+      case 8: try { try decoder.decodeSingularStringField(value: &self.osVersion) }()
+      default: break
+      }
+    }
+  }
+
+  func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    if self.screenWidthDp.bitPattern != 0 {
+      try visitor.visitSingularFloatField(value: self.screenWidthDp, fieldNumber: 1)
+    }
+    if self.screenHeightDp.bitPattern != 0 {
+      try visitor.visitSingularFloatField(value: self.screenHeightDp, fieldNumber: 2)
+    }
+    if self.density.bitPattern != 0 {
+      try visitor.visitSingularFloatField(value: self.density, fieldNumber: 3)
+    }
+    if self.screenWidthPx != 0 {
+      try visitor.visitSingularInt32Field(value: self.screenWidthPx, fieldNumber: 4)
+    }
+    if self.screenHeightPx != 0 {
+      try visitor.visitSingularInt32Field(value: self.screenHeightPx, fieldNumber: 5)
+    }
+    if !self.model.isEmpty {
+      try visitor.visitSingularStringField(value: self.model, fieldNumber: 6)
+    }
+    if self.osMajorVersion != 0 {
+      try visitor.visitSingularInt32Field(value: self.osMajorVersion, fieldNumber: 7)
+    }
+    if !self.osVersion.isEmpty {
+      try visitor.visitSingularStringField(value: self.osVersion, fieldNumber: 8)
+    }
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  static func ==(lhs: Clienttools_DeviceInfoFull, rhs: Clienttools_DeviceInfoFull) -> Bool {
+    if lhs.screenWidthDp != rhs.screenWidthDp {return false}
+    if lhs.screenHeightDp != rhs.screenHeightDp {return false}
+    if lhs.density != rhs.density {return false}
+    if lhs.screenWidthPx != rhs.screenWidthPx {return false}
+    if lhs.screenHeightPx != rhs.screenHeightPx {return false}
+    if lhs.model != rhs.model {return false}
+    if lhs.osMajorVersion != rhs.osMajorVersion {return false}
+    if lhs.osVersion != rhs.osVersion {return false}
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+nonisolated extension Clienttools_InfoData: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  static let protoMessageName: String = _protobuf_package + ".InfoData"
+  static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{3}page_name\0\u{1}screen\0\u{1}device\0\u{1}app\0")
+
+  mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 1: try { try decoder.decodeSingularStringField(value: &self.pageName) }()
+      case 2: try { try decoder.decodeSingularMessageField(value: &self._screen) }()
+      case 3: try { try decoder.decodeSingularMessageField(value: &self._device) }()
+      case 4: try { try decoder.decodeSingularMessageField(value: &self._app) }()
+      default: break
+      }
+    }
+  }
+
+  func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    // The use of inline closures is to circumvent an issue where the compiler
+    // allocates stack space for every if/case branch local when no optimizations
+    // are enabled. https://github.com/apple/swift-protobuf/issues/1034 and
+    // https://github.com/apple/swift-protobuf/issues/1182
+    if !self.pageName.isEmpty {
+      try visitor.visitSingularStringField(value: self.pageName, fieldNumber: 1)
+    }
+    try { if let v = self._screen {
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 2)
+    } }()
+    try { if let v = self._device {
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 3)
+    } }()
+    try { if let v = self._app {
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 4)
+    } }()
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  static func ==(lhs: Clienttools_InfoData, rhs: Clienttools_InfoData) -> Bool {
+    if lhs.pageName != rhs.pageName {return false}
+    if lhs._screen != rhs._screen {return false}
+    if lhs._device != rhs._device {return false}
+    if lhs._app != rhs._app {return false}
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+nonisolated extension Clienttools_InfoResponse: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  static let protoMessageName: String = _protobuf_package + ".InfoResponse"
+  static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}meta\0\u{1}data\0")
+
+  fileprivate class _StorageClass {
+    var _meta: Clienttools_ResponseMeta? = nil
+    var _data: Clienttools_InfoData? = nil
+
+      // This property is used as the initial default value for new instances of the type.
+      // The type itself is protecting the reference to its storage via CoW semantics.
+      // This will force a copy to be made of this reference when the first mutation occurs;
+      // hence, it is safe to mark this as `nonisolated(unsafe)`.
+      static nonisolated(unsafe) let defaultInstance = _StorageClass()
+
+    private init() {}
+
+    init(copying source: _StorageClass) {
+      _meta = source._meta
+      _data = source._data
+    }
+  }
+
+  fileprivate mutating func _uniqueStorage() -> _StorageClass {
+    if !isKnownUniquelyReferenced(&_storage) {
+      _storage = _StorageClass(copying: _storage)
+    }
+    return _storage
+  }
+
+  mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    _ = _uniqueStorage()
+    try withExtendedLifetime(_storage) { (_storage: _StorageClass) in
+      while let fieldNumber = try decoder.nextFieldNumber() {
+        // The use of inline closures is to circumvent an issue where the compiler
+        // allocates stack space for every case branch when no optimizations are
+        // enabled. https://github.com/apple/swift-protobuf/issues/1034
+        switch fieldNumber {
+        case 1: try { try decoder.decodeSingularMessageField(value: &_storage._meta) }()
+        case 2: try { try decoder.decodeSingularMessageField(value: &_storage._data) }()
+        default: break
+        }
+      }
+    }
+  }
+
+  func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    try withExtendedLifetime(_storage) { (_storage: _StorageClass) in
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every if/case branch local when no optimizations
+      // are enabled. https://github.com/apple/swift-protobuf/issues/1034 and
+      // https://github.com/apple/swift-protobuf/issues/1182
+      try { if let v = _storage._meta {
+        try visitor.visitSingularMessageField(value: v, fieldNumber: 1)
+      } }()
+      try { if let v = _storage._data {
+        try visitor.visitSingularMessageField(value: v, fieldNumber: 2)
+      } }()
+    }
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  static func ==(lhs: Clienttools_InfoResponse, rhs: Clienttools_InfoResponse) -> Bool {
+    if lhs._storage !== rhs._storage {
+      let storagesAreEqual: Bool = withExtendedLifetime((lhs._storage, rhs._storage)) { (_args: (_StorageClass, _StorageClass)) in
+        let _storage = _args.0
+        let rhs_storage = _args.1
+        if _storage._meta != rhs_storage._meta {return false}
+        if _storage._data != rhs_storage._data {return false}
+        return true
+      }
+      if !storagesAreEqual {return false}
+    }
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }

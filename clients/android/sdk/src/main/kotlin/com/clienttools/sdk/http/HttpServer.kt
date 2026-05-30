@@ -23,6 +23,12 @@ class HttpServer(
             val uri = session.uri
             val method = session.method
             when {
+                method == Method.GET && uri == "/api/info" ->
+                    ApiHandler.handleGetInfo()
+
+                method == Method.POST && uri == "/api/screen/wake" ->
+                    ApiHandler.handleScreenWake()
+
                 method == Method.GET && uri == "/api/page/current" ->
                     ApiHandler.handleGetCurrentPage()
 
