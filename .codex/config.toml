@@ -1,0 +1,6 @@
+[mcp_servers.client-tools]
+command = "node"
+args = ["./mcp/dist/index.js"]
+
+[mcp_servers.client-tools.env]
+CLIENT_TOOLS_PORT = "8080"
