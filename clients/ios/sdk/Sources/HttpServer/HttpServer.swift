@@ -247,35 +247,40 @@ class HttpServer {
     }
 
     private func handleGetInfo(connection: NWConnection) {
-        let screen = UIScreen.main
-        let bounds = screen.bounds
-        let scale = screen.scale
-
+        let sema = DispatchSemaphore(value: 0)
         var screenState = Clienttools_ScreenState()
-        // iOS: 能响应请求说明 app 处于活跃状态，屏幕视为点亮
-        screenState.isAwake = true
-        // isProtectedDataAvailable == false 表示设备已锁屏且数据受保护
-        screenState.isLocked = !UIApplication.shared.isProtectedDataAvailable
-
         var device = Clienttools_DeviceInfoFull()
-        device.screenWidthDp  = Float(bounds.width)
-        device.screenHeightDp = Float(bounds.height)
-        device.density        = Float(scale)
-        device.screenWidthPx  = Int32(bounds.width * scale)
-        device.screenHeightPx = Int32(bounds.height * scale)
-        device.model           = UIDevice.current.model
-        device.osMajorVersion = Int32(ProcessInfo.processInfo.operatingSystemVersion.majorVersion)
-        device.osVersion      = UIDevice.current.systemVersion
-
         var app = Clienttools_AppInfo()
-        app.packageName  = Bundle.main.bundleIdentifier ?? ""
-        app.versionName  = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? ""
-        app.versionCode  = Int32(Bundle.main.infoDictionary?["CFBundleVersion"] as? String ?? "0") ?? 0
+        var pageName = ""
 
-        let pageInfo = ClientToolsSDK.shared.getCurrentPage()
+        DispatchQueue.main.async {
+            let screen = UIScreen.main
+            let bounds = screen.bounds
+            let scale = screen.scale
+
+            screenState.isAwake = true
+            screenState.isLocked = !UIApplication.shared.isProtectedDataAvailable
+
+            device.screenWidthDp  = Float(bounds.width)
+            device.screenHeightDp = Float(bounds.height)
+            device.density        = Float(scale)
+            device.screenWidthPx  = Int32(bounds.width * scale)
+            device.screenHeightPx = Int32(bounds.height * scale)
+            device.model           = UIDevice.current.model
+            device.osMajorVersion = Int32(ProcessInfo.processInfo.operatingSystemVersion.majorVersion)
+            device.osVersion      = UIDevice.current.systemVersion
+
+            app.packageName  = Bundle.main.bundleIdentifier ?? ""
+            app.versionName  = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? ""
+            app.versionCode  = Int32(Bundle.main.infoDictionary?["CFBundleVersion"] as? String ?? "0") ?? 0
+
+            pageName = ClientToolsSDK.shared.getCurrentPage().pageName
+            sema.signal()
+        }
+        sema.wait()
 
         var data = Clienttools_InfoData()
-        data.pageName = pageInfo.pageName
+        data.pageName = pageName
         data.screen   = screenState
         data.device   = device
         data.app      = app
@@ -305,7 +310,13 @@ class HttpServer {
     }
 
     private func handleNodesAll(connection: NWConnection) {
-        let nodes = viewQueryService.getAllProtoNodes()
+        let sema = DispatchSemaphore(value: 0)
+        var nodes: [Clienttools_Node] = []
+        DispatchQueue.main.async {
+            nodes = self.viewQueryService.getAllProtoNodes()
+            sema.signal()
+        }
+        sema.wait()
         var nodeList = Clienttools_NodeList()
         nodeList.nodes = nodes
         var resp = Clienttools_NodeListResponse()
@@ -315,7 +326,14 @@ class HttpServer {
     }
 
     private func handleNodeById(_ id: String, connection: NWConnection) {
-        guard let node = viewQueryService.getProtoNode(byId: id) else {
+        let sema = DispatchSemaphore(value: 0)
+        var node: Clienttools_Node? = nil
+        DispatchQueue.main.async {
+            node = self.viewQueryService.getProtoNode(byId: id)
+            sema.signal()
+        }
+        sema.wait()
+        guard let node = node else {
             sendError(code: 404, message: "Node not found", httpCode: 404, connection: connection); return
         }
         var resp = Clienttools_NodeResponse()

@@ -29,7 +29,7 @@ class ViewTraverser {
                 widthDp: Float(subview.bounds.width) * visualSx,
                 heightDp: Float(subview.bounds.height) * visualSy,
                 visibility: visibilityCode,
-                isEnabled: subview.isUserInteractionEnabled,
+                isEnabled: (subview as? UIControl)?.isEnabled ?? subview.isUserInteractionEnabled,
                 attrs: StyleQuerier.query(subview)
             )
 
