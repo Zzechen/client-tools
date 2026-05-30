@@ -31,13 +31,15 @@ export function registerPageTools(server: McpServer): void {
       id: z.string().describe("View 的 id（Android resource id 不含包名前缀，iOS 为 accessibilityIdentifier）"),
       centerOffsetX: z.number().optional().describe("触点相对 view 中心的横向偏移 dp，正右，默认 0"),
       centerOffsetY: z.number().optional().describe("触点相对 view 中心的纵向偏移 dp，正下，默认 0"),
+      index: z.number().int().min(0).optional().describe("同 id 有多个匹配时点第 N 个（0-based），缺省点第 0 个"),
     },
-    async ({ id, centerOffsetX, centerOffsetY }) => {
+    async ({ id, centerOffsetX, centerOffsetY, index }) => {
       try {
         const req = create(ClickRequestSchema, {
           id,
           ...(centerOffsetX !== undefined && { centerOffsetX }),
           ...(centerOffsetY !== undefined && { centerOffsetY }),
+          ...(index !== undefined && { index }),
         });
         const res = await sdkPost("/api/click", ClickRequestSchema, req, ClickResponseSchema);
         return { content: [{ type: "text" as const, text: JSON.stringify({ id: res.data?.id }) }] };

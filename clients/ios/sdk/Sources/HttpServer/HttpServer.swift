@@ -277,7 +277,8 @@ class HttpServer {
         guard let req = try? Clienttools_ClickRequest(serializedBytes: body) else {
             sendError(code: 400, message: "Invalid request", connection: connection); return
         }
-        guard let view = viewQueryService.findView(byId: req.id) else {
+        let clickIndex = req.hasIndex ? Int(req.index) : 0
+        guard let view = viewQueryService.findView(byId: req.id, index: clickIndex) else {
             sendError(code: 404, message: "View not found", httpCode: 404, connection: connection); return
         }
 

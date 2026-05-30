@@ -117,6 +117,7 @@
 | id | string | 是 | View 的 id |
 | centerOffsetX | number | 否 | 触点相对 View 中心的横向偏移（dp），正右，默认 0 |
 | centerOffsetY | number | 否 | 触点相对 View 中心的纵向偏移（dp），正下，默认 0 |
+| index | number | 否 | 同 id 有多个匹配时点第 N 个（0-based），缺省点第 0 个 |
 
 **返回：**
 ```json
