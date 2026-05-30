@@ -2,7 +2,7 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
 import { readFileSync } from "fs";
 import { create } from "@bufbuild/protobuf";
-import { sdkPost } from "../sdk-client.js";
+import { sdkPost, platformParam } from "../sdk-client.js";
 import {
   PushHtmlRequestSchema,
   PushHtmlResponseSchema,
@@ -23,12 +23,13 @@ export function registerWebviewTools(server: McpServer): void {
     "push_html",
     "推送 HTML 到设备 WebView 叠加层并自动显示（Android/iOS 通用）。优先使用 file 参数（本地绝对路径），其次 html 字符串",
     {
+      ...platformParam,
       tag: z.string().describe("页面标识，如 login、home"),
       file: z.string().optional().describe("本地 HTML 文件的绝对路径，优先于 html 参数"),
       html: z.string().optional().describe("完整 HTML 内容字符串"),
       timestamp: z.string().optional().describe("时间戳，格式 MMdd-HHmm，缺省自动生成"),
     },
-    async ({ tag, file, html, timestamp }) => {
+    async ({ platform, tag, file, html, timestamp }) => {
       try {
         const content = file ? readFileSync(file, "utf-8") : html;
         if (!content) throw new Error("需要提供 file 或 html 参数");
@@ -39,7 +40,7 @@ export function registerWebviewTools(server: McpServer): void {
           timestamp: ts,
           html: new TextEncoder().encode(content),
         });
-        const res = await sdkPost("/webview/push-html", PushHtmlRequestSchema, req, PushHtmlResponseSchema);
+        const res = await sdkPost(platform, "/webview/push-html", PushHtmlRequestSchema, req, PushHtmlResponseSchema);
         return { content: [{ type: "text" as const, text: JSON.stringify({ tag: res.data?.tag, filePath: res.data?.filePath }) }] };
       } catch (e) { return errResult(e); }
     }
@@ -49,13 +50,14 @@ export function registerWebviewTools(server: McpServer): void {
     "show_webview",
     "切换显示设备上已保存的 HTML 文件（Android/iOS 通用）",
     {
+      ...platformParam,
       tag: z.string().describe("页面标识"),
       timestamp: z.string().describe("时间戳，格式 MMdd-HHmm"),
     },
-    async ({ tag, timestamp }) => {
+    async ({ platform, tag, timestamp }) => {
       try {
         const req = create(WebviewShowRequestSchema, { tag, timestamp });
-        await sdkPost("/webview/show", WebviewShowRequestSchema, req, SimpleResponseSchema);
+        await sdkPost(platform, "/webview/show", WebviewShowRequestSchema, req, SimpleResponseSchema);
         return { content: [{ type: "text" as const, text: "ok" }] };
       } catch (e) { return errResult(e); }
     }
@@ -64,11 +66,11 @@ export function registerWebviewTools(server: McpServer): void {
   server.tool(
     "hide_overlay",
     "隐藏 WebView 叠加层（Android/iOS 通用）",
-    {},
-    async () => {
+    { ...platformParam },
+    async ({ platform }) => {
       try {
         const req = create(SimpleResponseSchema, {});
-        await sdkPost("/webview/hide", SimpleResponseSchema, req, SimpleResponseSchema);
+        await sdkPost(platform, "/webview/hide", SimpleResponseSchema, req, SimpleResponseSchema);
         return { content: [{ type: "text" as const, text: "ok" }] };
       } catch (e) { return errResult(e); }
     }
@@ -78,18 +80,19 @@ export function registerWebviewTools(server: McpServer): void {
     "adjust_overlay",
     "调整叠加层偏移量（增量 dp）和透明度（绝对值 0~1）（Android/iOS 通用）",
     {
+      ...platformParam,
       offsetX: z.number().optional().describe("X 轴偏移增量，单位 dp"),
       offsetY: z.number().optional().describe("Y 轴偏移增量，单位 dp"),
       opacity: z.number().min(0).max(1).optional().describe("透明度绝对值 0.0~1.0"),
     },
-    async ({ offsetX, offsetY, opacity }) => {
+    async ({ platform, offsetX, offsetY, opacity }) => {
       try {
         const req = create(WebviewAdjustRequestSchema, {
           offsetX: offsetX ?? 0,
           offsetY: offsetY ?? 0,
           opacity: opacity ?? 0.5,
         });
-        await sdkPost("/webview/adjust", WebviewAdjustRequestSchema, req, SimpleResponseSchema);
+        await sdkPost(platform, "/webview/adjust", WebviewAdjustRequestSchema, req, SimpleResponseSchema);
         return { content: [{ type: "text" as const, text: "ok" }] };
       } catch (e) { return errResult(e); }
     }

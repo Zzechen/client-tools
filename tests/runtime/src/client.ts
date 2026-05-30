@@ -1,9 +1,10 @@
 import { fromBinary, toBinary, create, type MessageShape, type DescMessage, type MessageInitShape } from "@bufbuild/protobuf";
 import { execSync } from "child_process";
 
-const PORT = process.env.CLIENT_TOOLS_PORT ?? "8080";
-const BASE_URL = `http://127.0.0.1:${PORT}`;
 const PLATFORM = process.env.PLATFORM ?? "android";
+const DEFAULT_PORT = PLATFORM === "android" ? "8081" : "8080";
+const PORT = process.env.CLIENT_TOOLS_PORT ?? DEFAULT_PORT;
+const BASE_URL = `http://127.0.0.1:${PORT}`;
 
 function ensurePortForward(): void {
   if (PLATFORM === "android") {
@@ -11,7 +12,7 @@ function ensurePortForward(): void {
       execSync(`adb forward tcp:${PORT} tcp:${PORT}`, { stdio: "ignore" });
     } catch { /* ignore: no device or adb not in PATH */ }
   }
-  // iOS: assumes `iproxy 8080 8080` is already running externally
+  // iOS: SDK listens on port 8080, accessible via localhost directly
 }
 
 async function fetchBytes(url: string, init: RequestInit = {}): Promise<{ status: number; bytes: Uint8Array }> {

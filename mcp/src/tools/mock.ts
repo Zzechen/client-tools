@@ -2,7 +2,7 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
 import { create } from "@bufbuild/protobuf";
 import { readFileSync } from "fs";
-import { sdkPost, sdkGet, sdkDelete } from "../sdk-client.js";
+import { sdkPost, sdkGet, sdkDelete, platformParam } from "../sdk-client.js";
 import {
   MockRuleResponseSchema,
   MockRuleListResponseSchema,
@@ -22,8 +22,8 @@ export function registerMockTools(server: McpServer): void {
   server.tool(
     "mock_add",
     "从本地 JSON 文件注册一条 HTTP mock 规则，返回生成的规则 id",
-    { file: z.string().describe("规则 JSON 文件的绝对路径") },
-    async ({ file }) => {
+    { ...platformParam, file: z.string().describe("规则 JSON 文件的绝对路径") },
+    async ({ platform, file }) => {
       try {
         const json = JSON.parse(readFileSync(file, "utf-8"));
         const req = create(AddMockRuleRequestSchema, {
@@ -35,7 +35,7 @@ export function registerMockTools(server: McpServer): void {
           headers: json.headers ?? {},
           body: json.body ?? "",
         });
-        const res = await sdkPost("/mock/rules", AddMockRuleRequestSchema, req, MockRuleResponseSchema);
+        const res = await sdkPost(platform, "/mock/rules", AddMockRuleRequestSchema, req, MockRuleResponseSchema);
         return {
           content: [{
             type: "text" as const,
@@ -49,10 +49,10 @@ export function registerMockTools(server: McpServer): void {
   server.tool(
     "mock_list",
     "列出所有当前生效的 mock 规则",
-    {},
-    async () => {
+    { ...platformParam },
+    async ({ platform }) => {
       try {
-        const res = await sdkGet("/mock/rules", MockRuleListResponseSchema);
+        const res = await sdkGet(platform, "/mock/rules", MockRuleListResponseSchema);
         const rules = (res.data?.rules ?? []).map(r => ({
           id: r.id,
           url: r.url,
@@ -63,12 +63,7 @@ export function registerMockTools(server: McpServer): void {
           headers: r.headers,
           body: r.body,
         }));
-        return {
-          content: [{
-            type: "text" as const,
-            text: JSON.stringify(rules),
-          }],
-        };
+        return { content: [{ type: "text" as const, text: JSON.stringify(rules) }] };
       } catch (e) { return errResult(e); }
     }
   );
@@ -76,10 +71,10 @@ export function registerMockTools(server: McpServer): void {
   server.tool(
     "mock_delete",
     "按 id 删除一条 mock 规则",
-    { id: z.string().describe("规则 id，由 mock_add 返回") },
-    async ({ id }) => {
+    { ...platformParam, id: z.string().describe("规则 id，由 mock_add 返回") },
+    async ({ platform, id }) => {
       try {
-        await sdkDelete(`/mock/rules/${id}`, SimpleResponseSchema);
+        await sdkDelete(platform, `/mock/rules/${id}`, SimpleResponseSchema);
         return { content: [{ type: "text" as const, text: JSON.stringify({ success: true }) }] };
       } catch (e) { return errResult(e); }
     }
@@ -88,10 +83,10 @@ export function registerMockTools(server: McpServer): void {
   server.tool(
     "mock_clear",
     "清空所有 mock 规则",
-    {},
-    async () => {
+    { ...platformParam },
+    async ({ platform }) => {
       try {
-        const res = await sdkDelete("/mock/rules", ClearMockRulesResponseSchema);
+        const res = await sdkDelete(platform, "/mock/rules", ClearMockRulesResponseSchema);
         return {
           content: [{
             type: "text" as const,

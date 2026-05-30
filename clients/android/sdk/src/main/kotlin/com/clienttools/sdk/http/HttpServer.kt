@@ -11,7 +11,7 @@ class HttpServer(
     private val pageChangeListener: PageChangeListener,
     private val customRoutes: List<CustomRoute> = emptyList(),
     private val customHandlerTimeoutMs: Long = 4500L
-) : NanoHTTPD(8080) {
+) : NanoHTTPD(8081) {
 
     init {
         ApiHandler.init(context, pageChangeListener)
@@ -165,7 +165,7 @@ class HttpServer(
     fun startServer() {
         try {
             super.start()
-            Log.d("HttpServer", "HTTP server started on port 8080")
+            Log.d("HttpServer", "HTTP server started on port 8081")
         } catch (e: Exception) {
             Log.e("HttpServer", "Failed to start server", e)
         }
