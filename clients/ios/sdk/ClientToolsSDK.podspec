@@ -1,6 +1,6 @@
 Pod::Spec.new do |s|
   s.name             = 'ClientToolsSDK'
-  s.version          = '1.0.1'
+  s.version          = '1.1.0'
   s.summary          = 'AI Coding Client Tools SDK for iOS'
   s.description      = 'Runtime view inspection and modification for iOS apps'
   s.homepage         = 'https://github.com/Zzechen/client-tools'

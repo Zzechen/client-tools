@@ -63,9 +63,9 @@ dependencyResolutionManagement {
 
 ```kotlin
 // debug 包：完整 SDK，暴露 HTTP 接口
-debugImplementation("com.github.Zzechen:client-tools:v1.0.1")
+debugImplementation("com.github.Zzechen:client-tools:v1.1.0")
 // release 包：noop 桩，所有接口空实现，零运行时开销
-releaseImplementation("com.github.Zzechen:client-tools-noop:v1.0.1")
+releaseImplementation("com.github.Zzechen:client-tools-noop:v1.1.0")
 ```
 
 > `client-tools-noop` 与 `client-tools` 实现同一接口，release 包无需改代码，直接替换即可。
@@ -73,7 +73,7 @@ releaseImplementation("com.github.Zzechen:client-tools-noop:v1.0.1")
 **iOS SDK**（via CocoaPods）
 
 ```ruby
-pod 'ClientToolsSDK', :git => 'https://github.com/Zzechen/client-tools.git', :tag => 'ios/1.0.1'
+pod 'ClientToolsSDK', :git => 'https://github.com/Zzechen/client-tools.git', :tag => 'ios/1.1.0'
 ```
 
 **MCP Server**（本地构建）
