@@ -1,11 +1,12 @@
 # MCP Tools Reference
 
-本文档描述所有可用的 MCP 工具。MCP Server 通过 HTTP 与设备端 SDK 通信（端口 8080）。
+本文档描述所有可用的 MCP 工具。MCP Server 通过 HTTP 与设备端 SDK 通信（Android 端口 8081，iOS 端口 8080）。
 
 ## 概览
 
 | 分组 | 工具 | 用途 |
 |------|------|------|
+| 设备信息 | `get_info` | 获取设备基础信息（页面、屏幕状态、尺寸、型号、系统版本、App 信息） |
 | 屏幕 | `wake_screen` | 唤醒并解锁屏幕（无密码） |
 | 页面/节点 | `get_current_page` | 查询当前页面名称 |
 | | `get_node` | 查询单个 View 的位置和尺寸 |
@@ -34,6 +35,37 @@
 | | `webview_redirect_list` | 列出所有重定向规则 |
 | | `webview_redirect_delete` | 按 id 删除重定向规则 |
 | | `webview_redirect_clear` | 清空所有重定向规则 |
+
+---
+
+## 设备信息
+
+### get_info
+
+获取设备基础信息：当前页面、屏幕亮/锁状态、屏幕尺寸（dp/px）、设备型号、系统版本、App 包名和版本。Android/iOS 通用。
+
+**参数：**
+
+| 名称 | 类型 | 必填 | 说明 |
+|------|------|------|------|
+| platform | "android" \| "ios" | 是 | 目标平台：android（端口 8081）或 ios（端口 8080） |
+
+**返回：**
+```json
+{
+  "pageName": "com.clienttools.demo.LoginActivity",
+  "screen": {"isAwake": false, "isLocked": true},
+  "device": {
+    "widthDp": 375.38, "heightDp": 786.46,
+    "widthPx": 1220, "heightPx": 2556,
+    "density": 3.25,
+    "model": "Xiaomi 2312CRAD3C",
+    "osMajorVersion": 33,
+    "osVersion": "13"
+  },
+  "app": {"packageName": "com.clienttools.demo", "versionName": "1.0", "versionCode": 1}
+}
+```
 
 ---
 
