@@ -8,7 +8,8 @@ import { runWebViewRedirectSuite } from "./suites/webview-redirect.js";
 import { getResults } from "./helpers.js";
 
 const PLATFORM = process.env.PLATFORM ?? "android";
-const PORT = process.env.CLIENT_TOOLS_PORT ?? "8080";
+const DEFAULT_PORT = PLATFORM === "android" ? "8081" : "8080";
+const PORT = process.env.CLIENT_TOOLS_PORT ?? DEFAULT_PORT;
 
 console.log(`\n╔══ Client Tools Runtime Tests ═══════════════════╗`);
 console.log(`   Platform : ${PLATFORM.toUpperCase()}`);
