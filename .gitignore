@@ -2,6 +2,9 @@
 .superpowers/
 .worktrees/
 
+# Local ignore (personal notes, drafts, etc.)
+ignore/
+
 # Python
 __pycache__/
 *.pyc
