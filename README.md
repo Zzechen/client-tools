@@ -1,54 +1,73 @@
 # client-tools
 
-让 AI 真正"看懂"并"操作"你的移动端 App。
+> Give AI eyes and hands on your Android/iOS app.
 
-SDK 嵌入 App 后暴露一套 HTTP 接口，MCP Server 将这些接口封装为 AI 可直接调用的工具。AI 不仅能检查界面、对比设计稿、修改布局，还能通过自定义路由调用 App 的私有能力——页面跳转、获取用户信息、触发业务逻辑，一切均可扩展。
+Embed the SDK in your app to expose an HTTP interface. The MCP Server wraps those endpoints into tools Claude can call directly — inspect UI, fix layout bugs at runtime, compare against designs, and invoke your app's own business logic. No recompile. No simulator workarounds.
 
-支持平台：Android · iOS
+**Platforms:** Android · iOS
 
-## 功能
+---
 
-**界面检查**
-- 截图、获取视图节点树、查询节点属性
-- DOM 查询（WebView 内容）
+## Features
 
-**界面操作**
-- 运行时修改布局属性（位置、尺寸、边距、文字样式等）
-- 模拟点击、滚动
+**UI Inspection**
+- Screenshot, view node tree, query node properties
+- DOM query (WebView content)
 
-**设计稿对比**
-- 推送 HTML 设计稿叠加到 App 界面
-- 自动计算偏移对齐，逐节点视觉校正
+**UI Manipulation**
+- Modify layout properties at runtime (position, size, margin, text style, etc.)
+- Simulate tap, scroll
 
-**自定义扩展**
-- App 自行注册任意 HTTP 路由，暴露私有能力给 AI
-- 典型用途：页面跳转、获取当前用户信息、查询 App 状态、触发业务操作
+**Design Comparison**
+- Push an HTML design overlay onto your app screen
+- Auto-align and visually diff node by node
 
-**WebView 重定向**
-- 将 App 内 WebView 加载的指定远程 URL 替换为本地开发地址
-- 支持正则匹配、query 参数透传，debug/release 包分离（noop 实现）
+**Custom Routes**
+- Register any HTTP route in your app and expose it to AI
+- Typical uses: navigate to a page, get current user info, query app state, trigger business logic
 
-**其他**
-- Mock：拦截和模拟网络请求
-- 图片管理：推送本地图片到设备展示
-- WebView 覆层：显示/隐藏 HTML 叠加层
+**WebView Redirect**
+- Replace remote URLs loaded in in-app WebViews with local dev addresses
+- Supports regex matching and query param forwarding; noop in release builds
 
-## 架构
+**Other**
+- Mock: intercept and simulate network requests
+- Image overlay: push local images to device for display
+- WebView overlay: show/hide HTML layers over the native UI
+
+---
+
+## How It Works
 
 ```
-App (Android / iOS)
-  └── SDK（HTTP :8080）
+Your App (Android / iOS)
+  └── SDK  (HTTP :8080 / :8081)
         └── MCP Server
               └── AI (Claude)
 ```
 
-App 内嵌 SDK，SDK 暴露 HTTP 接口；MCP Server 将接口封装为 MCP 工具，供 AI 直接调用。
+The SDK runs a local HTTP server inside your app. The MCP Server translates those endpoints into 27 MCP tools. Claude calls the tools; the tools talk to your app.
 
-## 安装
+---
 
-**Android SDK**（via JitPack）
+## Use Cases
 
-在 `settings.gradle.kts` 中添加 JitPack 仓库：
+**Visual QA**
+Claude takes a screenshot, overlays your design file, and identifies every pixel-level mismatch. It then calls `modify_view` to fix margins, sizes, and colors — live, without touching your source code.
+
+**Runtime Layout Fix**
+You describe a layout bug. Claude inspects the view tree, locates the offending node, and patches the property on the running app. You see the result immediately.
+
+**App Automation via Custom Routes**
+Your app registers a `/navigate` route. Claude calls it to jump to the right screen before running a test, fetching state, or verifying a flow — all without Espresso or XCUITest boilerplate.
+
+---
+
+## Installation
+
+### Android SDK (via JitPack)
+
+Add JitPack to `settings.gradle.kts`:
 
 ```kotlin
 dependencyResolutionManagement {
@@ -59,32 +78,32 @@ dependencyResolutionManagement {
 }
 ```
 
-在 `app/build.gradle.kts` 中按 debug/release 分别依赖：
+Add dependencies to `app/build.gradle.kts`:
 
 ```kotlin
-// debug 包：完整 SDK，暴露 HTTP 接口
+// debug: full SDK, exposes HTTP interface
 debugImplementation("com.github.Zzechen:client-tools:v1.1.0")
-// release 包：noop 桩，所有接口空实现，零运行时开销
+// release: noop stub, zero runtime overhead
 releaseImplementation("com.github.Zzechen:client-tools-noop:v1.1.0")
 ```
 
-> `client-tools-noop` 与 `client-tools` 实现同一接口，release 包无需改代码，直接替换即可。
+> `client-tools-noop` implements the same interface. No code changes needed between debug and release.
 
-**iOS SDK**（via CocoaPods）
+### iOS SDK (via CocoaPods)
 
 ```ruby
 pod 'ClientToolsSDK', :git => 'https://github.com/Zzechen/client-tools.git', :tag => 'ios/1.1.0'
 ```
 
-**MCP Server**（本地构建）
+### MCP Server
 
 ```bash
 cd mcp && npm install && npm run build
-# adb forward（每次连接 Android 设备后执行）
+# Forward Android device port (run after each adb connect)
 adb forward tcp:8080 tcp:8080
 ```
 
-Claude Code 配置（`.mcp.json`）：
+Add to your Claude Code `.mcp.json`:
 
 ```json
 {
@@ -97,44 +116,48 @@ Claude Code 配置（`.mcp.json`）：
 }
 ```
 
-## 快速开始
+---
 
-### App 开发者
+## Quick Start
 
-在 App 里接入 SDK，让 AI 能看到和操作你的界面，并注册自定义路由暴露 App 私有能力。
+**App developers** — Integrate the SDK and register custom routes to expose your app's private capabilities to AI.
 
-→ 查看 [接入指南](docs/integration.md)
+→ [Integration Guide](docs/integration.md)
 
-### AI / MCP 用户
+**AI / MCP users** — Use MCP tools to control mobile UI and run visual QA.
 
-通过 MCP 工具控制移动端界面、做视觉核对。
+→ [MCP Tools Reference](docs/mcp-tools.md) (27 tools)
 
-→ 查看 [MCP 工具列表](docs/mcp-tools.md)（27 个工具）
+→ [SDK HTTP API](docs/sdk-http-api.md)
 
-→ 查看 [SDK HTTP API](docs/sdk-http-api.md)
+---
 
-## 文档
+## Documentation
 
-| 文档 | 内容 |
-|------|------|
-| [MCP Tools](docs/mcp-tools.md) | 23 个 MCP 工具的参数与返回值，AI 调用参考 |
-| [SDK HTTP API](docs/sdk-http-api.md) | SDK HTTP 接口完整参考，含 Android/iOS 对比 |
-| [接入指南](docs/integration.md) | App 集成 SDK 的步骤 |
+| Doc | Contents |
+|-----|----------|
+| [MCP Tools](docs/mcp-tools.md) | All 27 MCP tools with parameters and return values |
+| [SDK HTTP API](docs/sdk-http-api.md) | Full HTTP API reference with Android/iOS comparison |
+| [Integration Guide](docs/integration.md) | Step-by-step SDK integration |
 
-## 目录结构
+---
+
+## Repository Structure
 
 ```
 clients/
-  android/sdk/     — Android SDK（.aar）
-  android/demo/    — Android 接入示例
-  ios/sdk/         — iOS SDK（CocoaPod）
-  ios/demo/        — iOS 接入示例
-mcp/               — MCP Server（TypeScript）
-proto/             — Protocol Buffer 定义
-docs/              — 文档
-skill/             — client-tools-inspect 技能
-tests/             — 运行时 E2E 测试脚本
+  android/sdk/     — Android SDK (.aar)
+  android/demo/    — Android integration example
+  ios/sdk/         — iOS SDK (CocoaPod)
+  ios/demo/        — iOS integration example
+mcp/               — MCP Server (TypeScript)
+proto/             — Protocol Buffer definitions
+docs/              — Documentation
+skill/             — client-tools-inspect skill
+tests/             — Runtime E2E test scripts
 ```
+
+---
 
 ## License
 
