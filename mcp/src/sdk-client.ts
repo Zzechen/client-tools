@@ -1,4 +1,5 @@
-import { execSync } from "child_process";
+import { execSync, spawn } from "child_process";
+import type { ChildProcess } from "child_process";
 import { fromBinary, toBinary, MessageShape, DescMessage } from "@bufbuild/protobuf";
 import { z } from "zod";
 
@@ -12,6 +13,46 @@ export const platformParam = {
 } as const;
 
 const PORTS: Record<Platform, number> = { android: 8081, ios: 8080 };
+
+let iosProxyProcess: ChildProcess | null = null;
+
+function isPortListening(port: number): boolean {
+  try {
+    execSync(`nc -z 127.0.0.1 ${port}`, { stdio: "ignore" });
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+function ensureIosProxy(): void {
+  if (isPortListening(PORTS.ios)) return;
+  try {
+    execSync("which iproxy", { stdio: "ignore" });
+  } catch {
+    throw new Error(
+      "iproxy not found. Please install libimobiledevice: brew install libimobiledevice"
+    );
+  }
+  const proc = spawn("iproxy", [String(PORTS.ios), String(PORTS.ios)], {
+    stdio: "ignore",
+    detached: true,
+  });
+  proc.unref();
+  iosProxyProcess = proc;
+}
+
+function cleanupIosProxy(): void {
+  if (iosProxyProcess) {
+    try { iosProxyProcess.kill(); } catch { /* ignore */ }
+    iosProxyProcess = null;
+  }
+}
+
+process.on("exit", cleanupIosProxy);
+process.on("SIGINT", () => { cleanupIosProxy(); process.exit(0); });
+process.on("SIGTERM", () => { cleanupIosProxy(); process.exit(0); });
+
 const DEFAULT_TIMEOUT_MS = 5000;
 const DOM_TIMEOUT_MS = 8000;
 const CUSTOM_TIMEOUT_MS = parseInt(process.env.CLIENT_TOOLS_CUSTOM_TIMEOUT_MS ?? "5000", 10);
@@ -27,6 +68,8 @@ function ensureAdbForward(platform: Platform): void {
     } catch {
       // adb not available or no device, ignore
     }
+  } else if (platform === "ios") {
+    ensureIosProxy();
   }
 }
 
