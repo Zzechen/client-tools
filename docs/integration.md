@@ -74,18 +74,25 @@ end
 ### 前置条件
 
 - Node.js 18+
-- adb（Android Debug Bridge）
+- adb（Android Debug Bridge）— Android 调试必需
+- iproxy（libimobiledevice）— iOS USB 连接必需
+
+```bash
+# 安装 iproxy（macOS）
+brew install libimobiledevice
+```
 
 ### 安装步骤
 
 ```bash
-# 1. 安装依赖并构建
+# 安装依赖并构建
 cd <repo>/mcp
 npm install && npm run build
-
-# 2. adb forward（每次连接设备后执行）
-adb forward tcp:8080 tcp:8080
 ```
+
+> **连接说明：**
+> - **Android**：MCP 在每次请求前自动执行 `adb forward tcp:8081 tcp:8081`，无需手动操作。
+> - **iOS（USB）**：MCP 在每次请求前自动检测端口并按需启动 `iproxy 8080 8080`，无需手动操作。需确保设备已通过 USB 连接且 iproxy 已安装。
 
 ### Claude Code 配置
 
