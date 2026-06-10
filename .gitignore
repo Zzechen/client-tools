@@ -1,6 +1,8 @@
 # Superpowers
 .superpowers/
 .worktrees/
+docs/superpowers/plans/
+docs/superpowers/specs/
 
 # Local ignore (personal notes, drafts, etc.)
 ignore/
