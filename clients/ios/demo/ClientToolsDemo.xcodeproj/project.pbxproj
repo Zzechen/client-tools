@@ -12,6 +12,7 @@
 		317DD560FBE13FE5C05D9D0E /* LoginModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 871AB6D4FE1A7B20BA51EE2B /* LoginModels.swift */; };
 		51E0A869758C7DBFBFD320AF /* AuthService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 538DFF74149A976DBC44F27C /* AuthService.swift */; };
 		70688FD64EFA4BA7623F6CEF /* WebViewRedirectViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = CF71E2DA05BADFDF0B0DE8F9 /* WebViewRedirectViewController.swift */; };
+		AA11223344556677AABBCCDD /* AgentTestViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA11223344556677EEDDCCBB /* AgentTestViewController.swift */; };
 		70EB5498C23D0B2FD585EAF8 /* VerifyCodeViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = A88782AAAF79787337979263 /* VerifyCodeViewController.swift */; };
 		7A61C509609457000242A78A /* Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8240C34ABC3603201A8C8C94 /* Extensions.swift */; };
 		AFE41E6F08D6CF2CACB1823A /* LoginViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = B603AFFA6F16D6F9D6E2F79E /* LoginViewModel.swift */; };
@@ -38,6 +39,7 @@
 		AC098864F02B03C73A7A338D /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
 		B29F393B8DA709CBC9B18465 /* LoginViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoginViewController.swift; sourceTree = "<group>"; };
 		B603AFFA6F16D6F9D6E2F79E /* LoginViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoginViewModel.swift; sourceTree = "<group>"; };
+		AA11223344556677EEDDCCBB /* AgentTestViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AgentTestViewController.swift; sourceTree = "<group>"; };
 		CF71E2DA05BADFDF0B0DE8F9 /* WebViewRedirectViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebViewRedirectViewController.swift; sourceTree = "<group>"; };
 		F31BE9AE6CA18E94CFEACF63 /* Pods-ClientToolsDemo.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ClientToolsDemo.release.xcconfig"; path = "Target Support Files/Pods-ClientToolsDemo/Pods-ClientToolsDemo.release.xcconfig"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -66,6 +68,7 @@
 				BCF406D912A6D8999AFD6585 /* UserInfo */,
 				D70ABBB669C24EA9FDDBD385 /* VerifyCode */,
 				2EBCF9124FFD33E38196993E /* WebViewRedirect */,
+			AA11223344556677FFEE1122 /* AgentTest */,
 			);
 			path = ClientToolsDemo;
 			sourceTree = "<group>";
@@ -86,6 +89,14 @@
 				CF71E2DA05BADFDF0B0DE8F9 /* WebViewRedirectViewController.swift */,
 			);
 			path = WebViewRedirect;
+			sourceTree = "<group>";
+		};
+		AA11223344556677FFEE1122 /* AgentTest */ = {
+			isa = PBXGroup;
+			children = (
+				AA11223344556677EEDDCCBB /* AgentTestViewController.swift */,
+			);
+			path = AgentTest;
 			sourceTree = "<group>";
 		};
 		353FB86E6DA88C3809EAE7CD /* Pods */ = {
@@ -279,6 +290,7 @@
 				245EC5AA5560E43D6FC61CE8 /* UserInfoViewController.swift in Sources */,
 				70EB5498C23D0B2FD585EAF8 /* VerifyCodeViewController.swift in Sources */,
 				70688FD64EFA4BA7623F6CEF /* WebViewRedirectViewController.swift in Sources */,
+				AA11223344556677AABBCCDD /* AgentTestViewController.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
