@@ -22,6 +22,7 @@ import com.clienttools.sdk.proto.*
 import com.clienttools.sdk.webview.WebViewRedirectEntry
 import com.clienttools.sdk.webview.WebViewRedirectStore
 import java.util.UUID
+import com.clienttools.sdk.runtime.InteractionHandler
 import com.clienttools.sdk.runtime.ScreenManager
 import com.clienttools.sdk.runtime.ViewModifier
 import com.clienttools.sdk.runtime.ViewQueryService
@@ -207,6 +208,55 @@ object ApiHandler {
             okResponse(resp.toByteArray())
         } catch (e: Exception) {
             Log.e("ApiHandler", "handleScroll", e)
+            errResponse(NanoHTTPD.Response.Status.INTERNAL_ERROR, e.message ?: "error")
+        }
+    }
+
+    fun handleInputText(bodyBytes: ByteArray): NanoHTTPD.Response {
+        return try {
+            val req = InputTextRequest.parseFrom(bodyBytes)
+            val success = InteractionHandler.inputText(req.id, req.text, req.append)
+            if (!success) return errResponse(NanoHTTPD.Response.Status.NOT_FOUND, "View not found or not a TextView")
+            val resp = InputTextResponse.newBuilder().setMeta(ProtoHelper.okMeta(ctx())).build()
+            okResponse(resp.toByteArray())
+        } catch (e: Exception) {
+            Log.e("ApiHandler", "handleInputText", e)
+            errResponse(NanoHTTPD.Response.Status.INTERNAL_ERROR, e.message ?: "error")
+        }
+    }
+
+    fun handleGesture(bodyBytes: ByteArray): NanoHTTPD.Response {
+        return try {
+            val req = GestureRequest.parseFrom(bodyBytes)
+            val durationMs = if (req.durationMs > 0) req.durationMs else 500
+            val distanceDp = if (req.distanceDp > 0f) req.distanceDp else 200f
+            val swipeDurationMs = if (req.swipeDurationMs > 0) req.swipeDurationMs else 300
+            val success = InteractionHandler.gesture(
+                req.id, req.type, durationMs, req.direction, distanceDp, swipeDurationMs
+            )
+            if (!success) return errResponse(NanoHTTPD.Response.Status.NOT_FOUND, "View not found")
+            val resp = GestureResponse.newBuilder().setMeta(ProtoHelper.okMeta(ctx())).build()
+            okResponse(resp.toByteArray())
+        } catch (e: Exception) {
+            Log.e("ApiHandler", "handleGesture", e)
+            errResponse(NanoHTTPD.Response.Status.INTERNAL_ERROR, e.message ?: "error")
+        }
+    }
+
+    fun handleWaitFor(bodyBytes: ByteArray): NanoHTTPD.Response {
+        return try {
+            val req = WaitForRequest.parseFrom(bodyBytes)
+            val timeoutMs = if (req.timeoutMs > 0) req.timeoutMs else 5000
+            val intervalMs = if (req.intervalMs > 0) req.intervalMs else 200
+            val (met, elapsed) = InteractionHandler.waitFor(req.id, req.condition, timeoutMs, intervalMs)
+            val resp = WaitForResponse.newBuilder()
+                .setMeta(ProtoHelper.okMeta(ctx()))
+                .setMet(met)
+                .setElapsedMs(elapsed)
+                .build()
+            okResponse(resp.toByteArray())
+        } catch (e: Exception) {
+            Log.e("ApiHandler", "handleWaitFor", e)
             errResponse(NanoHTTPD.Response.Status.INTERNAL_ERROR, e.message ?: "error")
         }
     }
