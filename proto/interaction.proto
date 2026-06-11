@@ -1,0 +1,41 @@
+syntax = "proto3";
+package clienttools;
+option java_package = "com.clienttools.sdk.proto";
+option java_multiple_files = true;
+import "api.proto";
+
+// ── input_text ──────────────────────────────────────────
+message InputTextRequest {
+  string id     = 1;  // View id
+  string text   = 2;  // 输入内容
+  bool   append = 3;  // true=追加，false=替换（默认）
+}
+message InputTextResponse {
+  ResponseMeta meta = 1;
+}
+
+// ── gesture ─────────────────────────────────────────────
+message GestureRequest {
+  string id               = 1;  // 目标 View id
+  string type             = 2;  // "long_press"|"double_tap"|"swipe"
+  int32  duration_ms      = 3;  // 长按持续时间（ms），默认 500
+  string direction        = 4;  // swipe 方向："up"|"down"|"left"|"right"
+  float  distance_dp      = 5;  // swipe 距离（dp），默认 200
+  int32  swipe_duration_ms = 6; // swipe 持续时间（ms），默认 300
+}
+message GestureResponse {
+  ResponseMeta meta = 1;
+}
+
+// ── wait_for ─────────────────────────────────────────────
+message WaitForRequest {
+  string id           = 1;  // View id
+  string condition    = 2;  // "visible"|"gone"|"exists"|"not_exists"
+  int32  timeout_ms   = 3;  // 超时时间（ms），默认 5000
+  int32  interval_ms  = 4;  // 轮询间隔（ms），默认 200
+}
+message WaitForResponse {
+  ResponseMeta meta       = 1;
+  bool         met        = 2;  // 条件是否满足
+  int32        elapsed_ms = 3;  // 实际等待时间
+}
