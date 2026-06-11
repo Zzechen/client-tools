@@ -10,6 +10,7 @@ import { registerPageTools } from "./tools/page.js";
 import { registerMockTools } from "./tools/mock.js";
 import { registerCustomTools } from "./tools/custom.js";
 import { registerWebViewRedirectTools } from "./tools/webview_redirect.js";
+import { registerInteractionTools } from "./tools/interaction.js";
 
 const server = new McpServer({
   name: "client-tools",
@@ -25,6 +26,7 @@ registerPageTools(server);
 registerMockTools(server);
 registerCustomTools(server);
 registerWebViewRedirectTools(server);
+registerInteractionTools(server);
 
 const transport = new StdioServerTransport();
 await server.connect(transport);
