@@ -37,6 +37,10 @@
             android:name="com.clienttools.demo.WebViewRedirectActivity"
             android:exported="false" />
 
+        <activity
+            android:name="com.clienttools.demo.AgentTestActivity"
+            android:exported="false" />
+
     </application>
     
 </manifest>
