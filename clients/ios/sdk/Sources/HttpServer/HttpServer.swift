@@ -370,6 +370,15 @@ class HttpServer {
             let localPoint = CGPoint(x: view.bounds.midX + offsetX, y: view.bounds.midY + offsetY)
             let pointInWindow = view.convert(localPoint, to: window)
 
+            // 0. 直接对目标 view 尝试 UIControl touchUpInside（离屏滚动场景 hitTest 找不到）
+            if let control = view as? UIControl,
+               control.allTargets.contains(where: {
+                   control.actions(forTarget: $0, forControlEvent: .touchUpInside)?.isEmpty == false
+               }) {
+                control.sendActions(for: .touchUpInside)
+                sema.signal(); return
+            }
+
             let hitView = window.hitTest(pointInWindow, with: nil) ?? view
 
             // 1. UIControl
@@ -396,7 +405,7 @@ class HttpServer {
             var current: UIView? = hitView
             while let v = current {
                 if let tap = v.gestureRecognizers?.first(where: { $0 is UITapGestureRecognizer }) {
-                    tap.setValue(UIGestureRecognizer.State.ended.rawValue, forKey: "state")
+                    self.invokeGestureActions(tap, state: .ended)
                     sema.signal(); return
                 }
                 current = v.superview
@@ -749,11 +758,20 @@ class HttpServer {
         DispatchQueue.main.async {
             switch req.type {
             case "long_press":
-                self.injectLongPress(on: view, durationMs: durationMs)
+                self.injectLongPressAsync(on: view, durationMs: durationMs) { sema.signal() }
             case "double_tap":
-                self.injectTapAt(view: view)
-                Thread.sleep(forTimeInterval: 0.1)
-                self.injectTapAt(view: view)
+                // 优先查找 numberOfTapsRequired == 2 的手势识别器并直接触发
+                if let doubleTap = view.gestureRecognizers?.compactMap({ $0 as? UITapGestureRecognizer })
+                    .first(where: { $0.numberOfTapsRequired == 2 }) {
+                    self.invokeGestureActions(doubleTap, state: .ended)
+                    sema.signal()
+                } else {
+                    self.injectTapAt(view: view)
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                        self.injectTapAt(view: view)
+                        sema.signal()
+                    }
+                }
             case "swipe":
                 let end: CGPoint
                 switch req.direction {
@@ -763,9 +781,10 @@ class HttpServer {
                 default:      end = CGPoint(x: center.x + distanceDp, y: center.y)
                 }
                 self.injectSwipe(on: view, from: center, to: end, durationMs: swipeDurationMs)
-            default: break
+                sema.signal()
+            default:
+                sema.signal()
             }
-            sema.signal()
         }
         sema.wait()
 
@@ -774,19 +793,48 @@ class HttpServer {
         sendProto(resp, connection: connection)
     }
 
-    private func injectLongPress(on view: UIView, durationMs: Int) {
-        if let longPress = view.gestureRecognizers?.first(where: { $0 is UILongPressGestureRecognizer }) {
-            longPress.setValue(UIGestureRecognizer.State.began.rawValue, forKey: "state")
-            Thread.sleep(forTimeInterval: Double(durationMs) / 1000)
-            longPress.setValue(UIGestureRecognizer.State.ended.rawValue, forKey: "state")
+    /// 直接调用 gestureRecognizer 注册的 target-action，绕过 UIKit 手势状态机限制。
+    /// 同时通过 KVC 设置 state，确保 handler 内 gr.state 读取正确。
+    private func invokeGestureActions(_ recognizer: UIGestureRecognizer, state: UIGestureRecognizer.State) {
+        recognizer.setValue(state.rawValue, forKey: "state")
+        guard let targets = recognizer.value(forKey: "targets") as? [AnyObject] else { return }
+        for entry in targets {
+            guard let target = entry.value(forKey: "target") as? NSObject,
+                  let actionStr = entry.value(forKey: "action") as? String else { continue }
+            let sel = Selector(actionStr)
+            if target.responds(to: sel) {
+                _ = target.perform(sel, with: recognizer)
+            }
+        }
+    }
+
+    private func injectLongPressAsync(on view: UIView, durationMs: Int, completion: @escaping () -> Void) {
+        guard let longPress = view.gestureRecognizers?.first(where: { $0 is UILongPressGestureRecognizer }) else {
+            completion(); return
+        }
+        invokeGestureActions(longPress, state: .began)
+        let delay = Double(durationMs) / 1000.0
+        DispatchQueue.main.asyncAfter(deadline: .now() + delay) {
+            self.invokeGestureActions(longPress, state: .ended)
+            completion()
         }
     }
 
     private func injectTapAt(view: UIView) {
+        // 优先查找单击手势识别器（即使 view 是 UIControl 子类）
+        if let tap = view.gestureRecognizers?.compactMap({ $0 as? UITapGestureRecognizer })
+            .first(where: { $0.numberOfTapsRequired == 1 }) {
+            invokeGestureActions(tap, state: .ended)
+            return
+        }
+        // 兜底：UIControl sendActions
         if let control = view as? UIControl {
             control.sendActions(for: .touchUpInside)
-        } else if let tap = view.gestureRecognizers?.first(where: { $0 is UITapGestureRecognizer }) {
-            tap.setValue(UIGestureRecognizer.State.ended.rawValue, forKey: "state")
+            return
+        }
+        // 祖先链查找
+        if let tap = view.gestureRecognizers?.first(where: { $0 is UITapGestureRecognizer }) {
+            invokeGestureActions(tap, state: .ended)
         }
     }
 
