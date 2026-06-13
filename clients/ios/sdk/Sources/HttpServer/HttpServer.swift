@@ -401,17 +401,8 @@ class HttpServer {
                 cv.delegate?.collectionView?(cv, didSelectItemAt: indexPath)
                 sema.signal(); return
             }
-            // 4. UITapGestureRecognizer（hitView 及其祖先链）
-            var current: UIView? = hitView
-            while let v = current {
-                if let tap = v.gestureRecognizers?.first(where: { $0 is UITapGestureRecognizer }) {
-                    self.invokeGestureActions(tap, state: .ended)
-                    sema.signal(); return
-                }
-                current = v.superview
-            }
-            clickError = "No interactive handler found at point"
-            sema.signal()
+            // 4. IOHIDEvent tap（真机）/ UITapGestureRecognizer（模拟器）
+            TouchInjector.tap(at: pointInWindow, on: hitView) { sema.signal() }
         }
         sema.wait()
 
@@ -758,20 +749,9 @@ class HttpServer {
         DispatchQueue.main.async {
             switch req.type {
             case "long_press":
-                self.injectLongPressAsync(on: view, durationMs: durationMs) { sema.signal() }
+                TouchInjector.longPress(at: center, on: view, durationMs: durationMs) { sema.signal() }
             case "double_tap":
-                // 优先查找 numberOfTapsRequired == 2 的手势识别器并直接触发
-                if let doubleTap = view.gestureRecognizers?.compactMap({ $0 as? UITapGestureRecognizer })
-                    .first(where: { $0.numberOfTapsRequired == 2 }) {
-                    self.invokeGestureActions(doubleTap, state: .ended)
-                    sema.signal()
-                } else {
-                    self.injectTapAt(view: view)
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-                        self.injectTapAt(view: view)
-                        sema.signal()
-                    }
-                }
+                TouchInjector.doubleTap(at: center, on: view) { sema.signal() }
             case "swipe":
                 let end: CGPoint
                 switch req.direction {
@@ -780,8 +760,19 @@ class HttpServer {
                 case "left":  end = CGPoint(x: center.x - distanceDp, y: center.y)
                 default:      end = CGPoint(x: center.x + distanceDp, y: center.y)
                 }
-                self.injectSwipe(on: view, from: center, to: end, durationMs: swipeDurationMs)
-                sema.signal()
+                // UIScrollView 直接操控 contentOffset，其余用 IOHIDEvent/手势识别器
+                if let scrollView = view as? UIScrollView {
+                    let dx = end.x - center.x
+                    let dy = end.y - center.y
+                    let newOffset = CGPoint(
+                        x: max(0, scrollView.contentOffset.x - dx),
+                        y: max(0, scrollView.contentOffset.y - dy)
+                    )
+                    scrollView.setContentOffset(newOffset, animated: true)
+                    sema.signal()
+                } else {
+                    TouchInjector.swipe(from: center, to: end, on: view, durationMs: swipeDurationMs) { sema.signal() }
+                }
             default:
                 sema.signal()
             }
@@ -793,68 +784,6 @@ class HttpServer {
         sendProto(resp, connection: connection)
     }
 
-    /// 直接调用 gestureRecognizer 注册的 target-action，绕过 UIKit 手势状态机限制。
-    /// 同时通过 KVC 设置 state，确保 handler 内 gr.state 读取正确。
-    private func invokeGestureActions(_ recognizer: UIGestureRecognizer, state: UIGestureRecognizer.State) {
-        recognizer.setValue(state.rawValue, forKey: "state")
-        // _targets 是 UIGestureRecognizer 内部存储 target-action 的私有数组
-        guard let targetEntries = recognizer.value(forKey: "_targets") as? [AnyObject] else { return }
-        for entry in targetEntries {
-            // _target: 注册的目标对象
-            guard let target = entry.value(forKey: "_target") as? NSObject else { continue }
-            // _action: SEL（指针，不是 NSString），需通过 ObjC runtime 直接读内存
-            guard let ivar = class_getInstanceVariable(object_getClass(entry), "_action") else { continue }
-            let sel = UnsafeRawPointer(Unmanaged.passUnretained(entry).toOpaque())
-                .advanced(by: ivar_getOffset(ivar))
-                .load(as: Selector.self)
-            guard target.responds(to: sel) else { continue }
-            _ = target.perform(sel, with: recognizer)
-        }
-    }
-
-    private func injectLongPressAsync(on view: UIView, durationMs: Int, completion: @escaping () -> Void) {
-        guard let longPress = view.gestureRecognizers?.first(where: { $0 is UILongPressGestureRecognizer }) else {
-            completion(); return
-        }
-        invokeGestureActions(longPress, state: .began)
-        let delay = Double(durationMs) / 1000.0
-        DispatchQueue.main.asyncAfter(deadline: .now() + delay) {
-            self.invokeGestureActions(longPress, state: .ended)
-            completion()
-        }
-    }
-
-    private func injectTapAt(view: UIView) {
-        // 优先查找单击手势识别器（即使 view 是 UIControl 子类）
-        if let tap = view.gestureRecognizers?.compactMap({ $0 as? UITapGestureRecognizer })
-            .first(where: { $0.numberOfTapsRequired == 1 }) {
-            invokeGestureActions(tap, state: .ended)
-            return
-        }
-        // 兜底：UIControl sendActions
-        if let control = view as? UIControl {
-            control.sendActions(for: .touchUpInside)
-            return
-        }
-        // 祖先链查找
-        if let tap = view.gestureRecognizers?.first(where: { $0 is UITapGestureRecognizer }) {
-            invokeGestureActions(tap, state: .ended)
-        }
-    }
-
-    private func injectSwipe(on view: UIView, from start: CGPoint, to end: CGPoint, durationMs: Int) {
-        if let scrollView = view as? UIScrollView {
-            let dx = end.x - start.x
-            let dy = end.y - start.y
-            let newOffset = CGPoint(
-                x: max(0, scrollView.contentOffset.x - dx),
-                y: max(0, scrollView.contentOffset.y - dy)
-            )
-            scrollView.setContentOffset(newOffset, animated: true)
-        } else if let swipe = view.gestureRecognizers?.first(where: { $0 is UISwipeGestureRecognizer }) {
-            swipe.setValue(UIGestureRecognizer.State.ended.rawValue, forKey: "state")
-        }
-    }
 
     // MARK: - wait_for
 

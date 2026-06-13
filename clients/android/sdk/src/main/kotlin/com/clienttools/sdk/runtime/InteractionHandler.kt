@@ -4,6 +4,7 @@ import android.os.Handler
 import android.os.Looper
 import android.os.SystemClock
 import android.view.MotionEvent
+import android.view.View
 import android.widget.EditText
 import android.widget.TextView
 import com.clienttools.sdk.ClientToolsSDK
@@ -14,10 +15,6 @@ object InteractionHandler {
 
     // ── input_text ──────────────────────────────────────────────────
 
-    /**
-     * 向指定 View 输入文本。
-     * @return true=成功，false=View 不存在或不支持输入
-     */
     fun inputText(viewId: String, text: String, append: Boolean): Boolean {
         val views = ViewTreeTraversal.findViewById(viewId)
         if (views.isEmpty()) return false
@@ -25,8 +22,7 @@ object InteractionHandler {
         if (view !is TextView) return false
 
         val latch = CountDownLatch(1)
-        val handler = Handler(Looper.getMainLooper())
-        handler.post {
+        Handler(Looper.getMainLooper()).post {
             view.requestFocus()
             if (!append) view.text = null
             (view as? EditText)?.append(text) ?: view.append(text)
@@ -38,10 +34,6 @@ object InteractionHandler {
 
     // ── gesture ─────────────────────────────────────────────────────
 
-    /**
-     * 对指定 View 执行手势。
-     * type: "long_press" | "double_tap" | "swipe"
-     */
     fun gesture(
         viewId: String,
         type: String,
@@ -63,46 +55,71 @@ object InteractionHandler {
         val decorView = activity.window.decorView
 
         val latch = CountDownLatch(1)
-        activity.runOnUiThread {
-            when (type) {
-                "long_press" -> injectLongPress(decorView, cx, cy, durationMs.toLong())
-                "double_tap" -> injectDoubleTap(decorView, cx, cy)
-                "swipe" -> {
-                    val distancePx = distanceDp * density
-                    val (ex, ey) = when (direction) {
-                        "up"    -> Pair(cx, cy - distancePx)
-                        "down"  -> Pair(cx, cy + distancePx)
-                        "left"  -> Pair(cx - distancePx, cy)
-                        "right" -> Pair(cx + distancePx, cy)
-                        else    -> Pair(cx, cy - distancePx)
-                    }
-                    injectSwipe(decorView, cx, cy, ex, ey, swipeDurationMs.toLong())
+        val mainHandler = Handler(Looper.getMainLooper())
+
+        when (type) {
+            "long_press" -> mainHandler.post {
+                injectLongPressAsync(decorView, cx, cy, durationMs.toLong().coerceAtLeast(500L)) {
+                    latch.countDown()
                 }
             }
-            latch.countDown()
+            "double_tap" -> mainHandler.post {
+                injectDoubleTapAsync(decorView, cx, cy) { latch.countDown() }
+            }
+            "swipe" -> {
+                val distancePx = distanceDp * density
+                val (ex, ey) = when (direction) {
+                    "up"    -> Pair(cx, cy - distancePx)
+                    "down"  -> Pair(cx, cy + distancePx)
+                    "left"  -> Pair(cx - distancePx, cy)
+                    "right" -> Pair(cx + distancePx, cy)
+                    else    -> Pair(cx, cy - distancePx)
+                }
+                mainHandler.post {
+                    injectSwipeAsync(decorView, cx, cy, ex, ey, swipeDurationMs.toLong().coerceAtLeast(300L)) {
+                        latch.countDown()
+                    }
+                }
+            }
+            else -> return false
         }
-        latch.await(10, TimeUnit.SECONDS)
+
+        latch.await(15, TimeUnit.SECONDS)
         return true
     }
 
-    private fun injectLongPress(decorView: android.view.View, x: Float, y: Float, durationMs: Long) {
-        val t = SystemClock.uptimeMillis()
-        val down = MotionEvent.obtain(t, t, MotionEvent.ACTION_DOWN, x, y, 0)
+    /**
+     * 异步长按：ACTION_DOWN 后让主线程空转（使 Android 长按定时器能触发），
+     * durationMs 后再发 ACTION_UP。
+     */
+    private fun injectLongPressAsync(decorView: View, x: Float, y: Float, durationMs: Long, onDone: () -> Unit) {
+        val mainHandler = Handler(Looper.getMainLooper())
+        val downTime = SystemClock.uptimeMillis()
+        val down = MotionEvent.obtain(downTime, downTime, MotionEvent.ACTION_DOWN, x, y, 0)
         decorView.dispatchTouchEvent(down)
         down.recycle()
-        Thread.sleep(durationMs)
-        val up = MotionEvent.obtain(t, t + durationMs, MotionEvent.ACTION_UP, x, y, 0)
-        decorView.dispatchTouchEvent(up)
-        up.recycle()
+
+        mainHandler.postDelayed({
+            val upTime = SystemClock.uptimeMillis()
+            val up = MotionEvent.obtain(downTime, upTime, MotionEvent.ACTION_UP, x, y, 0)
+            decorView.dispatchTouchEvent(up)
+            up.recycle()
+            onDone()
+        }, durationMs)
     }
 
-    private fun injectDoubleTap(decorView: android.view.View, x: Float, y: Float) {
+    /**
+     * 异步双击：两次点击之间通过 postDelayed 间隔 100ms，不阻塞主线程。
+     */
+    private fun injectDoubleTapAsync(decorView: View, x: Float, y: Float, onDone: () -> Unit) {
         injectTap(decorView, x, y)
-        Thread.sleep(100)
-        injectTap(decorView, x, y)
+        Handler(Looper.getMainLooper()).postDelayed({
+            injectTap(decorView, x, y)
+            onDone()
+        }, 100)
     }
 
-    private fun injectTap(decorView: android.view.View, x: Float, y: Float) {
+    private fun injectTap(decorView: View, x: Float, y: Float) {
         val t = SystemClock.uptimeMillis()
         val down = MotionEvent.obtain(t, t, MotionEvent.ACTION_DOWN, x, y, 0)
         val up = MotionEvent.obtain(t, t + 50, MotionEvent.ACTION_UP, x, y, 0)
@@ -112,39 +129,51 @@ object InteractionHandler {
         up.recycle()
     }
 
-    private fun injectSwipe(
-        decorView: android.view.View,
+    /**
+     * 异步滑动：将每个 MOVE 事件通过 postDelayed 均匀分布，不阻塞主线程。
+     */
+    private fun injectSwipeAsync(
+        decorView: View,
         sx: Float, sy: Float,
         ex: Float, ey: Float,
-        durationMs: Long
+        durationMs: Long,
+        onDone: () -> Unit
     ) {
-        val t = SystemClock.uptimeMillis()
+        val mainHandler = Handler(Looper.getMainLooper())
         val steps = 20
-        val down = MotionEvent.obtain(t, t, MotionEvent.ACTION_DOWN, sx, sy, 0)
+        val stepDelay = durationMs / steps
+        val downTime = SystemClock.uptimeMillis()
+
+        val down = MotionEvent.obtain(downTime, downTime, MotionEvent.ACTION_DOWN, sx, sy, 0)
         decorView.dispatchTouchEvent(down)
         down.recycle()
+
         for (i in 1..steps) {
             val fraction = i.toFloat() / steps
             val mx = sx + (ex - sx) * fraction
             val my = sy + (ey - sy) * fraction
-            val moveTime = t + (durationMs * fraction).toLong()
-            val move = MotionEvent.obtain(t, moveTime, MotionEvent.ACTION_MOVE, mx, my, 0)
-            decorView.dispatchTouchEvent(move)
-            move.recycle()
-            Thread.sleep(durationMs / steps)
+            val delay = stepDelay * i
+            val isLast = i == steps
+            mainHandler.postDelayed({
+                val moveTime = SystemClock.uptimeMillis()
+                val move = MotionEvent.obtain(downTime, moveTime, MotionEvent.ACTION_MOVE, mx, my, 0)
+                decorView.dispatchTouchEvent(move)
+                move.recycle()
+                if (isLast) {
+                    mainHandler.postDelayed({
+                        val upTime = SystemClock.uptimeMillis()
+                        val up = MotionEvent.obtain(downTime, upTime, MotionEvent.ACTION_UP, ex, ey, 0)
+                        decorView.dispatchTouchEvent(up)
+                        up.recycle()
+                        onDone()
+                    }, 50)
+                }
+            }, delay)
         }
-        val up = MotionEvent.obtain(t, t + durationMs, MotionEvent.ACTION_UP, ex, ey, 0)
-        decorView.dispatchTouchEvent(up)
-        up.recycle()
     }
 
     // ── wait_for ─────────────────────────────────────────────────────
 
-    /**
-     * 在主线程轮询等待 View 满足 condition。
-     * condition: "visible" | "gone" | "exists" | "not_exists"
-     * @return Pair(met, elapsedMs)
-     */
     fun waitFor(viewId: String, condition: String, timeoutMs: Int, intervalMs: Int): Pair<Boolean, Int> {
         val latch = CountDownLatch(1)
         val handler = Handler(Looper.getMainLooper())
@@ -157,8 +186,8 @@ object InteractionHandler {
             val conditionMet = when (condition) {
                 "exists"     -> views.isNotEmpty()
                 "not_exists" -> views.isEmpty()
-                "visible"    -> views.isNotEmpty() && views[0].visibility == android.view.View.VISIBLE
-                "gone"       -> views.isEmpty() || views[0].visibility != android.view.View.VISIBLE
+                "visible"    -> views.isNotEmpty() && views[0].visibility == View.VISIBLE
+                "gone"       -> views.isEmpty() || views[0].visibility != View.VISIBLE
                 else         -> false
             }
             if (conditionMet) {
