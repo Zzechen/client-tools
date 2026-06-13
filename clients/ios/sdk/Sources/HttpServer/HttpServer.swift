@@ -797,14 +797,18 @@ class HttpServer {
     /// 同时通过 KVC 设置 state，确保 handler 内 gr.state 读取正确。
     private func invokeGestureActions(_ recognizer: UIGestureRecognizer, state: UIGestureRecognizer.State) {
         recognizer.setValue(state.rawValue, forKey: "state")
-        guard let targets = recognizer.value(forKey: "targets") as? [AnyObject] else { return }
-        for entry in targets {
-            guard let target = entry.value(forKey: "target") as? NSObject,
-                  let actionStr = entry.value(forKey: "action") as? String else { continue }
-            let sel = Selector(actionStr)
-            if target.responds(to: sel) {
-                _ = target.perform(sel, with: recognizer)
-            }
+        // _targets 是 UIGestureRecognizer 内部存储 target-action 的私有数组
+        guard let targetEntries = recognizer.value(forKey: "_targets") as? [AnyObject] else { return }
+        for entry in targetEntries {
+            // _target: 注册的目标对象
+            guard let target = entry.value(forKey: "_target") as? NSObject else { continue }
+            // _action: SEL（指针，不是 NSString），需通过 ObjC runtime 直接读内存
+            guard let ivar = class_getInstanceVariable(object_getClass(entry), "_action") else { continue }
+            let sel = UnsafeRawPointer(Unmanaged.passUnretained(entry).toOpaque())
+                .advanced(by: ivar_getOffset(ivar))
+                .load(as: Selector.self)
+            guard target.responds(to: sel) else { continue }
+            _ = target.perform(sel, with: recognizer)
         }
     }
 
