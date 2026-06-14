@@ -178,6 +178,12 @@ class HttpServer {
             handleClick(bodyData, connection: connection)
         case ("POST", "/api/scroll"):
             handleScroll(bodyData, connection: connection)
+        case ("POST", "/api/input"):
+            handleInputText(bodyData, connection: connection)
+        case ("POST", "/api/gesture"):
+            handleGesture(bodyData, connection: connection)
+        case ("POST", "/api/wait"):
+            handleWaitFor(bodyData, connection: connection)
         case ("POST", "/api/modify"):
             handleModify(bodyData, connection: connection)
         case ("POST", "/webview/push-html"):
@@ -364,6 +370,15 @@ class HttpServer {
             let localPoint = CGPoint(x: view.bounds.midX + offsetX, y: view.bounds.midY + offsetY)
             let pointInWindow = view.convert(localPoint, to: window)
 
+            // 0. 直接对目标 view 尝试 UIControl touchUpInside（离屏滚动场景 hitTest 找不到）
+            if let control = view as? UIControl,
+               control.allTargets.contains(where: {
+                   control.actions(forTarget: $0, forControlEvent: .touchUpInside)?.isEmpty == false
+               }) {
+                control.sendActions(for: .touchUpInside)
+                sema.signal(); return
+            }
+
             let hitView = window.hitTest(pointInWindow, with: nil) ?? view
 
             // 1. UIControl
@@ -386,17 +401,8 @@ class HttpServer {
                 cv.delegate?.collectionView?(cv, didSelectItemAt: indexPath)
                 sema.signal(); return
             }
-            // 4. UITapGestureRecognizer（hitView 及其祖先链）
-            var current: UIView? = hitView
-            while let v = current {
-                if let tap = v.gestureRecognizers?.first(where: { $0 is UITapGestureRecognizer }) {
-                    tap.setValue(UIGestureRecognizer.State.ended.rawValue, forKey: "state")
-                    sema.signal(); return
-                }
-                current = v.superview
-            }
-            clickError = "No interactive handler found at point"
-            sema.signal()
+            // 4. IOHIDEvent tap（真机）/ UITapGestureRecognizer（模拟器）
+            TouchInjector.tap(at: pointInWindow, on: hitView) { sema.signal() }
         }
         sema.wait()
 
@@ -688,6 +694,144 @@ class HttpServer {
             return "{\"path\":\"/custom/\(route.path)\",\"method\":\"\(route.method.value)\",\"description\":\"\(esc(route.description))\",\"params\":{\(paramsJson)}}"
         }.joined(separator: ",")
         sendJson("[\(items)]", connection: connection)
+    }
+
+    // MARK: - input_text
+
+    private func handleInputText(_ body: Data, connection: NWConnection) {
+        guard let req = try? Clienttools_InputTextRequest(serializedBytes: body) else {
+            sendError(code: 400, message: "Invalid request", connection: connection); return
+        }
+        guard let view = viewQueryService.findView(byId: req.id) else {
+            sendError(code: 404, message: "View not found", httpCode: 404, connection: connection); return
+        }
+        guard view is UITextField || view is UITextView else {
+            sendError(code: 400, message: "View is not UITextField or UITextView", connection: connection); return
+        }
+
+        let sema = DispatchSemaphore(value: 0)
+        DispatchQueue.main.async {
+            view.becomeFirstResponder()
+            if let tf = view as? UITextField {
+                tf.text = req.append ? (tf.text ?? "") + req.text : req.text
+                NotificationCenter.default.post(name: UITextField.textDidChangeNotification, object: tf)
+            } else if let tv = view as? UITextView {
+                tv.text = req.append ? (tv.text ?? "") + req.text : req.text
+                NotificationCenter.default.post(name: UITextView.textDidChangeNotification, object: tv)
+            }
+            sema.signal()
+        }
+        sema.wait()
+
+        var resp = Clienttools_InputTextResponse()
+        resp.meta = okMeta()
+        sendProto(resp, connection: connection)
+    }
+
+    // MARK: - gesture
+
+    private func handleGesture(_ body: Data, connection: NWConnection) {
+        guard let req = try? Clienttools_GestureRequest(serializedBytes: body) else {
+            sendError(code: 400, message: "Invalid request", connection: connection); return
+        }
+        guard let view = viewQueryService.findView(byId: req.id),
+              let window = view.window else {
+            sendError(code: 404, message: "View not found", httpCode: 404, connection: connection); return
+        }
+
+        let localCenter = CGPoint(x: view.bounds.midX, y: view.bounds.midY)
+        let center = view.convert(localCenter, to: window)
+        let durationMs = req.durationMs > 0 ? Int(req.durationMs) : 500
+        let distanceDp = req.distanceDp > 0 ? CGFloat(req.distanceDp) : 200
+        let swipeDurationMs = req.swipeDurationMs > 0 ? Int(req.swipeDurationMs) : 300
+
+        let sema = DispatchSemaphore(value: 0)
+        DispatchQueue.main.async {
+            switch req.type {
+            case "long_press":
+                TouchInjector.longPress(at: center, on: view, durationMs: durationMs) { sema.signal() }
+            case "double_tap":
+                TouchInjector.doubleTap(at: center, on: view) { sema.signal() }
+            case "swipe":
+                let end: CGPoint
+                switch req.direction {
+                case "up":    end = CGPoint(x: center.x, y: center.y - distanceDp)
+                case "down":  end = CGPoint(x: center.x, y: center.y + distanceDp)
+                case "left":  end = CGPoint(x: center.x - distanceDp, y: center.y)
+                default:      end = CGPoint(x: center.x + distanceDp, y: center.y)
+                }
+                // UIScrollView 直接操控 contentOffset，其余用 IOHIDEvent/手势识别器
+                if let scrollView = view as? UIScrollView {
+                    let dx = end.x - center.x
+                    let dy = end.y - center.y
+                    let newOffset = CGPoint(
+                        x: max(0, scrollView.contentOffset.x - dx),
+                        y: max(0, scrollView.contentOffset.y - dy)
+                    )
+                    scrollView.setContentOffset(newOffset, animated: true)
+                    sema.signal()
+                } else {
+                    TouchInjector.swipe(from: center, to: end, on: view, durationMs: swipeDurationMs) { sema.signal() }
+                }
+            default:
+                sema.signal()
+            }
+        }
+        sema.wait()
+
+        var resp = Clienttools_GestureResponse()
+        resp.meta = okMeta()
+        sendProto(resp, connection: connection)
+    }
+
+
+    // MARK: - wait_for
+
+    private func handleWaitFor(_ body: Data, connection: NWConnection) {
+        guard let req = try? Clienttools_WaitForRequest(serializedBytes: body) else {
+            sendError(code: 400, message: "Invalid request", connection: connection); return
+        }
+        let timeoutMs = req.timeoutMs > 0 ? Int(req.timeoutMs) : 5000
+        let intervalMs = req.intervalMs > 0 ? Int(req.intervalMs) : 200
+
+        let latch = DispatchSemaphore(value: 0)
+        var met = false
+        let startTime = Date()
+
+        func checkCondition() {
+            let elapsed = Int(Date().timeIntervalSince(startTime) * 1000)
+            let view = self.viewQueryService.findView(byId: req.id)
+            let conditionMet: Bool
+            switch req.condition {
+            case "exists":     conditionMet = view != nil
+            case "not_exists": conditionMet = view == nil
+            case "visible":    conditionMet = view != nil && !view!.isHidden && view!.alpha > 0
+            case "gone":       conditionMet = view == nil || view!.isHidden || view!.alpha == 0
+            default:           conditionMet = false
+            }
+            if conditionMet {
+                met = true
+                latch.signal()
+                return
+            }
+            if elapsed >= timeoutMs {
+                latch.signal()
+                return
+            }
+            DispatchQueue.main.asyncAfter(deadline: .now() + .milliseconds(intervalMs)) {
+                checkCondition()
+            }
+        }
+
+        DispatchQueue.main.async { checkCondition() }
+        _ = latch.wait(timeout: .now() + .milliseconds(timeoutMs + 1000))
+
+        let elapsed = Int(Date().timeIntervalSince(startTime) * 1000)
+        var resp = Clienttools_WaitForResponse()
+        resp.meta = okMeta()
+        resp.met = met
+        resp.elapsedMs = Int32(elapsed)
+        sendProto(resp, connection: connection)
     }
 
     private func handleCustomCall(_ route: CustomRoute, body: String?, connection: NWConnection) {

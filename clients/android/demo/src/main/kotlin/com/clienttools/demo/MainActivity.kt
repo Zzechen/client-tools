@@ -17,6 +17,7 @@ class MainActivity : AppCompatActivity() {
             Page("Login Screen") { startActivity(Intent(this, LoginActivity::class.java)) },
             Page("WebView 重定向测试") { startActivity(Intent(this, WebViewRedirectActivity::class.java)) },
             Page("Verify Code") { startActivity(Intent(this, VerifyCodeActivity::class.java)) },
+            Page("Agent Test") { startActivity(Intent(this, AgentTestActivity::class.java)) },
             Page("User Info (Demo)") {
                 val demoUser = com.clienttools.demo.model.UserInfo(
                     id = "demo",

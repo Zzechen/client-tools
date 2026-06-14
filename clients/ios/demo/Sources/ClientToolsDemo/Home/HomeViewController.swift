@@ -22,6 +22,9 @@ class HomeViewController: UIViewController {
         ("VerifyCode Demo", "验证码输入页", "🔐", { [weak self] in
             self?.navigationController?.pushViewController(VerifyCodeViewController(), animated: true)
         }),
+        ("Agent Test", "agent 交互能力验证页", "🤖", { [weak self] in
+            self?.navigationController?.pushViewController(AgentTestViewController(), animated: true)
+        }),
         ("User Info (Demo)", "用户信息展示页", "👤", { [weak self] in
             let demoUser = UserInfo(
                 id: "demo",

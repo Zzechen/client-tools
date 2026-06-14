@@ -14,6 +14,9 @@
 | | `capture_view` | 截取指定 View 的截图 |
 | 交互 | `click_view` | 点击指定 View |
 | | `scroll_view` | 滚动指定 View |
+| | `input_text` | 向指定 View 输入文本 |
+| | `gesture` | 对指定 View 执行长按/双击/滑动手势 |
+| | `wait_for` | 等待指定 View 满足条件（可见/消失/出现） |
 | 视图修改 | `modify_view` | 修改 View 的位置、尺寸或文案（Android/iOS 通用） |
 | WebView 覆层 | `push_html` | 推送 HTML 到 WebView 覆层并显示 |
 | | `show_webview` | 切换显示已保存的 HTML |
@@ -583,4 +586,72 @@
 **返回：**
 ```json
 {"cleared_count": 2}
+```
+
+---
+
+## 交互能力
+
+### input_text
+
+向指定 View 输入文本（Android/iOS 通用）。
+
+| 参数 | 类型 | 必填 | 说明 |
+|---|---|---|---|
+| platform | "android"\|"ios" | 是 | 目标平台 |
+| id | string | 是 | View id |
+| text | string | 是 | 输入内容 |
+| append | boolean | 否 | true=追加，false=替换（默认） |
+
+要求 View 类型为 EditText / UITextField / UITextView。
+
+**返回：**
+```json
+{"ok": true}
+```
+
+---
+
+### gesture
+
+对指定 View 执行手势（Android/iOS 通用）。
+
+| 参数 | 类型 | 必填 | 说明 |
+|---|---|---|---|
+| platform | "android"\|"ios" | 是 | 目标平台 |
+| id | string | 是 | View id |
+| type | "long_press"\|"double_tap"\|"swipe" | 是 | 手势类型 |
+| duration_ms | number | 否 | 长按持续时间 ms（默认 500） |
+| direction | "up"\|"down"\|"left"\|"right" | swipe 必填 | 滑动方向 |
+| distance_dp | number | 否 | 滑动距离 dp（默认 200） |
+| swipe_duration_ms | number | 否 | 滑动动画时长 ms（默认 300） |
+
+**返回：**
+```json
+{"ok": true}
+```
+
+---
+
+### wait_for
+
+等待指定 View 满足条件后返回，超时返回 `met=false`（Android/iOS 通用）。
+
+| 参数 | 类型 | 必填 | 说明 |
+|---|---|---|---|
+| platform | "android"\|"ios" | 是 | 目标平台 |
+| id | string | 是 | View id |
+| condition | "visible"\|"gone"\|"exists"\|"not_exists" | 是 | 等待条件 |
+| timeout_ms | number | 否 | 超时时间 ms（默认 5000） |
+| interval_ms | number | 否 | 轮询间隔 ms（默认 200） |
+
+条件说明：
+- `visible`：View 存在且可见（not hidden，alpha > 0）
+- `gone`：View 不存在或不可见
+- `exists`：View 在视图树中存在（不论可见性）
+- `not_exists`：View 不在视图树中
+
+**返回：**
+```json
+{"met": true, "elapsed_ms": 1200}
 ```

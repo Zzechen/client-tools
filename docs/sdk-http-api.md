@@ -30,6 +30,9 @@ SDK 在设备上启动 HTTP Server，MCP Server 通过 `http://localhost:8080` �
 | `/api/scroll` | POST | ✓ | ✓ | 滚动 View |
 | `/api/capture/{id}` | GET | ✓ | ✓ | 截取 View 截图 |
 | `/api/modify` | POST | ✓ | ✓ | 修改 View 位置/尺寸/文案 |
+| `/api/input` | POST | ✓ | ✓ | 向 View 输入文本 |
+| `/api/gesture` | POST | ✓ | ✓ | 对 View 执行手势 |
+| `/api/wait` | POST | ✓ | ✓ | 等待 View 满足条件 |
 | `/webview/files` | GET | ✓ | ✓ | 列出 HTML 文件 |
 | `/webview/push-html` | POST | ✓ | ✓ | 推送 HTML |
 | `/webview/show` | POST | ✓ | ✓ | 显示 HTML |
@@ -567,3 +570,63 @@ releaseImplementation 'com.github.Zzechen:client-tools-noop:v1.x.x'
 pod 'ClientToolsSDK',      :configurations => ['Debug']
 pod 'ClientToolsSDK-Noop', :configurations => ['Release']
 ```
+
+---
+
+## 交互类接口
+
+### POST /api/input
+
+向指定 View 输入文本。
+
+- **请求体：** `InputTextRequest`（Protobuf）
+
+| 字段 | 类型 | 说明 |
+|---|---|---|
+| id | string | View id |
+| text | string | 输入内容 |
+| append | bool | true=追加，false=替换（默认） |
+
+- **响应体：** `InputTextResponse`（Protobuf），含 `ResponseMeta`
+
+---
+
+### POST /api/gesture
+
+对指定 View 执行手势。
+
+- **请求体：** `GestureRequest`（Protobuf）
+
+| 字段 | 类型 | 说明 |
+|---|---|---|
+| id | string | 目标 View id |
+| type | string | "long_press"\|"double_tap"\|"swipe" |
+| duration_ms | int32 | 长按持续时间 ms（默认 500） |
+| direction | string | swipe 方向："up"\|"down"\|"left"\|"right" |
+| distance_dp | float | swipe 距离 dp（默认 200） |
+| swipe_duration_ms | int32 | swipe 持续时间 ms（默认 300） |
+
+- **响应体：** `GestureResponse`（Protobuf），含 `ResponseMeta`
+
+---
+
+### POST /api/wait
+
+等待 View 满足指定条件。
+
+- **请求体：** `WaitForRequest`（Protobuf）
+
+| 字段 | 类型 | 说明 |
+|---|---|---|
+| id | string | View id |
+| condition | string | "visible"\|"gone"\|"exists"\|"not_exists" |
+| timeout_ms | int32 | 超时时间 ms（默认 5000） |
+| interval_ms | int32 | 轮询间隔 ms（默认 200） |
+
+- **响应体：** `WaitForResponse`（Protobuf）
+
+| 字段 | 类型 | 说明 |
+|---|---|---|
+| meta | ResponseMeta | 通用响应 meta |
+| met | bool | 条件是否满足 |
+| elapsed_ms | int32 | 实际等待时间 ms |

@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/test_root"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/bg_dark"
+    android:padding="24dp">
+
+    <LinearLayout
+        android:id="@+id/test_container"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:paddingTop="48dp">
+
+        <!-- 状态反馈 -->
+        <TextView
+            android:id="@+id/test_status"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="status: idle"
+            android:textColor="@color/text_primary"
+            android:textSize="14sp"
+            android:padding="12dp"
+            android:background="#1AFFFFFF"
+            android:layout_marginBottom="24dp" />
+
+        <!-- 输入区 -->
+        <EditText
+            android:id="@+id/test_input"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="输入框（test_input）"
+            android:textColor="@color/text_primary"
+            android:textColorHint="@color/text_secondary"
+            android:backgroundTint="@color/primary_light"
+            android:layout_marginBottom="8dp" />
+
+        <Button
+            android:id="@+id/test_btn_clear"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="清空输入框"
+            android:layout_marginBottom="24dp" />
+
+        <!-- 手势区 -->
+        <Button
+            android:id="@+id/test_btn_long_press"
+            android:layout_width="match_parent"
+            android:layout_height="56dp"
+            android:text="长按我（test_btn_long_press）"
+            android:layout_marginBottom="12dp" />
+
+        <Button
+            android:id="@+id/test_btn_double_tap"
+            android:layout_width="match_parent"
+            android:layout_height="56dp"
+            android:text="双击我（test_btn_double_tap）"
+            android:layout_marginBottom="24dp" />
+
+        <!-- 滑动区 -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="滑动列表（test_scroll）"
+            android:textColor="@color/text_secondary"
+            android:textSize="12sp"
+            android:layout_marginBottom="8dp" />
+
+        <androidx.core.widget.NestedScrollView
+            android:id="@+id/test_scroll"
+            android:layout_width="match_parent"
+            android:layout_height="200dp"
+            android:layout_marginBottom="24dp">
+
+            <LinearLayout
+                android:id="@+id/test_scroll_content"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical" />
+        </androidx.core.widget.NestedScrollView>
+
+        <!-- wait_for 验证区 -->
+        <Button
+            android:id="@+id/test_btn_trigger_delay"
+            android:layout_width="match_parent"
+            android:layout_height="56dp"
+            android:text="触发延迟出现（2秒后）"
+            android:layout_marginBottom="12dp" />
+
+        <TextView
+            android:id="@+id/test_delayed_view"
+            android:layout_width="match_parent"
+            android:layout_height="56dp"
+            android:text="我是延迟出现的 View"
+            android:textColor="@color/text_primary"
+            android:gravity="center"
+            android:background="#2A4CFF"
+            android:visibility="gone" />
+
+    </LinearLayout>
+</ScrollView>

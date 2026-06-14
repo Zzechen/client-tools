@@ -38,6 +38,15 @@ class HttpServer(
                 method == Method.POST && uri == "/api/scroll" ->
                     ApiHandler.handleScroll(readBodyBytes(session))
 
+                method == Method.POST && uri == "/api/input" ->
+                    ApiHandler.handleInputText(readBodyBytes(session))
+
+                method == Method.POST && uri == "/api/gesture" ->
+                    ApiHandler.handleGesture(readBodyBytes(session))
+
+                method == Method.POST && uri == "/api/wait" ->
+                    ApiHandler.handleWaitFor(readBodyBytes(session))
+
                 method == Method.GET && uri == "/api/nodes/all" ->
                     ApiHandler.handleGetAllNodes()
 
